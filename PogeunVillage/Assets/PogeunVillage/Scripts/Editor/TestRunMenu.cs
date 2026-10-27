@@ -59,6 +59,10 @@ namespace PogeunVillage.EditorTools
                 if (!result.HasChildren)
                 {
                     text.AppendLine($"{result.TestStatus}\t{result.FullName}\t{result.Message?.Replace('\n', ' ')}");
+                    if (result.TestStatus == TestStatus.Failed && !string.IsNullOrEmpty(result.StackTrace))
+                        foreach (string line in result.StackTrace.Split('\n'))
+                            if (line.Contains("PogeunVillage"))
+                                text.AppendLine("    " + line.Trim());
                     return;
                 }
                 foreach (var child in result.Children)

@@ -50,8 +50,13 @@ namespace PogeunVillage
                 interactable.Interacted -= OnShaken;
         }
 
-        void OnShaken(Interactable _, PlayerInteractor by)
+        void OnShaken(Interactable _, PlayerInteractor by) => DropAll();
+
+        /// <summary>달린 열매를 전부 떨어뜨림(흔들기 · 베어질 때)</summary>
+        public void DropAll()
         {
+            if (tree == null)
+                return;
             int dropped = tree.Shake();
             for (int i = 0; i < dropped; i++)
                 Drop(i, dropped);
@@ -72,6 +77,7 @@ namespace PogeunVillage
             Pickup pickup = Instantiate(pickupPrefab, visual.position, Quaternion.identity);
             pickup.name = fruitItem.id;
             pickup.item = fruitItem;
+            pickup.GetComponent<Interactable>().displayName = fruitItem.displayName;
             pickup.GetComponentInChildren<Renderer>().sharedMaterial = fruitMaterial;
             pickup.Fall(visual.position, ground, settings.fruitFallTime);
         }

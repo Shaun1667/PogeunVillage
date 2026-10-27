@@ -138,6 +138,8 @@ namespace PogeunVillage
             bool hit = target && Array.IndexOf(tool.hitKinds, target.kind) >= 0;
             Debug.Log(hit ? $"[도구] {tool.displayName} → {target.displayName}" : $"[도구] {tool.displayName} 허공", this);
             ToolUsed?.Invoke(tool, hit ? target : null);
+            if (hit)
+                target.ReceiveToolHit(this, tool);
             bool stillHeld = inventory.Inventory.Slots[slot].itemId == tool.id;
             if (hit && stillHeld && inventory.Inventory.UseDurability(slot))
                 Debug.Log($"[도구] {tool.displayName}이(가) 부서졌어요", this);

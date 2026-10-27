@@ -65,6 +65,8 @@ namespace PogeunVillage.EditorTools
         static ItemDefinition appleItem, peachItem, flowerItem;
         static Pickup pickupPrefab;
         static ToolDefinition[] tools;
+        static ItemDefinition woodItem;
+        static GameObject stumpPrefab;
         static readonly List<(Vector2 a, Vector2 b)> Paths = new();
         static readonly List<Vector3> Occupied = new(); // x, z, radius
 
@@ -102,6 +104,8 @@ namespace PogeunVillage.EditorTools
             peachItem = EnsureItem("Peach", "복숭아");
             flowerItem = EnsureItem("Flower", "꽃");
             pickupPrefab = BuildPickupPrefab();
+            woodItem = EnsureItem("Wood", "목재");
+            stumpPrefab = BuildStumpPrefab();
             EnsureFolder(ToolDir);
             tools = new[]
             {
@@ -551,7 +555,7 @@ namespace PogeunVillage.EditorTools
                 float z = Range(random, -34f, 48f);
                 if (!CanPlaceNature(x, z, 1.6f))
                     continue;
-                PlaceTree(trees, random, x, z);
+                PlaceTree(trees, random, x, z, inVillage: true);
                 placed++;
             }
 
@@ -562,12 +566,13 @@ namespace PogeunVillage.EditorTools
                 float z = Range(random, -40f, 80f);
                 if (Mathf.Max(Mathf.Abs(x), z) < 51f || Height(x, z) < 0.3f || !IsFree(x, z, 1.4f))
                     continue;
-                PlaceTree(trees, random, x, z);
+                PlaceTree(trees, random, x, z, inVillage: false);
                 placed++;
             }
         }
 
-        static void PlaceTree(Transform parent, System.Random random, float x, float z)
+        // inVillage: 마을 안쪽 나무만 도끼로 벨 수 있음(결정 2026-10-27). 가장자리 숲은 경계
+        static void PlaceTree(Transform parent, System.Random random, float x, float z, bool inVillage)
         {
             Occupied.Add(new Vector3(x, z, 1.4f));
             var tree = new GameObject("Tree").transform;
@@ -590,7 +595,7 @@ namespace PogeunVillage.EditorTools
                     layer.transform.localPosition = new Vector3(0f, 1.1f + i * 0.85f, 0f);
                     layer.transform.localScale = new Vector3(2.4f - i * 0.6f, 1.6f - i * 0.2f, 2.4f - i * 0.6f);
                 }
-                AddInteractable(tree.gameObject, "나무", InteractableKind.Tree, radius: 0.4f, markerHeight: 4f);
+                AddInteractable(tree.gameObject, "나무", inVillage ? InteractableKind.Tree : InteractableKind.ForestTree, radius: 0.4f, markerHeight: 4f);
             }
             else
             {
@@ -601,7 +606,7 @@ namespace PogeunVillage.EditorTools
                 Prim(PrimitiveType.Sphere, "Crown2", tree, new Vector3(0.6f, 2.0f, 0.3f), new Vector3(1.5f, 1.3f, 1.5f), leaves);
                 Prim(PrimitiveType.Sphere, "Crown3", tree, new Vector3(-0.5f, 2.1f, -0.4f), new Vector3(1.4f, 1.2f, 1.4f), leaves);
 
-                AddInteractable(tree.gameObject, "나무", InteractableKind.Tree, radius: 0.4f, markerHeight: 3.7f);
+                AddInteractable(tree.gameObject, "나무", inVillage ? InteractableKind.Tree : InteractableKind.ForestTree, radius: 0.4f, markerHeight: 3.7f);
 
                 if (kind >= 8)
                 {
@@ -621,6 +626,17 @@ namespace PogeunVillage.EditorTools
                     fruitTree.pickupPrefab = pickupPrefab;
                     fruitTree.fruitVisuals = visuals;
                 }
+            }
+
+            if (inVillage)
+            {
+                var choppable = tree.gameObject.AddComponent<ChoppableTreeBehaviour>();
+                choppable.rules = gatheringRules;
+                choppable.settings = settings;
+                choppable.woodItem = woodItem;
+                choppable.woodMaterial = Mat("Wood", "#B98A5E");
+                choppable.pickupPrefab = pickupPrefab;
+                choppable.stumpPrefab = stumpPrefab;
             }
         }
 
@@ -912,6 +928,18 @@ namespace PogeunVillage.EditorTools
                 EditorUtility.SetDirty(tool);
             }
             return tool;
+        }
+
+        // 베어진 나무의 밑동(삽으로만 없앰 → 1-8). 크기는 베어진 나무 배율을 따름
+        static GameObject BuildStumpPrefab()
+        {
+            var root = new GameObject("Stump");
+            Prim(PrimitiveType.Cylinder, "Trunk", root.transform, new Vector3(0f, 0.15f, 0f), new Vector3(0.42f, 0.15f, 0.42f), Mat("Trunk", "#A57A52"), collider: true);
+            Prim(PrimitiveType.Cylinder, "Top", root.transform, new Vector3(0f, 0.305f, 0f), new Vector3(0.36f, 0.01f, 0.36f), Mat("StumpTop", "#E8C99A"), castShadows: false);
+            AddInteractable(root, "밑동", InteractableKind.Stump, radius: 0.35f, markerHeight: 0.9f, wiggle: false);
+            var prefab = PrefabUtility.SaveAsPrefabAsset(root, PrefabDir + "/Stump.prefab");
+            Object.DestroyImmediate(root);
+            return prefab;
         }
 
         // 떨어진 열매용 줍기 프리팹. 재질은 떨어뜨리는 나무가 자기 열매 재질로 바꿈

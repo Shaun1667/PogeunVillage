@@ -100,7 +100,9 @@
 | `axeHitsToFell` | 5 | 이 횟수만큼 치면 나무가 베어짐 → 밑동만 남음 |
 | 치다 만 횟수 | 아침 초기화 | 1~4번 친 나무는 다음 날 아침 0번으로 |
 | 나무 1그루 목재 | 10 | 2 × 5 (검산용 결과값) |
-| 베어질 때 열매 | 바닥에 떨어짐 | 열매가 열려 있던 경우 |
+| 베어질 때 열매 | 바닥에 떨어짐 | 열매가 열려 있던 경우. 1~4번째엔 그대로, 5번째(베어질 때)에 전부 (결정 2026-10-27) |
+| 목재가 넘칠 때 | 나무 앞 땅에 | 인벤토리에 못 넣은 목재는 떨어진 물건으로 (결정 2026-10-27) |
+| 벨 수 있는 나무 | 마을 안쪽 70그루 | 가장자리 숲 190그루는 도끼에 안 맞음 (결정 2026-10-27) |
 | 밑동 | 삽으로만 제거 | 벤 나무는 다시 자라지 않음 |
 | `holeFallPenalty` | -2 | 주민이 구멍에 빠지면 친밀도 감소 |
 | 구멍 유지 | 메우거나 주민이 빠졌다 나올 때까지 | 그 전엔 날이 지나도 그대로 |
@@ -109,7 +111,7 @@
 | 맞는 대상(`hitKinds`) | 도끼 → 나무, 삽 · 물뿌리개 → 꽃, 잠자리채 · 낚싯대 → 없음 | 휘두를 때 앞의 대상이 이 종류면 '맞음'(내구도 -1). 주민 · 물은 각 파트에서 추가 (결정 2026-10-27, 1-5) |
 | 휘두르는 시간 · 각도 | 0.35초 · 70° | WorldSettings `toolSwingTime` · `toolSwingAngle` |
 
-데이터 위치: 도구 `Data/Items/Tools/*.asset`(`ToolDefinition`: `durability` 50, `maxStack` 1, `hitKinds`). 가격(`toolPrice`)은 2-2 상점 때 데이터로
+데이터 위치: 도끼 수치 `Data/GatheringRules.asset`(`axeWoodPerHit` · `axeHitsToFell`), 목재 `Data/Items/Wood.asset`. 도구 `Data/Items/Tools/*.asset`(`ToolDefinition`: `durability` 50, `maxStack` 1, `hitKinds`). 가격(`toolPrice`)은 2-2 상점 때 데이터로
 
 ### 검산 케이스
 | # | 상황 | 결과 |

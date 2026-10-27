@@ -15,6 +15,8 @@ namespace PogeunVillage
         DroppedItem,
         Flower,
         ToolBox,
+        ForestTree,  // 맵 가장자리 숲: 흔들 수는 있지만 벨 수 없음
+        Stump,
     }
 
     /// <summary>
@@ -39,6 +41,8 @@ namespace PogeunVillage
 
         /// <summary>대상과 상호작용한 플레이어</summary>
         public event Action<Interactable, PlayerInteractor> Interacted;
+        /// <summary>도구에 맞음(도구의 hitKinds에 든 대상만). 휘두른 플레이어와 도구</summary>
+        public event Action<Interactable, PlayerTools, ToolDefinition> HitByTool;
 
         public Vector3 MarkerPosition => transform.position + Vector3.up * (markerHeight * transform.lossyScale.y);
         public float WorldRadius => radius * transform.lossyScale.x;
@@ -54,18 +58,29 @@ namespace PogeunVillage
             Debug.Log($"[상호작용] {displayName}", this);
             Interacted?.Invoke(this, by);
 
-            if (!wiggleOnInteract || !isActiveAndEnabled)
+            if (wiggleOnInteract)
+                Wiggle(by.settings);
+        }
+
+        public void ReceiveToolHit(PlayerTools by, ToolDefinition tool)
+        {
+            HitByTool?.Invoke(this, by, tool);
+        }
+
+        /// <summary>살짝 흔들림(나무 흔들기 · 도끼에 맞음 · 아직 동작이 없는 대상의 임시 반응)</summary>
+        public void Wiggle(WorldSettings settings)
+        {
+            if (!isActiveAndEnabled)
                 return;
-            var settings = by.settings;
             if (wiggle != null)
             {
                 StopCoroutine(wiggle);
                 transform.localRotation = baseRotation;
             }
-            wiggle = StartCoroutine(Wiggle(settings.interactWiggleAngle, settings.interactWiggleTime));
+            wiggle = StartCoroutine(WiggleRoutine(settings.interactWiggleAngle, settings.interactWiggleTime));
         }
 
-        IEnumerator Wiggle(float angle, float duration)
+        IEnumerator WiggleRoutine(float angle, float duration)
         {
             baseRotation = transform.localRotation;
             for (float t = 0f; t < duration; t += Time.deltaTime)
