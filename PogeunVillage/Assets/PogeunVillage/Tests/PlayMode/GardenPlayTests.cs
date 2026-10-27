@@ -9,17 +9,17 @@ namespace PogeunVillage.PlayModeTests
     /// <summary>1-9 물뿌리개 · 묘목 · 꽃 확인 (F8 아침 · 물 주기 · 묘목 3단계 · 나무가 됨 · 꽃 번식 · 시듦 · 사라짐 · 열매 채움 · 도끼 횟수 초기화).</summary>
     public class GardenPlayTests : ToolSceneTest
     {
-        MorningRunner runner;
+        DayCycle dayCycle;
         GardenKeeper keeper;
         GatheringRules rules;
 
         [UnitySetUp]
         public IEnumerator FindGarden()
         {
-            runner = Object.FindAnyObjectByType<MorningRunner>();
+            dayCycle = Object.FindAnyObjectByType<DayCycle>();
             keeper = Object.FindAnyObjectByType<GardenKeeper>();
             rules = keeper.rules;
-            Assert.IsNotNull(runner);
+            Assert.IsNotNull(dayCycle);
             yield break;
         }
 
@@ -44,9 +44,9 @@ namespace PogeunVillage.PlayModeTests
         [UnityTest]
         public IEnumerator F8_RunsMorning()
         {
-            int day = runner.Day;
+            int day = dayCycle.Day;
             yield return NextMorning();
-            Assert.AreEqual(day + 1, runner.Day);
+            Assert.AreEqual(day + 1, dayCycle.Day);
         }
 
         [UnityTest]

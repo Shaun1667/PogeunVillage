@@ -23,6 +23,7 @@ namespace PogeunVillage.EditorTools
         const string GatheringRulesPath = Root + "/Data/GatheringRules.asset";
         const string InventoryRulesPath = Root + "/Data/InventoryRules.asset";
         const string GroundGridPath = Root + "/Data/GroundGrid.asset";
+        const string DayRulesPath = Root + "/Data/DayRules.asset";
         const string ItemDir = Root + "/Data/Items";
         const string PrefabDir = Root + "/Prefabs";
         const string ToolDir = ItemDir + "/Tools";
@@ -146,6 +147,7 @@ namespace PogeunVillage.EditorTools
             var player = BuildPlayer();
             BuildGroundCursor(player.GetComponent<PlayerTools>(), ground);
             BuildShovel(player, ground);
+            BuildDayCycle(props);
             var cam = BuildCamera(player.transform);
             player.GetComponent<PlayerController>().cameraTransform = cam.transform;
 
@@ -880,6 +882,24 @@ namespace PogeunVillage.EditorTools
             var morning = new GameObject("MorningRunner").AddComponent<MorningRunner>();
             morning.garden = keeper;
             return ground;
+        }
+
+        // 게임 시계 · 잠자기(2-1): 광장 임시 침대(F) → 다음 날 아침, 아침 처리는 MorningRunner
+        static void BuildDayCycle(Transform props)
+        {
+            var dayCycle = new GameObject("DayCycle").AddComponent<DayCycle>();
+            dayCycle.rules = EnsureAsset<DayRules>(DayRulesPath);
+            dayCycle.morning = Object.FindAnyObjectByType<MorningRunner>();
+
+            var bed = new GameObject("Bed").transform;
+            bed.SetParent(props, false);
+            bed.localPosition = OnGround(PlazaCenter.x + 4f, PlazaCenter.y - 3.5f);
+            bed.localRotation = Quaternion.Euler(0f, -30f, 0f);
+            Prim(PrimitiveType.Cube, "Frame", bed, new Vector3(0f, 0.2f, 0f), new Vector3(1f, 0.4f, 1.9f), Mat("Wood", "#B98A5E"), collider: true);
+            Prim(PrimitiveType.Cube, "Blanket", bed, new Vector3(0f, 0.43f, -0.2f), new Vector3(0.95f, 0.08f, 1.3f), Mat("BedBlanket", "#8FB8E8", rim: 0.2f));
+            Prim(PrimitiveType.Cube, "Pillow", bed, new Vector3(0f, 0.47f, 0.65f), new Vector3(0.7f, 0.12f, 0.35f), Mat("BedPillow", "#FFF7EE", rim: 0.2f));
+            AddInteractable(bed.gameObject, "침대", InteractableKind.Bed, radius: 0.9f, markerHeight: 1.2f, wiggle: false);
+            bed.gameObject.AddComponent<Bed>().dayCycle = dayCycle;
         }
 
         // 삽 동작 · 구멍에 빠지기 (1-8)
