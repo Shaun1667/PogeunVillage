@@ -16,3 +16,7 @@ MonoBehaviour:
   fruitMaxOnTree: 3
   axeWoodPerHit: 2
   axeHitsToFell: 5
+  saplingGrowDays: 6
+  saplingWaterBonus: 1
+  flowerWiltChance: 0.1
+  natureSeed: 20261027

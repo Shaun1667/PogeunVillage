@@ -24,6 +24,9 @@ namespace PogeunVillage
 
         public int Hits => tree?.Hits ?? 0;
 
+        /// <summary>아침: 치다 만 횟수 초기화(BALANCE 5번)</summary>
+        public void ResetHitsForMorning() => tree?.ResetHits();
+
         void Awake()
         {
             if (!rules || !settings || !woodItem || !woodMaterial || !pickupPrefab || !stumpPrefab)

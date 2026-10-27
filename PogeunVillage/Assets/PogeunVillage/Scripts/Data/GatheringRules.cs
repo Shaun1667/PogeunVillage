@@ -19,5 +19,15 @@ namespace PogeunVillage
         public int axeWoodPerHit = 2;
         [Tooltip("이 횟수만큼 치면 나무가 베어져 밑동만 남음")]
         [Min(1)] public int axeHitsToFell = 5;
+
+        [Header("묘목 · 꽃 (BALANCE.md 8번)")]
+        [Tooltip("묘목이 다 자라는 데 필요한 성장일(아침마다 +1)")]
+        [Min(1)] public int saplingGrowDays = 6;
+        [Tooltip("그날 물을 준 묘목은 아침에 이만큼 더 자람(하루 1번만 인정)")]
+        public int saplingWaterBonus = 1;
+        [Tooltip("그날 물을 안 준 꽃이 다음 날 아침 시들 확률")]
+        [Range(0f, 1f)] public float flowerWiltChance = 0.1f;
+        [Tooltip("꽃 번식 · 시듦 난수 시드(같은 시드 + 같은 행동 = 같은 결과)")]
+        public int natureSeed = 20261027;
     }
 }

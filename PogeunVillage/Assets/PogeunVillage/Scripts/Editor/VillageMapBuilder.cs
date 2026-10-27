@@ -873,6 +873,12 @@ namespace PogeunVillage.EditorTools
             placer.holePrefab = BuildHolePrefab();
             placer.saplingPrefab = BuildSaplingPrefab();
             placer.flowerPrefab = BuildPlantedFlowerPrefab();
+            var keeper = ground.gameObject.AddComponent<GardenKeeper>();
+            keeper.rules = gatheringRules;
+            keeper.settings = settings;
+            keeper.grownTreePrefab = BuildGrownTreePrefab();
+            var morning = new GameObject("MorningRunner").AddComponent<MorningRunner>();
+            morning.garden = keeper;
             return ground;
         }
 
@@ -885,6 +891,11 @@ namespace PogeunVillage.EditorTools
             shovel.interactor = player.GetComponent<PlayerInteractor>();
             shovel.inventory = player.GetComponent<PlayerInventory>();
             shovel.flowerClumpItem = flowerClumpItem;
+
+            var can = player.AddComponent<WateringCanUser>();
+            can.settings = settings;
+            can.ground = ground;
+            can.garden = ground.GetComponent<GardenKeeper>();
 
             var fall = player.AddComponent<PlayerHoleFall>();
             fall.settings = settings;
@@ -911,14 +922,45 @@ namespace PogeunVillage.EditorTools
             return SavePrefab(root, "Hole");
         }
 
-        // 심은 묘목(성장은 1-9)
+        // 심은 묘목: 성장 3단계(Stage0 ~ 2)는 GardenKeeper가 켬
         static GameObject BuildSaplingPrefab()
         {
             var root = new GameObject("Sapling");
-            Prim(PrimitiveType.Cylinder, "Stem", root.transform, new Vector3(0f, 0.25f, 0f), new Vector3(0.06f, 0.25f, 0.06f), Mat("Trunk", "#A57A52"), castShadows: false);
-            Prim(PrimitiveType.Sphere, "Leaf", root.transform, new Vector3(0f, 0.55f, 0f), new Vector3(0.3f, 0.22f, 0.3f), Mat("Leaves", "#6FC27A"), castShadows: false);
+            var trunk = Mat("Trunk", "#A57A52");
+            var leaves = Mat("Leaves", "#6FC27A");
+            float[] heights = { 0.5f, 0.9f, 1.4f };
+            for (int i = 0; i < heights.Length; i++)
+            {
+                var stage = new GameObject("Stage" + i).transform;
+                stage.SetParent(root.transform, false);
+                float h = heights[i];
+                Prim(PrimitiveType.Cylinder, "Stem", stage, new Vector3(0f, h * 0.5f, 0f), new Vector3(0.06f + i * 0.04f, h * 0.5f, 0.06f + i * 0.04f), trunk, castShadows: false);
+                Prim(PrimitiveType.Sphere, "Leaf", stage, new Vector3(0f, h, 0f), Vector3.one * (0.3f + i * 0.3f), leaves, castShadows: i > 0);
+                stage.gameObject.SetActive(i == 0);
+            }
             root.AddComponent<GridObject>().kind = GroundObjectKind.Sapling;
             return SavePrefab(root, "Sapling");
+        }
+
+        // 묘목이 다 자라 생기는 나무: 열매 없는 활엽수, 흔들기 · 도끼로 베기 가능 (결정 2026-10-27)
+        static GameObject BuildGrownTreePrefab()
+        {
+            var root = new GameObject("GrownTree");
+            var trunk = Mat("Trunk", "#A57A52");
+            var leaves = Mat("Leaves", "#6FC27A");
+            Prim(PrimitiveType.Cylinder, "Trunk", root.transform, new Vector3(0f, 0.8f, 0f), new Vector3(0.4f, 0.8f, 0.4f), trunk, collider: true);
+            Prim(PrimitiveType.Sphere, "Crown", root.transform, new Vector3(0f, 2.4f, 0f), new Vector3(2.4f, 2.1f, 2.4f), leaves);
+            Prim(PrimitiveType.Sphere, "Crown2", root.transform, new Vector3(0.6f, 2.0f, 0.3f), new Vector3(1.5f, 1.3f, 1.5f), leaves);
+            Prim(PrimitiveType.Sphere, "Crown3", root.transform, new Vector3(-0.5f, 2.1f, -0.4f), new Vector3(1.4f, 1.2f, 1.4f), leaves);
+            AddInteractable(root, "나무", InteractableKind.Tree, radius: 0.4f, markerHeight: 3.7f);
+            var choppable = root.AddComponent<ChoppableTreeBehaviour>();
+            choppable.rules = gatheringRules;
+            choppable.settings = settings;
+            choppable.woodItem = woodItem;
+            choppable.woodMaterial = Mat("Wood", "#B98A5E");
+            choppable.pickupPrefab = pickupPrefab;
+            choppable.stumpPrefab = stumpPrefab;
+            return SavePrefab(root, "GrownTree");
         }
 
         // 꽃 포기를 심어 난 꽃(꺾을 수 있음)

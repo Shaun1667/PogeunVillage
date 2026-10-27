@@ -181,6 +181,10 @@
 | 8-7 | 시든 꽃에 그날 물 안 줌 | 다음 날 아침 사라짐 |
 | 8-8 | 시든 꽃에 그날 물 줌 | 살아남 (번식 여부는 착수 때 — 제안: 살아나기만) |
 | 8-9 | 같은 시드로 같은 행동 | 같은 꽃이 같은 날 시듦 (결정론) |
+| 8-10 | 묘목 성장 0 / 2 / 4일 | 모습 단계 묘목 / 어린 나무 / 큰 나무 (결정 2026-10-27) |
+| 8-11 | 물 준 꽃이 번진 아침 | 원래 꽃 · 새 꽃 모두 그 아침엔 안 시듦 |
+
+데이터 위치: `Data/GatheringRules.asset`(`saplingGrowDays` · `saplingWaterBonus` · `flowerWiltChance` · `natureSeed`), 시든 꽃 모습은 WorldSettings(`wiltedPetalColor` · `wiltedFlowerHeight` 0.6). 다 자란 묘목 = 열매 없는 활엽수(`Prefabs/GrownTree`). 아침 처리 = `MorningRunner`(2-1 전까지 개발용 F8)
 
 ## 9. 월드 · 조작 (2026-10-27, 맵 프로토타입 값 그대로)
 데이터 위치: `Data/WorldSettings.asset` (`WorldSettings`). `CurvedWorld` · `PlayerController` · `CameraFollow`와 맵 생성 메뉴가 읽는다(1-1).

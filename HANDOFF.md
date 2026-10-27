@@ -60,11 +60,11 @@
 | 괴롭히기 연속 | 주민마다 따로 셈, 다른 주민을 때려도 끊기지 않음 | GDD 4-3 |
 | 이사 취소 기준 | -20 **초과**(-19 이상)로 회복하면 취소 | GDD 4-3 |
 | ~~도끼 열매~~ (확정 2026-10-27) | 베어지는 순간(5번째)에만 떨어짐 | GDD 4-7 |
-| 묘목 가속 | 물 준 날은 그날 하루 더 성장(하루 +2) → 매일 물이면 3일 | GDD 4-8 · BALANCE 8 |
-| 꽃 번식 칸 | 상하좌우 빈 칸 중 무작위 1칸 | GDD 4-8 |
+| ~~묘목 가속~~ (확정 2026-10-27) | 물 준 날은 그날 하루 더 성장(하루 +2) → 매일 물이면 3일 | GDD 4-8 · BALANCE 8 |
+| ~~꽃 번식 칸~~ (확정 2026-10-27) | 상하좌우 빈 칸 중 무작위 1칸 | GDD 4-8 |
 | ~~구멍 사라짐~~ (확정 2026-10-27) | 주민이 빠졌다 나올 때만(플레이어는 아님) | GDD 4-8-1 |
 | 구멍 -2 | 하루 상한 · 괴롭히기 연속과 별개, 하한 -20 적용 | GDD 10번 |
 | 다 자란 나무 | 옮길 수 없음 | GDD 10번 |
 
 ## 6. 다음 작업
-TASKS.md **1-9 물뿌리개 · 묘목 · 꽃**부터 (Phase 1). 테스트는 메뉴 `Pogeun Village > Run EditMode Tests` · `Run PlayMode Tests`로 실행(결과: `Temp/PogeunVillageTestResults_{EditMode|PlayMode}.txt`). PlayMode는 플레이 모드에 들어갔다 나오므로 씬에 저장 안 한 변경이 있으면 먼저 저장.
+TASKS.md **2-1 게임 시간 · 하루 루프**부터 (Phase 2). Phase 1 그레이박스 1-1 ~ 1-9 완료(곤충 · 낚시는 각 파트 기획 후). 개발용 F8 = 다음 날 아침. 테스트는 메뉴 `Pogeun Village > Run EditMode Tests` · `Run PlayMode Tests`로 실행(결과: `Temp/PogeunVillageTestResults_{EditMode|PlayMode}.txt`). PlayMode는 플레이 모드에 들어갔다 나오므로 씬에 저장 안 한 변경이 있으면 먼저 저장.

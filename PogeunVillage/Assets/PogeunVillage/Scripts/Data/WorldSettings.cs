@@ -84,6 +84,12 @@ namespace PogeunVillage
         [Tooltip("빠졌을 때 몸이 내려가는 깊이(m)")]
         public float holeSinkDepth = 0.45f;
 
+        [Header("꽃 · 묘목 모습")]
+        [Tooltip("시든 꽃의 꽃잎 색(프로퍼티 블록)")]
+        public Color wiltedPetalColor = new(0.72f, 0.6f, 0.45f, 1f);
+        [Tooltip("시든 꽃의 높이 배율")]
+        public float wiltedFlowerHeight = 0.6f;
+
         [Header("땅 칸 표시")]
         [Tooltip("플레이어 중심에서 이 거리(m) 앞의 점이 든 칸을 '앞 칸'으로 봅니다.")]
         public float groundCursorReach = 0.9f;

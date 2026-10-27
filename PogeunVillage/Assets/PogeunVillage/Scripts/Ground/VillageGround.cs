@@ -32,6 +32,9 @@ namespace PogeunVillage
 
         public GridObject ObjectAt(Vector2Int cell) => objects.TryGetValue(cell, out var obj) ? obj : null;
 
+        /// <summary>칸에 놓인 것 모두(복사본)</summary>
+        public List<GridObject> Objects() => new(objects.Values);
+
         internal void Track(GridObject obj) => objects[obj.Cell] = obj;
 
         internal void Untrack(GridObject obj)

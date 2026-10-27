@@ -82,6 +82,15 @@ namespace PogeunVillage
             pickup.Fall(visual.position, ground, settings.fruitFallTime);
         }
 
+        /// <summary>아침: 열매가 다시 열림(BALANCE 6번)</summary>
+        public void RefillForMorning()
+        {
+            if (tree == null)
+                return;
+            tree.Refill(rules.fruitPerDay, rules.fruitMaxOnTree);
+            RefreshVisuals();
+        }
+
         void RefreshVisuals()
         {
             for (int i = 0; i < fruitVisuals.Length; i++)

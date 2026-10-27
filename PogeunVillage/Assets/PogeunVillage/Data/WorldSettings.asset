@@ -45,6 +45,8 @@ MonoBehaviour:
   holeFallRadius: 0.3
   holeStuckTime: 1.5
   holeSinkDepth: 0.45
+  wiltedPetalColor: {r: 0.72, g: 0.6, b: 0.45, a: 1}
+  wiltedFlowerHeight: 0.6
   groundCursorReach: 0.9
   groundCursorColor: {r: 1, g: 1, b: 1, a: 1}
   groundCursorBlockedColor: {r: 1, g: 0.55, b: 0.5, a: 1}

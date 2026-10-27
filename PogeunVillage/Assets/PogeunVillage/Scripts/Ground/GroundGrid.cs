@@ -76,6 +76,16 @@ namespace PogeunVillage
             return true;
         }
 
+        /// <summary>칸을 막음(묘목이 다 자라 나무가 된 자리). 그 칸에 있던 것은 먼저 치워야 함. 바뀌었으면 true</summary>
+        public bool Block(Vector2Int cell)
+        {
+            if (!InBounds(cell) || IsBlocked(cell) || Get(cell) != GroundObjectKind.None)
+                return false;
+            blocked[(cell.y - origin.y) * width + (cell.x - origin.x)] = true;
+            CellChanged?.Invoke(cell);
+            return true;
+        }
+
         /// <summary>막힌 칸을 빈 땅으로(밑동을 파낸 자리). 바뀌었으면 true</summary>
         public bool Unblock(Vector2Int cell)
         {
