@@ -225,6 +225,8 @@
 
 | `holeFallRadius` / `holeStuckTime` / `holeSinkDepth` | 0.3 / 1.5 / 0.45 | 구멍 칸 가운데 0.3m 안이면 빠짐 · 1.5초 못 움직임 · 몸이 0.45m 내려감 (결정 2026-10-27, 1-8) |
 | `fruitDropRadius` / `fruitFallTime` | 1.1 / 0.35 | 흔든 나무에서 열매가 떨어지는 거리(나무 중심에서, m) · 시간(초) (1-3) |
+| `hudNoticeSeconds` | 2 | 화면 아래 알림이 떠 있는 시간(초), 새 알림이 오면 바로 바뀜 (결정 2026-10-27, 2-3) |
+| `inventorySlotColor` / `inventoryCursorColor` / `inventoryPickedColor` | 흰색 0.75 / 노랑 / 하늘색 | 인벤토리 창 칸 · 고른 칸 · 집은 칸 색 (2-3) |
 
 대상 크기(`Interactable.radius`, 로컬 m) · 마커 높이: 나무 0.4 · 3.7(침엽수 4) / 게시판 1 · 2 / 우체통 0.3 · 1.5 / 떨어진 열매 0.2 · 0.7 / 꽃 0.15 · 0.75 — 맵 생성 메뉴에서 지정
 

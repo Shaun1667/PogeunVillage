@@ -26,21 +26,21 @@ namespace PogeunVillage
 
             if (!shop.IsOpen)
             {
-                Debug.Log($"[상점] 지금은 문을 닫았어요 ({shop.data.openHour}시 ~ {shop.data.closeHour}시)", this);
+                GameNotice.Post($"[상점] 지금은 문을 닫았어요 ({shop.data.openHour}시 ~ {shop.data.closeHour}시)", this);
                 return;
             }
 
             int slot = ShopRules.ChooseSellSlot(inventory.Inventory.Slots, shop.SellPriceOf);
             if (slot < 0)
             {
-                Debug.Log("[상점] 팔 수 있는 물건이 없어요", this);
+                GameNotice.Post("[상점] 팔 수 있는 물건이 없어요", this);
                 return;
             }
 
             var taken = inventory.Inventory.TakeAll(slot);
             int earned = shop.SellPriceOf(taken.itemId) * taken.count;
             wallet.Wallet.Earn(earned);
-            Debug.Log($"[상점] {shop.NameOf(taken.itemId)} {taken.count}개를 {earned} 모아에 팔았어요", this);
+            GameNotice.Post($"[상점] {shop.NameOf(taken.itemId)} {taken.count}개를 {earned} 모아에 팔았어요", this);
         }
     }
 }

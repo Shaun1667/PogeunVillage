@@ -90,6 +90,15 @@ namespace PogeunVillage
         [Tooltip("시든 꽃의 높이 배율")]
         public float wiltedFlowerHeight = 0.6f;
 
+        [Header("HUD (2-3)")]
+        [Tooltip("화면 아래 알림이 떠 있는 시간(초). 새 알림이 오면 바로 바뀜")]
+        public float hudNoticeSeconds = 2f;
+        public Color inventorySlotColor = new(1f, 1f, 1f, 0.75f);
+        [Tooltip("인벤토리 창에서 고른 칸")]
+        public Color inventoryCursorColor = new(1f, 0.85f, 0.42f, 0.95f);
+        [Tooltip("맞바꾸려고 집은 칸")]
+        public Color inventoryPickedColor = new(0.55f, 0.85f, 1f, 0.95f);
+
         [Header("땅 칸 표시")]
         [Tooltip("플레이어 중심에서 이 거리(m) 앞의 점이 든 칸을 '앞 칸'으로 봅니다.")]
         public float groundCursorReach = 0.9f;

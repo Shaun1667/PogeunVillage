@@ -128,6 +128,16 @@ namespace PogeunVillage
             return broken;
         }
 
+        /// <summary>두 칸을 맞바꿈(인벤토리 창). 같은 칸이면 아무 일 없음</summary>
+        public void Swap(int a, int b)
+        {
+            if (a == b)
+                return;
+            (slots[a], slots[b]) = (slots[b], slots[a]);
+            SlotChanged?.Invoke(a);
+            SlotChanged?.Invoke(b);
+        }
+
         /// <summary>그 칸을 통째로 비움(판매함).</summary>
         /// <returns>비우기 전 칸</returns>
         public InventorySlot TakeAll(int index)

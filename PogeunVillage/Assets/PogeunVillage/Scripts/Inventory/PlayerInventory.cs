@@ -29,7 +29,7 @@ namespace PogeunVillage
                 return false;
             if (!Inventory.TryAdd(item.id, item.maxStack, amount))
             {
-                Debug.Log($"[인벤토리] 가득 찼어요: {item.displayName}", this);
+                GameNotice.Post($"[인벤토리] 가득 찼어요: {item.displayName}", this);
                 return false;
             }
             Debug.Log($"[인벤토리] {item.displayName} +{amount} → {Inventory.Count(item.id)}개 (칸 {Inventory.UsedSlots}/{Inventory.Slots.Count})", this);
@@ -44,7 +44,7 @@ namespace PogeunVillage
             int slot = Inventory.TryAddWithDurability(tool.id, tool.durability);
             if (slot < 0)
             {
-                Debug.Log($"[인벤토리] 가득 찼어요: {tool.displayName}", this);
+                GameNotice.Post($"[인벤토리] 가득 찼어요: {tool.displayName}", this);
                 return false;
             }
             Debug.Log($"[인벤토리] {tool.displayName} (내구도 {tool.durability}) → {slot + 1}번 칸", this);

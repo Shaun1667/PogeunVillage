@@ -36,7 +36,7 @@ namespace PogeunVillage
             int slot = ShovelRules.ChoosePlantSlot(inventory.Inventory.Slots, ids);
             if (slot < 0)
             {
-                Debug.Log("[심기] 심을 것이 없어요(묘목 · 꽃 포기)", this);
+                GameNotice.Post("[심기] 심을 것이 없어요(묘목 · 꽃 포기)", this);
                 return;
             }
 

@@ -29,7 +29,7 @@ namespace PogeunVillage
 
         void Greet(Interactable _, PlayerInteractor by)
         {
-            Debug.Log(IsOpen
+            GameNotice.Post(IsOpen
                 ? $"[상점] 어서 오세요! 매대 앞에서 F로 사고, 판매함에 F로 팔 수 있어요 ({data.openHour}시 ~ {data.closeHour}시)"
                 : $"[상점] 지금은 문을 닫았어요 ({data.openHour}시 ~ {data.closeHour}시)", this);
         }

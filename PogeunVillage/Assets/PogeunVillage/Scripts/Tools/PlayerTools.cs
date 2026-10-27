@@ -90,7 +90,7 @@ namespace PogeunVillage
         {
             int slot = ToolBelt.Select(inventory.Inventory.Slots, toolIds[index], EquippedSlot);
             if (slot == EquippedSlot && ToolBelt.FindSlot(inventory.Inventory.Slots, toolIds[index]) < 0)
-                Debug.Log($"[도구] {tools[index].displayName}이(가) 없어요", this);
+                GameNotice.Post($"[도구] {tools[index].displayName}이(가) 없어요", this);
             Equip(slot);
         }
 
@@ -157,7 +157,7 @@ namespace PogeunVillage
                 target.ReceiveToolHit(this, tool);
             bool stillHeld = inventory.Inventory.Slots[slot].itemId == tool.id;
             if (hit && stillHeld && inventory.Inventory.UseDurability(slot))
-                Debug.Log($"[도구] {tool.displayName}이(가) 부서졌어요", this);
+                GameNotice.Post($"[도구] {tool.displayName}이(가) 부서졌어요", this);
 
             yield return RotatePivot(1f, 0f, half);
             IsSwinging = false;

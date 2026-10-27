@@ -5,6 +5,9 @@ using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
+using UnityEngine.TextCore.LowLevel;
+using UnityEngine.UI;
+using TMPro;
 
 namespace PogeunVillage.EditorTools
 {
@@ -26,6 +29,8 @@ namespace PogeunVillage.EditorTools
         const string GroundGridPath = Root + "/Data/GroundGrid.asset";
         const string DayRulesPath = Root + "/Data/DayRules.asset";
         const string ShopDataPath = Root + "/Data/ShopData.asset";
+        const string FontSourcePath = Root + "/Fonts/Cafe24Ssurround-v2.0.ttf";
+        const string FontAssetPath = Root + "/Fonts/Cafe24Ssurround SDF.asset";
         const string ItemDir = Root + "/Data/Items";
         const string PrefabDir = Root + "/Prefabs";
         const string ToolDir = ItemDir + "/Tools";
@@ -153,6 +158,7 @@ namespace PogeunVillage.EditorTools
             BuildShovel(player, ground);
             BuildDayCycle(props);
             BuildShop(props);
+            BuildHud(player);
             var cam = BuildCamera(player.transform);
             player.GetComponent<PlayerController>().cameraTransform = cam.transform;
 
@@ -879,6 +885,131 @@ namespace PogeunVillage.EditorTools
             var morning = new GameObject("MorningRunner").AddComponent<MorningRunner>();
             morning.garden = keeper;
             return ground;
+        }
+
+        // ---------------------------------------------------------------- HUD (2-3)
+
+        // 한글 TMP 글꼴(동적 아틀라스: 쓰는 글자만 그때그때 채움). 없을 때만 만듦
+        static TMP_FontAsset EnsureFontAsset()
+        {
+            var existing = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(FontAssetPath);
+            if (existing)
+                return existing;
+            var font = AssetDatabase.LoadAssetAtPath<Font>(FontSourcePath);
+            if (!font)
+            {
+                Debug.LogError($"{FontSourcePath} 글꼴이 없습니다.");
+                return null;
+            }
+            var asset = TMP_FontAsset.CreateFontAsset(font, 90, 9, GlyphRenderMode.SDFAA, 1024, 1024, AtlasPopulationMode.Dynamic, true);
+            asset.name = "Cafe24Ssurround SDF";
+            AssetDatabase.CreateAsset(asset, FontAssetPath);
+            asset.material.name = asset.name + " Material";
+            asset.atlasTexture.name = asset.name + " Atlas";
+            AssetDatabase.AddObjectToAsset(asset.material, asset);
+            AssetDatabase.AddObjectToAsset(asset.atlasTexture, asset);
+            AssetDatabase.SaveAssets();
+            return asset;
+        }
+
+        static TMP_Text HudLabel(Transform parent, string name, TMP_FontAsset font, float size, TextAlignmentOptions align,
+            Vector2 anchor, Vector2 pivot, Vector2 position, Vector2 boxSize)
+        {
+            var go = new GameObject(name, typeof(RectTransform));
+            go.transform.SetParent(parent, false);
+            var rt = (RectTransform)go.transform;
+            rt.anchorMin = rt.anchorMax = anchor;
+            rt.pivot = pivot;
+            rt.anchoredPosition = position;
+            rt.sizeDelta = boxSize;
+            var text = go.AddComponent<TextMeshProUGUI>();
+            text.font = font;
+            text.fontSize = size;
+            text.alignment = align;
+            text.color = Hex("#4A3F55");
+            text.raycastTarget = false;  // 외곽선은 쓰지 않음: 편집 중 외곽선을 바꾸면 저장 안 되는 재질 복사본이 생김 → 받침판으로 대신
+            return text;
+        }
+
+        // 글자 뒤 반투명 받침판(읽기 쉽게)
+        static void HudPlate(Transform parent, string name, Vector2 anchor, Vector2 pivot, Vector2 position, Vector2 size)
+        {
+            var go = new GameObject(name, typeof(RectTransform), typeof(Image));
+            go.transform.SetParent(parent, false);
+            var rt = (RectTransform)go.transform;
+            rt.anchorMin = rt.anchorMax = anchor;
+            rt.pivot = pivot;
+            rt.anchoredPosition = position;
+            rt.sizeDelta = size;
+            var image = go.GetComponent<Image>();
+            image.color = new Color(1f, 0.98f, 0.94f, 0.82f);
+            image.raycastTarget = false;
+        }
+
+        static void BuildHud(GameObject player)
+        {
+            var font = EnsureFontAsset();
+            var canvasGo = new GameObject("HUD", typeof(RectTransform));
+            var canvas = canvasGo.AddComponent<Canvas>();
+            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            var scaler = canvasGo.AddComponent<CanvasScaler>();
+            scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+            scaler.referenceResolution = new Vector2(1920f, 1080f);
+            scaler.matchWidthOrHeight = 0.5f;
+            var root = canvasGo.transform;
+
+            var hud = canvasGo.AddComponent<HudView>();
+            hud.settings = settings;
+            hud.dayCycle = Object.FindAnyObjectByType<DayCycle>();
+            hud.wallet = player.GetComponent<PlayerWallet>();
+            hud.tools = player.GetComponent<PlayerTools>();
+            hud.inventory = player.GetComponent<PlayerInventory>();
+            HudPlate(root, "ClockPlate", new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-24f, -18f), new Vector2(380f, 140f));
+            HudPlate(root, "ToolPlate", new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(24f, 18f), new Vector2(360f, 76f));
+            hud.clockText = HudLabel(root, "Clock", font, 44, TextAlignmentOptions.TopRight, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-40f, -30f), new Vector2(600f, 60f));
+            hud.moaText = HudLabel(root, "Moa", font, 40, TextAlignmentOptions.TopRight, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-40f, -92f), new Vector2(600f, 56f));
+            hud.toolText = HudLabel(root, "HeldTool", font, 38, TextAlignmentOptions.BottomLeft, new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(40f, 30f), new Vector2(700f, 56f));
+            HudPlate(root, "Notice", new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 110f), new Vector2(1100f, 72f));
+            var noticePlate = root.Find("Notice");
+            hud.noticeRoot = noticePlate.gameObject;
+            hud.noticeText = HudLabel(noticePlate, "Text", font, 40, TextAlignmentOptions.Center, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(1080f, 64f));
+
+            // 인벤토리 창: 가운데 5열 × 4줄
+            var panel = new GameObject("InventoryPanel", typeof(RectTransform), typeof(Image));
+            panel.transform.SetParent(root, false);
+            var prt = (RectTransform)panel.transform;
+            prt.anchorMin = prt.anchorMax = prt.pivot = new Vector2(0.5f, 0.5f);
+            const float cell = 190f, gap = 14f;
+            int slotCount = inventoryRules.slotCount;
+            int rows = (slotCount + InventoryWindow.Columns - 1) / InventoryWindow.Columns;
+            prt.sizeDelta = new Vector2(InventoryWindow.Columns * (cell + gap) + gap, rows * (cell * 0.5f + gap) + gap + 70f);
+            panel.GetComponent<Image>().color = new Color(1f, 0.97f, 0.92f, 0.92f);
+            var title = HudLabel(panel.transform, "Title", font, 40, TextAlignmentOptions.Top, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -12f), new Vector2(800f, 56f));
+            title.text = "인벤토리";
+
+            var backgrounds = new Image[slotCount];
+            var texts = new TMP_Text[slotCount];
+            for (int i = 0; i < slotCount; i++)
+            {
+                int col = i % InventoryWindow.Columns, row = i / InventoryWindow.Columns;
+                var slotGo = new GameObject("Slot" + i, typeof(RectTransform), typeof(Image));
+                slotGo.transform.SetParent(panel.transform, false);
+                var srt = (RectTransform)slotGo.transform;
+                srt.anchorMin = srt.anchorMax = srt.pivot = new Vector2(0f, 1f);
+                srt.anchoredPosition = new Vector2(gap + col * (cell + gap), -(70f + row * (cell * 0.5f + gap)));
+                srt.sizeDelta = new Vector2(cell, cell * 0.5f);
+                backgrounds[i] = slotGo.GetComponent<Image>();
+                texts[i] = HudLabel(slotGo.transform, "Label", font, 28, TextAlignmentOptions.Center, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(cell - 10f, cell * 0.5f - 6f));
+            }
+
+            var window = canvasGo.AddComponent<InventoryWindow>();
+            window.settings = settings;
+            window.catalogSource = shopData;
+            window.inventory = player.GetComponent<PlayerInventory>();
+            window.pausedWhileOpen = new Behaviour[] { player.GetComponent<PlayerController>(), player.GetComponent<PlayerInteractor>(), player.GetComponent<PlayerTools>() };
+            window.panel = panel;
+            window.slotBackgrounds = backgrounds;
+            window.slotTexts = texts;
         }
 
         // 상점(2-2): 광장 서쪽 노점 — 지붕 · 상점 주인 · 매대 6개(도구 5종 · 묘목) · 판매함. 광장 쪽(동쪽)을 봄
