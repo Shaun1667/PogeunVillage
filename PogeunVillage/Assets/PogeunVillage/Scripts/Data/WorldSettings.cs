@@ -69,5 +69,11 @@ namespace PogeunVillage
         public float fruitDropRadius = 1.1f;
         [Tooltip("열매가 땅까지 떨어지는 시간(초)")]
         public float fruitFallTime = 0.35f;
+
+        [Header("도구")]
+        [Tooltip("한 번 휘두르는 시간(초). 휘두르는 동안에는 다시 휘두를 수 없습니다.")]
+        public float toolSwingTime = 0.35f;
+        [Tooltip("휘두를 때 도구가 앞으로 꺾이는 각도(도)")]
+        public float toolSwingAngle = 70f;
     }
 }

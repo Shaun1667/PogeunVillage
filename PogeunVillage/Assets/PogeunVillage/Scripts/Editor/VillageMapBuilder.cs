@@ -24,6 +24,7 @@ namespace PogeunVillage.EditorTools
         const string InventoryRulesPath = Root + "/Data/InventoryRules.asset";
         const string ItemDir = Root + "/Data/Items";
         const string PrefabDir = Root + "/Prefabs";
+        const string ToolDir = ItemDir + "/Tools";
 
         const int GroundHalfSize = 90;   // 지면 메시 범위(±m), 1m 격자
         const int WaterHalfSize = 130;   // 물 메시 범위(±m), 2m 격자
@@ -62,6 +63,7 @@ namespace PogeunVillage.EditorTools
         static InventoryRules inventoryRules;
         static ItemDefinition appleItem, peachItem, flowerItem;
         static Pickup pickupPrefab;
+        static ToolDefinition[] tools;
         static readonly List<(Vector2 a, Vector2 b)> Paths = new();
         static readonly List<Vector3> Occupied = new(); // x, z, radius
 
@@ -99,6 +101,15 @@ namespace PogeunVillage.EditorTools
             peachItem = EnsureItem("Peach", "복숭아");
             flowerItem = EnsureItem("Flower", "꽃");
             pickupPrefab = BuildPickupPrefab();
+            EnsureFolder(ToolDir);
+            tools = new[]
+            {
+                EnsureTool("Net", "잠자리채", ToolKind.Net),
+                EnsureTool("FishingRod", "낚싯대", ToolKind.FishingRod),
+                EnsureTool("Axe", "도끼", ToolKind.Axe, InteractableKind.Tree),
+                EnsureTool("Shovel", "삽", ToolKind.Shovel, InteractableKind.Flower),
+                EnsureTool("WateringCan", "물뿌리개", ToolKind.WateringCan, InteractableKind.Flower),
+            };
 
             BuildPaths();
             Occupied.Clear();
@@ -424,7 +435,13 @@ namespace PogeunVillage.EditorTools
             Prim(PrimitiveType.Cube, "Post_L", board, new Vector3(-0.8f, 0.7f, 0f), new Vector3(0.15f, 1.4f, 0.15f), wood);
             Prim(PrimitiveType.Cube, "Post_R", board, new Vector3(0.8f, 0.7f, 0f), new Vector3(0.15f, 1.4f, 0.15f), wood);
             Prim(PrimitiveType.Cube, "Board", board, new Vector3(0f, 1.15f, 0f), new Vector3(1.9f, 0.9f, 0.12f), Mat("BoardPaper", "#FFF4D8"), collider: true);
-            AddInteractable(board.gameObject, "게시판", radius: 1f, markerHeight: 2f);
+            AddInteractable(board.gameObject, "게시판", InteractableKind.NoticeBoard, radius: 1f, markerHeight: 2f);
+
+            // 임시 도구 상자 (2-2 상점이 생기면 없앰)
+            var toolBox = Prim(PrimitiveType.Cube, "ToolBox", parent, OnGround(PlazaCenter.x - 4f, PlazaCenter.y - 3f, 0.3f), new Vector3(1f, 0.6f, 0.7f), Mat("ToolBox", "#E07A5F"), collider: true);
+            toolBox.transform.localRotation = Quaternion.Euler(0f, 30f, 0f);
+            AddInteractable(toolBox, "도구 상자", InteractableKind.ToolBox, radius: 0.5f, markerHeight: 1.5f); // 높이 배율 0.6 → 상자 중심 위 0.9m
+            toolBox.AddComponent<ToolBox>().tools = tools;
         }
 
         static void BuildHouse(Transform parent, HouseInfo info)
@@ -458,7 +475,7 @@ namespace PogeunVillage.EditorTools
             mailbox.localPosition = new Vector3(1.9f, 0f, 2.9f);
             Prim(PrimitiveType.Cylinder, "MailboxPost", mailbox, new Vector3(0f, 0.45f, 0f), new Vector3(0.12f, 0.45f, 0.12f), wood);
             Prim(PrimitiveType.Cube, "MailboxBox", mailbox, new Vector3(0f, 1f, 0f), new Vector3(0.45f, 0.35f, 0.6f), roof);
-            AddInteractable(mailbox.gameObject, "우체통", radius: 0.3f, markerHeight: 1.5f);
+            AddInteractable(mailbox.gameObject, "우체통", InteractableKind.Mailbox, radius: 0.3f, markerHeight: 1.5f);
         }
 
         static void BuildBridge(Transform parent, float z)
@@ -570,7 +587,7 @@ namespace PogeunVillage.EditorTools
                     layer.transform.localPosition = new Vector3(0f, 1.1f + i * 0.85f, 0f);
                     layer.transform.localScale = new Vector3(2.4f - i * 0.6f, 1.6f - i * 0.2f, 2.4f - i * 0.6f);
                 }
-                AddInteractable(tree.gameObject, "나무", radius: 0.4f, markerHeight: 4f);
+                AddInteractable(tree.gameObject, "나무", InteractableKind.Tree, radius: 0.4f, markerHeight: 4f);
             }
             else
             {
@@ -581,7 +598,7 @@ namespace PogeunVillage.EditorTools
                 Prim(PrimitiveType.Sphere, "Crown2", tree, new Vector3(0.6f, 2.0f, 0.3f), new Vector3(1.5f, 1.3f, 1.5f), leaves);
                 Prim(PrimitiveType.Sphere, "Crown3", tree, new Vector3(-0.5f, 2.1f, -0.4f), new Vector3(1.4f, 1.2f, 1.4f), leaves);
 
-                AddInteractable(tree.gameObject, "나무", radius: 0.4f, markerHeight: 3.7f);
+                AddInteractable(tree.gameObject, "나무", InteractableKind.Tree, radius: 0.4f, markerHeight: 3.7f);
 
                 if (kind >= 8)
                 {
@@ -651,7 +668,7 @@ namespace PogeunVillage.EditorTools
                     Prim(PrimitiveType.Cylinder, "Stem", flower, new Vector3(0f, 0.15f, 0f), new Vector3(0.05f, 0.15f, 0.05f), stem, castShadows: false);
                     Prim(PrimitiveType.Sphere, "Petals", flower, new Vector3(0f, 0.33f, 0f), new Vector3(0.32f, 0.14f, 0.32f), petal, castShadows: false);
                     Prim(PrimitiveType.Sphere, "Center", flower, new Vector3(0f, 0.4f, 0f), Vector3.one * 0.1f, center, castShadows: false);
-                    AddInteractable(flower.gameObject, "꽃", radius: 0.15f, markerHeight: 0.75f, wiggle: false);
+                    AddInteractable(flower.gameObject, "꽃", InteractableKind.Flower, radius: 0.15f, markerHeight: 0.75f, wiggle: false);
                     flower.gameObject.AddComponent<Pickup>().item = flowerItem;
                 }
                 Occupied.Add(new Vector3(x, z, 0.8f));
@@ -696,8 +713,56 @@ namespace PogeunVillage.EditorTools
             var interactor = player.AddComponent<PlayerInteractor>();
             interactor.settings = settings;
             BuildInteractionMarker(interactor);
-            player.AddComponent<PlayerInventory>().rules = inventoryRules;
+            var inventory = player.AddComponent<PlayerInventory>();
+            inventory.rules = inventoryRules;
+            BuildPlayerTools(player, visual, inventory, interactor);
             return player;
+        }
+
+        // 손에 든 도구(그레이박스). 축은 오른손 위치, 휘두르면 앞으로 꺾임
+        static void BuildPlayerTools(GameObject player, Transform visual, PlayerInventory inventory, PlayerInteractor interactor)
+        {
+            var pivot = new GameObject("ToolPivot").transform;
+            pivot.SetParent(visual, false);
+            pivot.localPosition = new Vector3(0.38f, 0.55f, 0.05f);
+            pivot.localRotation = Quaternion.Euler(-35f, 0f, 0f);
+
+            var handle = Mat("ToolHandle", "#B98A5E");
+            var metal = Mat("ToolMetal", "#C9D2DC", rim: 0.3f);
+            GameObject Tool(string name) { var go = new GameObject(name); go.transform.SetParent(pivot, false); return go; }
+
+            var net = Tool("Net");
+            Prim(PrimitiveType.Cylinder, "Handle", net.transform, new Vector3(0f, 0.5f, 0f), new Vector3(0.05f, 0.5f, 0.05f), handle, castShadows: false);
+            Prim(PrimitiveType.Sphere, "Hoop", net.transform, new Vector3(0f, 1.1f, 0f), new Vector3(0.4f, 0.4f, 0.1f), Mat("ToolNet", "#F4F1EA", rim: 0.3f), castShadows: false);
+
+            var rod = Tool("FishingRod");
+            Prim(PrimitiveType.Cylinder, "Rod", rod.transform, new Vector3(0f, 0.6f, 0f), new Vector3(0.035f, 0.6f, 0.035f), handle, castShadows: false);
+            Prim(PrimitiveType.Sphere, "Reel", rod.transform, new Vector3(0f, 0.2f, 0.06f), Vector3.one * 0.12f, metal, castShadows: false);
+
+            var axe = Tool("Axe");
+            Prim(PrimitiveType.Cylinder, "Handle", axe.transform, new Vector3(0f, 0.35f, 0f), new Vector3(0.06f, 0.35f, 0.06f), handle, castShadows: false);
+            Prim(PrimitiveType.Cube, "Head", axe.transform, new Vector3(0f, 0.65f, 0.1f), new Vector3(0.06f, 0.2f, 0.25f), metal, castShadows: false);
+
+            var shovel = Tool("Shovel");
+            Prim(PrimitiveType.Cylinder, "Handle", shovel.transform, new Vector3(0f, 0.4f, 0f), new Vector3(0.05f, 0.4f, 0.05f), handle, castShadows: false);
+            Prim(PrimitiveType.Cube, "Blade", shovel.transform, new Vector3(0f, 0.9f, 0f), new Vector3(0.25f, 0.3f, 0.04f), metal, castShadows: false);
+
+            var can = Tool("WateringCan");
+            Prim(PrimitiveType.Cylinder, "Body", can.transform, new Vector3(0f, 0.15f, 0.1f), new Vector3(0.25f, 0.15f, 0.25f), Mat("ToolCan", "#7FB8E6", rim: 0.3f), castShadows: false);
+            Prim(PrimitiveType.Cylinder, "Spout", can.transform, new Vector3(0f, 0.22f, 0.3f), new Vector3(0.04f, 0.15f, 0.04f), metal, castShadows: false)
+                .transform.localRotation = Quaternion.Euler(60f, 0f, 0f);
+
+            var holds = new[] { net, rod, axe, shovel, can };
+            foreach (var hold in holds)
+                hold.SetActive(false);
+
+            var playerTools = player.AddComponent<PlayerTools>();
+            playerTools.settings = settings;
+            playerTools.inventory = inventory;
+            playerTools.interactor = interactor;
+            playerTools.tools = tools;
+            playerTools.holdVisuals = holds;
+            playerTools.swingPivot = pivot;
         }
 
         static void BuildInteractionMarker(PlayerInteractor interactor)
@@ -709,10 +774,11 @@ namespace PogeunVillage.EditorTools
             ball.SetActive(false); // 대상이 생기면 InteractionMarker가 켬
         }
 
-        static void AddInteractable(GameObject go, string displayName, float radius, float markerHeight, bool wiggle = true)
+        static void AddInteractable(GameObject go, string displayName, InteractableKind kind, float radius, float markerHeight, bool wiggle = true)
         {
             var interactable = go.AddComponent<Interactable>();
             interactable.displayName = displayName;
+            interactable.kind = kind;
             interactable.radius = radius;
             interactable.markerHeight = markerHeight;
             interactable.wiggleOnInteract = wiggle;
@@ -744,12 +810,29 @@ namespace PogeunVillage.EditorTools
             return item;
         }
 
+        static ToolDefinition EnsureTool(string id, string displayName, ToolKind kind, params InteractableKind[] hitKinds)
+        {
+            string path = $"{ToolDir}/{id}.asset";
+            bool isNew = !AssetDatabase.LoadAssetAtPath<ToolDefinition>(path);
+            var tool = EnsureAsset<ToolDefinition>(path);
+            if (isNew)
+            {
+                tool.id = id;
+                tool.displayName = displayName;
+                tool.kind = kind;
+                tool.maxStack = 1;
+                tool.hitKinds = hitKinds;
+                EditorUtility.SetDirty(tool);
+            }
+            return tool;
+        }
+
         // 떨어진 열매용 줍기 프리팹. 재질은 떨어뜨리는 나무가 자기 열매 재질로 바꿈
         static Pickup BuildPickupPrefab()
         {
             var root = new GameObject("Pickup");
             Prim(PrimitiveType.Sphere, "Ball", root.transform, new Vector3(0f, 0.15f, 0f), Vector3.one * 0.3f, Mat("Apple", "#F0645A", rim: 0.3f));
-            AddInteractable(root, "열매", radius: 0.2f, markerHeight: 0.7f, wiggle: false);
+            AddInteractable(root, "열매", InteractableKind.DroppedItem, radius: 0.2f, markerHeight: 0.7f, wiggle: false);
             root.AddComponent<Pickup>();
             var prefab = PrefabUtility.SaveAsPrefabAsset(root, PrefabDir + "/Pickup.prefab");
             Object.DestroyImmediate(root);

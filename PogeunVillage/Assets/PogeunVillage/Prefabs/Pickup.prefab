@@ -47,6 +47,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: PogeunVillage::PogeunVillage.Interactable
   displayName: "\uC5F4\uB9E4"
+  kind: 4
   radius: 0.2
   markerHeight: 0.7
   wiggleOnInteract: 0

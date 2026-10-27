@@ -3,16 +3,21 @@ using System.Collections.Generic;
 
 namespace PogeunVillage
 {
-    /// <summary>인벤토리 한 칸. 비어 있으면 itemId가 null, count 0.</summary>
+    /// <summary>
+    /// 인벤토리 한 칸. 비어 있으면 itemId가 null, count 0.
+    /// durability는 도구처럼 한 칸에 하나만 든 물건의 남은 내구도(겹치는 물건은 0).
+    /// </summary>
     public readonly struct InventorySlot
     {
         public readonly string itemId;
         public readonly int count;
+        public readonly int durability;
 
-        public InventorySlot(string itemId, int count)
+        public InventorySlot(string itemId, int count, int durability = 0)
         {
             this.itemId = itemId;
             this.count = count;
+            this.durability = durability;
         }
 
         public bool IsEmpty => count == 0;
@@ -87,6 +92,40 @@ namespace PogeunVillage
                 if (slots[i].IsEmpty)
                     amount = Put(i, itemId, maxStack, amount);
             return true;
+        }
+
+        /// <summary>
+        /// 겹치지 않고 내구도가 있는 물건(도구)을 앞쪽 빈 칸에 하나 넣음.
+        /// </summary>
+        /// <returns>넣은 칸 번호, 빈 칸이 없으면 -1</returns>
+        public int TryAddWithDurability(string itemId, int durability)
+        {
+            Validate(itemId, 1);
+            if (durability <= 0)
+                throw new ArgumentOutOfRangeException(nameof(durability));
+            for (int i = 0; i < slots.Length; i++)
+            {
+                if (!slots[i].IsEmpty)
+                    continue;
+                slots[i] = new InventorySlot(itemId, 1, durability);
+                SlotChanged?.Invoke(i);
+                return i;
+            }
+            return -1;
+        }
+
+        /// <summary>그 칸 물건의 내구도를 1 깎고, 0이 되면 칸을 비움(부서짐).</summary>
+        /// <returns>부서졌으면 true</returns>
+        public bool UseDurability(int index)
+        {
+            var slot = slots[index];
+            if (slot.IsEmpty || slot.durability <= 0)
+                throw new InvalidOperationException($"{index}번 칸에는 내구도가 있는 물건이 없습니다.");
+
+            bool broken = slot.durability == 1;
+            slots[index] = broken ? default : new InventorySlot(slot.itemId, 1, slot.durability - 1);
+            SlotChanged?.Invoke(index);
+            return broken;
         }
 
         int Put(int index, string itemId, int maxStack, int amount)

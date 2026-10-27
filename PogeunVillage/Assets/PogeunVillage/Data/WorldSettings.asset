@@ -40,3 +40,5 @@ MonoBehaviour:
   interactWiggleTime: 0.3
   fruitDropRadius: 1.1
   fruitFallTime: 0.35
+  toolSwingTime: 0.35
+  toolSwingAngle: 70

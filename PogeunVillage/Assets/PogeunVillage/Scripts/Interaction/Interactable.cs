@@ -5,6 +5,18 @@ using UnityEngine;
 
 namespace PogeunVillage
 {
+    /// <summary>상호작용 대상 종류(도구의 맞음 판정 등에 씀). enum은 끝에만 추가.</summary>
+    public enum InteractableKind
+    {
+        None,
+        Tree,
+        NoticeBoard,
+        Mailbox,
+        DroppedItem,
+        Flower,
+        ToolBox,
+    }
+
     /// <summary>
     /// 플레이어가 다가가 상호작용 키로 쓸 수 있는 대상(나무 · 게시판 · 우체통 …).
     /// 켜져 있는 대상은 All 목록에 등록되어 PlayerInteractor가 고릅니다.
@@ -18,6 +30,7 @@ namespace PogeunVillage
 
         [Tooltip("로그 · 안내에 쓰는 이름")]
         public string displayName = "대상";
+        public InteractableKind kind;
         [Tooltip("바닥에서 본 대상의 크기(반지름, m, 로컬 기준). 상호작용 거리는 이 가장자리부터 잽니다.")]
         public float radius = 0.4f;
         [Tooltip("마커가 뜰 높이(m, 로컬 기준)")]
