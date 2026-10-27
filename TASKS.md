@@ -28,8 +28,11 @@
 - [x] **0-2. 문서 3종 + .gitignore 정리** (2026-10-19)
   - 구현: `CLAUDE.md`, `GDD.md`, `TASKS.md`
   - `.gitignore`: 넓은 패턴(`**/[Tt]emp/` 등) → `/PogeunVillage/…` 경로 기준으로. `/[Aa]ssets/…` 규칙도 하위 폴더 기준으로 수정(기존엔 아무것도 매칭되지 않았음)
-- [ ] **0-3. 어셈블리 · 테스트 기반** — 진행 전
-  - 런타임 asmdef(`PogeunVillage`), 에디터 asmdef(`PogeunVillage.Editor`), EditMode 테스트 asmdef(`PogeunVillage.Tests`) + 샘플 테스트 1개
+- [x] **0-3. 어셈블리 · 테스트 기반** (2026-10-27) — 플레이 확인 대기
+  - 구현: 런타임 asmdef `Scripts/PogeunVillage.asmdef`(참조: Input System, URP Core/Universal Runtime), 에디터 asmdef `Scripts/Editor/PogeunVillage.Editor.asmdef`(Editor 전용, + Test Runner), EditMode 테스트 asmdef `Tests/EditMode/PogeunVillage.Tests.asmdef`(Editor 전용, `UNITY_INCLUDE_TESTS`, nunit)
+  - 구현: 에디터 메뉴 `Pogeun Village/Run EditMode Tests`(`Scripts/Editor/EditModeTestRunner.cs`) — EditMode 테스트 전체 실행, 요약은 콘솔(실패 시 에러), 테스트별 결과는 `Temp/PogeunVillageTestResults.txt`. 이유: MCP 명령 스크립트에서 Test Runner 결과를 받을 수 없어(System.Reflection 금지), 매 작업 자동 검증에 쓰려고
+  - 테스트 1개(`AssemblySetupTests` — 테스트 어셈블리가 런타임 어셈블리를 참조) — 전체 1개 통과
+  - 참고: 콘솔 경고 3개는 Unity MCP 패키지(`ExecutableIdentityCollector`)가 Claude 실행 파일 서명을 못 읽어 내는 것 — 프로젝트 코드와 무관
 - [ ] **0-4. 템플릿 정리** — 진행 전
   - `Assets/TutorialInfo`, `Readme.asset`, `Scenes/SampleScene` 정리(참조 확인 후), 시작 씬 지정
 - [ ] **0-5. 데이터 에셋 자리** — 진행 전
