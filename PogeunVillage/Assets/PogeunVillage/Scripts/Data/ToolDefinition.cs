@@ -24,6 +24,8 @@ namespace PogeunVillage
         [Min(1)] public int durability = 50;
         [Tooltip("휘둘렀을 때 '맞음'으로 치는 대상 종류. 실제 효과는 각 기능(1-7 도끼 · 1-8 삽 · 1-9 물뿌리개 …)이 붙임")]
         public InteractableKind[] hitKinds = new InteractableKind[0];
+        [Tooltip("땅 칸을 다루는 도구(삽 · 물뿌리개). 들고 있으면 앞 칸 표시가 뜸")]
+        public bool usesGroundCell;
 
         void Reset() => maxStack = 1;
     }

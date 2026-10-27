@@ -75,5 +75,12 @@ namespace PogeunVillage
         public float toolSwingTime = 0.35f;
         [Tooltip("휘두를 때 도구가 앞으로 꺾이는 각도(도)")]
         public float toolSwingAngle = 70f;
+
+        [Header("땅 칸 표시")]
+        [Tooltip("플레이어 중심에서 이 거리(m) 앞의 점이 든 칸을 '앞 칸'으로 봅니다.")]
+        public float groundCursorReach = 0.9f;
+        public Color groundCursorColor = new(1f, 1f, 1f, 1f);
+        [Tooltip("막힌 칸(물 · 길 · 광장 · 건물 …)일 때 색")]
+        public Color groundCursorBlockedColor = new(1f, 0.55f, 0.5f, 1f);
     }
 }

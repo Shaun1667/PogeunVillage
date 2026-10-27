@@ -18,3 +18,4 @@ MonoBehaviour:
   kind: 4
   durability: 50
   hitKinds: 05000000i
+  usesGroundCell: 1

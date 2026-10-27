@@ -42,3 +42,6 @@ MonoBehaviour:
   fruitFallTime: 0.35
   toolSwingTime: 0.35
   toolSwingAngle: 70
+  groundCursorReach: 0.9
+  groundCursorColor: {r: 1, g: 1, b: 1, a: 1}
+  groundCursorBlockedColor: {r: 1, g: 0.55, b: 0.5, a: 1}

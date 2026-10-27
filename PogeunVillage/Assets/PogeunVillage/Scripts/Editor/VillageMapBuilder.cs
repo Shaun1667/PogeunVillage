@@ -22,6 +22,7 @@ namespace PogeunVillage.EditorTools
         const string WorldSettingsPath = Root + "/Data/WorldSettings.asset";
         const string GatheringRulesPath = Root + "/Data/GatheringRules.asset";
         const string InventoryRulesPath = Root + "/Data/InventoryRules.asset";
+        const string GroundGridPath = Root + "/Data/GroundGrid.asset";
         const string ItemDir = Root + "/Data/Items";
         const string PrefabDir = Root + "/Prefabs";
         const string ToolDir = ItemDir + "/Tools";
@@ -104,11 +105,11 @@ namespace PogeunVillage.EditorTools
             EnsureFolder(ToolDir);
             tools = new[]
             {
-                EnsureTool("Net", "잠자리채", ToolKind.Net),
-                EnsureTool("FishingRod", "낚싯대", ToolKind.FishingRod),
-                EnsureTool("Axe", "도끼", ToolKind.Axe, InteractableKind.Tree),
-                EnsureTool("Shovel", "삽", ToolKind.Shovel, InteractableKind.Flower),
-                EnsureTool("WateringCan", "물뿌리개", ToolKind.WateringCan, InteractableKind.Flower),
+                EnsureTool("Net", "잠자리채", ToolKind.Net, false),
+                EnsureTool("FishingRod", "낚싯대", ToolKind.FishingRod, false),
+                EnsureTool("Axe", "도끼", ToolKind.Axe, false, InteractableKind.Tree),
+                EnsureTool("Shovel", "삽", ToolKind.Shovel, true, InteractableKind.Flower),
+                EnsureTool("WateringCan", "물뿌리개", ToolKind.WateringCan, true, InteractableKind.Flower),
             };
 
             BuildPaths();
@@ -133,9 +134,11 @@ namespace PogeunVillage.EditorTools
             BuildLamps(props);
             BuildTrees(props, random);
             BuildRocks(props, random);
-            BuildFlowers(props, random);
+            var ground = BuildGroundGrid(world);
+            BuildFlowers(props, random, ground);
 
             var player = BuildPlayer();
+            BuildGroundCursor(player.GetComponent<PlayerTools>(), ground);
             var cam = BuildCamera(player.transform);
             player.GetComponent<PlayerController>().cameraTransform = cam.transform;
 
@@ -641,13 +644,20 @@ namespace PogeunVillage.EditorTools
             }
         }
 
-        static void BuildFlowers(Transform parent, System.Random random)
+        // 꽃 무리: 무리 중심 칸 + 이웃 칸 중 놓을 수 있는 칸 3~5개에 한 송이씩 (결정 2026-10-27: 칸에 맞춰 배치)
+        static readonly Vector2Int[] PatchCells =
+        {
+            new(0, 0), new(1, 0), new(0, 1), new(-1, 0), new(0, -1), new(1, 1), new(-1, 1), new(1, -1), new(-1, -1),
+        };
+
+        static void BuildFlowers(Transform parent, System.Random random, VillageGround ground)
         {
             var flowers = new GameObject("Flowers").transform;
             flowers.SetParent(parent, false);
             string[] palette = { "#FF9EC4", "#FFFFFF", "#FFE066", "#C9A7F2", "#FF8C7A" };
             var stem = Mat("Stem", "#5BAA5E");
             var center = Mat("FlowerCenter", "#FFD34D");
+            var grid = ground.data.CreateGrid();
 
             int placed = 0;
             for (int attempt = 0; attempt < 1500 && placed < 55; attempt++)
@@ -658,18 +668,26 @@ namespace PogeunVillage.EditorTools
                     continue;
                 var petal = Mat("Flower_" + placed % palette.Length, palette[placed % palette.Length], rim: 0.25f);
                 int count = random.Next(3, 6);
-                for (int i = 0; i < count; i++)
+                Vector2Int middle = grid.ToCell(new Vector2(x, z));
+                int planted = 0;
+                for (int i = 0; i < PatchCells.Length && planted < count; i++)
                 {
-                    float fx = x + Range(random, -0.7f, 0.7f);
-                    float fz = z + Range(random, -0.7f, 0.7f);
+                    Vector2Int cell = middle + PatchCells[i];
+                    if (!grid.TryPlace(cell, GroundObjectKind.Flower))
+                        continue;
+                    planted++;
+                    Vector2 c = grid.CellCenter(cell);
                     var flower = new GameObject("Flower").transform;
                     flower.SetParent(flowers, false);
-                    flower.localPosition = OnGround(fx, fz);
+                    flower.localPosition = OnGround(c.x, c.y);
                     Prim(PrimitiveType.Cylinder, "Stem", flower, new Vector3(0f, 0.15f, 0f), new Vector3(0.05f, 0.15f, 0.05f), stem, castShadows: false);
                     Prim(PrimitiveType.Sphere, "Petals", flower, new Vector3(0f, 0.33f, 0f), new Vector3(0.32f, 0.14f, 0.32f), petal, castShadows: false);
                     Prim(PrimitiveType.Sphere, "Center", flower, new Vector3(0f, 0.4f, 0f), Vector3.one * 0.1f, center, castShadows: false);
                     AddInteractable(flower.gameObject, "꽃", InteractableKind.Flower, radius: 0.15f, markerHeight: 0.75f, wiggle: false);
                     flower.gameObject.AddComponent<Pickup>().item = flowerItem;
+                    var gridObject = flower.gameObject.AddComponent<GridObject>();
+                    gridObject.ground = ground;
+                    gridObject.kind = GroundObjectKind.Flower;
                 }
                 Occupied.Add(new Vector3(x, z, 0.8f));
                 placed++;
@@ -786,6 +804,74 @@ namespace PogeunVillage.EditorTools
 
         // ---------------------------------------------------------------- gathering data
 
+        // ---------------------------------------------------------------- ground grid
+
+        // 막힌 칸 굽기: 물(물 높이 근처 이하) · 길 · 광장 · 충돌체(집 · 나무 줄기 · 바위 · 다리 · 가로등 · 분수 · 게시판 · 도구 상자)
+        const float PathBlockDistance = 1.2f;     // 길 중심선에서 이 거리 안의 칸 중심 = 길
+        const float WaterBlockMargin = 0.1f;      // 물 높이 + 이 값 아래 = 물
+
+        static VillageGround BuildGroundGrid(Transform world)
+        {
+            var data = EnsureAsset<GroundGridData>(GroundGridPath);
+            Collider groundCollider = world.Find("Ground").GetComponent<Collider>();
+            Physics.SyncTransforms();
+
+            float size = data.cellSize;
+            var origin = new Vector2Int(Mathf.FloorToInt(-GroundHalfSize / size), Mathf.FloorToInt(-GroundHalfSize / size));
+            int count = Mathf.CeilToInt(GroundHalfSize * 2 / size);
+            var blocked = new bool[count * count];
+            var hits = new Collider[8];
+            var halfExtents = new Vector3(size * 0.45f, 0.9f, size * 0.45f);
+
+            for (int j = 0; j < count; j++)
+            for (int i = 0; i < count; i++)
+            {
+                float x = (origin.x + i + 0.5f) * size;
+                float z = (origin.y + j + 0.5f) * size;
+                float h = Height(x, z);
+                bool isBlocked = h < settings.waterLevel + WaterBlockMargin
+                                 || PathDistance(x, z) < PathBlockDistance
+                                 || PlazaMask(x, z) > 0.01f;
+                if (!isBlocked)
+                {
+                    int n = Physics.OverlapBoxNonAlloc(new Vector3(x, h + 1.05f, z), halfExtents, hits, Quaternion.identity, ~0, QueryTriggerInteraction.Ignore);
+                    for (int k = 0; k < n && !isBlocked; k++)
+                        isBlocked = hits[k] != groundCollider;
+                }
+                blocked[j * count + i] = isBlocked;
+            }
+
+            data.Bake(origin, count, count, blocked);
+            EditorUtility.SetDirty(data);
+
+            var ground = new GameObject("GroundGrid").AddComponent<VillageGround>();
+            ground.transform.SetParent(world, false);
+            ground.data = data;
+            return ground;
+        }
+
+        static void BuildGroundCursor(PlayerTools playerTools, VillageGround ground)
+        {
+            var cursor = new GameObject("GroundCursor").AddComponent<GroundCursor>();
+            var outline = new GameObject("Outline");
+            outline.transform.SetParent(cursor.transform, false);
+            var mat = Mat("GroundCursor", "#FFFFFF", rim: 0f);
+            float half = ground.data.cellSize * 0.5f;
+            const float thickness = 0.06f, lift = 0.03f;
+            for (int side = 0; side < 4; side++)
+            {
+                bool alongX = side < 2;
+                float sign = side % 2 == 0 ? 1f : -1f;
+                Vector3 position = alongX ? new Vector3(0f, lift, sign * half) : new Vector3(sign * half, lift, 0f);
+                Vector3 scale = alongX ? new Vector3(half * 2f, 0.02f, thickness) : new Vector3(thickness, 0.02f, half * 2f);
+                Prim(PrimitiveType.Cube, "Edge", outline.transform, position, scale, mat, castShadows: false);
+            }
+            cursor.settings = settings;
+            cursor.ground = ground;
+            cursor.tools = playerTools;
+            cursor.outline = outline;
+        }
+
         static T EnsureAsset<T>(string path) where T : ScriptableObject
         {
             var asset = AssetDatabase.LoadAssetAtPath<T>(path);
@@ -810,7 +896,7 @@ namespace PogeunVillage.EditorTools
             return item;
         }
 
-        static ToolDefinition EnsureTool(string id, string displayName, ToolKind kind, params InteractableKind[] hitKinds)
+        static ToolDefinition EnsureTool(string id, string displayName, ToolKind kind, bool usesGroundCell, params InteractableKind[] hitKinds)
         {
             string path = $"{ToolDir}/{id}.asset";
             bool isNew = !AssetDatabase.LoadAssetAtPath<ToolDefinition>(path);
@@ -822,6 +908,7 @@ namespace PogeunVillage.EditorTools
                 tool.kind = kind;
                 tool.maxStack = 1;
                 tool.hitKinds = hitKinds;
+                tool.usesGroundCell = usesGroundCell;
                 EditorUtility.SetDirty(tool);
             }
             return tool;
