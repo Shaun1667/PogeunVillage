@@ -33,8 +33,12 @@
   - 구현: 에디터 메뉴 `Pogeun Village/Run EditMode Tests`(`Scripts/Editor/EditModeTestRunner.cs`) — EditMode 테스트 전체 실행, 요약은 콘솔(실패 시 에러), 테스트별 결과는 `Temp/PogeunVillageTestResults.txt`. 이유: MCP 명령 스크립트에서 Test Runner 결과를 받을 수 없어(System.Reflection 금지), 매 작업 자동 검증에 쓰려고
   - 테스트 1개(`AssemblySetupTests` — 테스트 어셈블리가 런타임 어셈블리를 참조) — 전체 1개 통과
   - 참고: 콘솔 경고 3개는 Unity MCP 패키지(`ExecutableIdentityCollector`)가 Claude 실행 파일 서명을 못 읽어 내는 것 — 프로젝트 코드와 무관
-- [ ] **0-4. 템플릿 정리** — 진행 전
-  - `Assets/TutorialInfo`, `Readme.asset`, `Scenes/SampleScene` 정리(참조 확인 후), 시작 씬 지정
+- [x] **0-4. 템플릿 정리** (2026-10-27) — 플레이 확인 대기
+  - 삭제: `Assets/TutorialInfo/`(Readme 스크립트 · 에디터 · 아이콘 · 스타일 · 레이아웃), `Assets/Readme.asset`, `Assets/Scenes/SampleScene.unity`와 빈 `Assets/Scenes/` — GUID 검색으로 빌드 설정 외 참조 없음 확인
+  - 시작 씬: 빌드 설정을 `PogeunVillage/Scenes/VillagePrototype.unity` 하나만(0번)으로
+  - 유지: `Settings/SampleSceneProfile.asset` — 이름과 달리 `PC_RPAsset` · `Mobile_RPAsset`의 기본 볼륨 프로파일이라 지우면 렌더링이 바뀜. `InputSystem_Actions.inputactions` — Input System 프로젝트 설정이 참조
+  - 테스트: 추가 없음 — 전체 1개 통과
+  - 참고: MCP 명령으로 `AssetDatabase.DeleteAsset`이 "사용자 상호작용 필요"로 막혀 `git rm`으로 지우고 에디터에서 새로고침함. `ProjectSettings.asset`의 `templateDefaultScene`은 지운 SampleScene 경로를 가리키지만 템플릿 제작용 값이라 그대로 둠
 - [ ] **0-5. 데이터 에셋 자리** — 진행 전
   - `Data/` 폴더와 첫 설정 에셋(예: `WorldSettings` — 휨 반경, 물 높이, 플레이어 속도, 카메라)
 
