@@ -8,7 +8,8 @@ namespace PogeunVillage
     /// <summary>
     /// 플레이어가 다가가 상호작용 키로 쓸 수 있는 대상(나무 · 게시판 · 우체통 …).
     /// 켜져 있는 대상은 All 목록에 등록되어 PlayerInteractor가 고릅니다.
-    /// 지금은 임시 반응(살짝 흔들림 + 콘솔 로그)만 있고, 실제 동작은 각 기능(1-3 채집 등)이 Interacted를 구독해 붙입니다.
+    /// 실제 동작은 각 기능(FruitTreeBehaviour · Pickup …)이 Interacted를 구독해 붙입니다.
+    /// wiggleOnInteract면 상호작용 때 살짝 흔들립니다(나무 흔들기 · 아직 동작이 없는 대상의 임시 반응).
     /// </summary>
     public class Interactable : MonoBehaviour
     {
@@ -21,8 +22,10 @@ namespace PogeunVillage
         public float radius = 0.4f;
         [Tooltip("마커가 뜰 높이(m, 로컬 기준)")]
         public float markerHeight = 2f;
+        public bool wiggleOnInteract = true;
 
-        public event Action<Interactable> Interacted;
+        /// <summary>대상과 상호작용한 플레이어</summary>
+        public event Action<Interactable, PlayerInteractor> Interacted;
 
         public Vector3 MarkerPosition => transform.position + Vector3.up * (markerHeight * transform.lossyScale.y);
         public float WorldRadius => radius * transform.lossyScale.x;
@@ -33,11 +36,14 @@ namespace PogeunVillage
         void OnEnable() => all.Add(this);
         void OnDisable() => all.Remove(this);
 
-        public void Interact(WorldSettings settings)
+        public void Interact(PlayerInteractor by)
         {
             Debug.Log($"[상호작용] {displayName}", this);
-            Interacted?.Invoke(this);
+            Interacted?.Invoke(this, by);
 
+            if (!wiggleOnInteract || !isActiveAndEnabled)
+                return;
+            var settings = by.settings;
             if (wiggle != null)
             {
                 StopCoroutine(wiggle);

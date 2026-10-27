@@ -20,6 +20,9 @@ namespace PogeunVillage.EditorTools
         const string TextureDir = Root + "/Textures";
         const string ScenePath = Root + "/Scenes/VillagePrototype.unity";
         const string WorldSettingsPath = Root + "/Data/WorldSettings.asset";
+        const string GatheringRulesPath = Root + "/Data/GatheringRules.asset";
+        const string ItemDir = Root + "/Data/Items";
+        const string PrefabDir = Root + "/Prefabs";
 
         const int GroundHalfSize = 90;   // 지면 메시 범위(±m), 1m 격자
         const int WaterHalfSize = 130;   // 물 메시 범위(±m), 2m 격자
@@ -54,6 +57,9 @@ namespace PogeunVillage.EditorTools
 
         static Shader toonShader;
         static WorldSettings settings;
+        static GatheringRules gatheringRules;
+        static ItemDefinition appleItem, peachItem, flowerItem;
+        static Pickup pickupPrefab;
         static readonly List<(Vector2 a, Vector2 b)> Paths = new();
         static readonly List<Vector3> Occupied = new(); // x, z, radius
 
@@ -81,6 +87,15 @@ namespace PogeunVillage.EditorTools
                 Debug.LogError($"{WorldSettingsPath} 를 찾을 수 없습니다.");
                 return;
             }
+
+            // 채집 데이터 · 프리팹 (없을 때만 만들고, 있으면 값을 건드리지 않음)
+            EnsureFolder(ItemDir);
+            EnsureFolder(PrefabDir);
+            gatheringRules = EnsureAsset<GatheringRules>(GatheringRulesPath);
+            appleItem = EnsureItem("Apple", "사과");
+            peachItem = EnsureItem("Peach", "복숭아");
+            flowerItem = EnsureItem("Flower", "꽃");
+            pickupPrefab = BuildPickupPrefab();
 
             BuildPaths();
             Occupied.Clear();
@@ -563,16 +578,26 @@ namespace PogeunVillage.EditorTools
                 Prim(PrimitiveType.Sphere, "Crown2", tree, new Vector3(0.6f, 2.0f, 0.3f), new Vector3(1.5f, 1.3f, 1.5f), leaves);
                 Prim(PrimitiveType.Sphere, "Crown3", tree, new Vector3(-0.5f, 2.1f, -0.4f), new Vector3(1.4f, 1.2f, 1.4f), leaves);
 
+                AddInteractable(tree.gameObject, "나무", radius: 0.4f, markerHeight: 3.7f);
+
                 if (kind >= 8)
                 {
-                    var fruit = Mat(kind == 8 ? "Apple" : "Peach", kind == 8 ? "#F0645A" : "#FFB38A", rim: 0.3f);
-                    for (int i = 0; i < 5; i++)
+                    bool apple = kind == 8;
+                    var fruit = Mat(apple ? "Apple" : "Peach", apple ? "#F0645A" : "#FFB38A", rim: 0.3f);
+                    var visuals = new Transform[gatheringRules.fruitMaxOnTree];
+                    for (int i = 0; i < visuals.Length; i++)
                     {
-                        float a = i * 72f * Mathf.Deg2Rad;
-                        Prim(PrimitiveType.Sphere, "Fruit", tree, new Vector3(Mathf.Cos(a) * 1.05f, 2.2f + (i % 2) * 0.5f, Mathf.Sin(a) * 1.05f), Vector3.one * 0.3f, fruit);
+                        float a = i * 360f / visuals.Length * Mathf.Deg2Rad;
+                        visuals[i] = Prim(PrimitiveType.Sphere, "Fruit", tree, new Vector3(Mathf.Cos(a) * 1.05f, 2.2f + (i % 2) * 0.5f, Mathf.Sin(a) * 1.05f), Vector3.one * 0.3f, fruit).transform;
                     }
+
+                    var fruitTree = tree.gameObject.AddComponent<FruitTreeBehaviour>();
+                    fruitTree.rules = gatheringRules;
+                    fruitTree.settings = settings;
+                    fruitTree.fruitItem = apple ? appleItem : peachItem;
+                    fruitTree.pickupPrefab = pickupPrefab;
+                    fruitTree.fruitVisuals = visuals;
                 }
-                AddInteractable(tree.gameObject, "나무", radius: 0.4f, markerHeight: 3.7f);
             }
         }
 
@@ -623,6 +648,8 @@ namespace PogeunVillage.EditorTools
                     Prim(PrimitiveType.Cylinder, "Stem", flower, new Vector3(0f, 0.15f, 0f), new Vector3(0.05f, 0.15f, 0.05f), stem, castShadows: false);
                     Prim(PrimitiveType.Sphere, "Petals", flower, new Vector3(0f, 0.33f, 0f), new Vector3(0.32f, 0.14f, 0.32f), petal, castShadows: false);
                     Prim(PrimitiveType.Sphere, "Center", flower, new Vector3(0f, 0.4f, 0f), Vector3.one * 0.1f, center, castShadows: false);
+                    AddInteractable(flower.gameObject, "꽃", radius: 0.15f, markerHeight: 0.75f, wiggle: false);
+                    flower.gameObject.AddComponent<Pickup>().item = flowerItem;
                 }
                 Occupied.Add(new Vector3(x, z, 0.8f));
                 placed++;
@@ -666,6 +693,7 @@ namespace PogeunVillage.EditorTools
             var interactor = player.AddComponent<PlayerInteractor>();
             interactor.settings = settings;
             BuildInteractionMarker(interactor);
+            player.AddComponent<PlayerPouch>();
             return player;
         }
 
@@ -678,12 +706,51 @@ namespace PogeunVillage.EditorTools
             ball.SetActive(false); // 대상이 생기면 InteractionMarker가 켬
         }
 
-        static void AddInteractable(GameObject go, string displayName, float radius, float markerHeight)
+        static void AddInteractable(GameObject go, string displayName, float radius, float markerHeight, bool wiggle = true)
         {
             var interactable = go.AddComponent<Interactable>();
             interactable.displayName = displayName;
             interactable.radius = radius;
             interactable.markerHeight = markerHeight;
+            interactable.wiggleOnInteract = wiggle;
+        }
+
+        // ---------------------------------------------------------------- gathering data
+
+        static T EnsureAsset<T>(string path) where T : ScriptableObject
+        {
+            var asset = AssetDatabase.LoadAssetAtPath<T>(path);
+            if (asset)
+                return asset;
+            asset = ScriptableObject.CreateInstance<T>();
+            AssetDatabase.CreateAsset(asset, path);
+            return asset;
+        }
+
+        static ItemDefinition EnsureItem(string id, string displayName)
+        {
+            string path = $"{ItemDir}/{id}.asset";
+            bool isNew = !AssetDatabase.LoadAssetAtPath<ItemDefinition>(path);
+            var item = EnsureAsset<ItemDefinition>(path);
+            if (isNew)
+            {
+                item.id = id;
+                item.displayName = displayName;
+                EditorUtility.SetDirty(item);
+            }
+            return item;
+        }
+
+        // 떨어진 열매용 줍기 프리팹. 재질은 떨어뜨리는 나무가 자기 열매 재질로 바꿈
+        static Pickup BuildPickupPrefab()
+        {
+            var root = new GameObject("Pickup");
+            Prim(PrimitiveType.Sphere, "Ball", root.transform, new Vector3(0f, 0.15f, 0f), Vector3.one * 0.3f, Mat("Apple", "#F0645A", rim: 0.3f));
+            AddInteractable(root, "열매", radius: 0.2f, markerHeight: 0.7f, wiggle: false);
+            root.AddComponent<Pickup>();
+            var prefab = PrefabUtility.SaveAsPrefabAsset(root, PrefabDir + "/Pickup.prefab");
+            Object.DestroyImmediate(root);
+            return prefab.GetComponent<Pickup>();
         }
 
         static Camera BuildCamera(Transform target)

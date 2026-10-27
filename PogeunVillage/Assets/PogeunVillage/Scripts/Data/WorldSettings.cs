@@ -63,5 +63,11 @@ namespace PogeunVillage
         [Tooltip("임시 반응: 상호작용하면 대상이 이 각도(도)로 이 시간(초) 동안 흔들립니다. 1-3 이후 실제 동작으로 교체")]
         public float interactWiggleAngle = 6f;
         public float interactWiggleTime = 0.3f;
+
+        [Header("채집 연출")]
+        [Tooltip("흔든 나무에서 열매가 떨어지는 거리(나무 중심에서, m)")]
+        public float fruitDropRadius = 1.1f;
+        [Tooltip("열매가 땅까지 떨어지는 시간(초)")]
+        public float fruitFallTime = 0.35f;
     }
 }

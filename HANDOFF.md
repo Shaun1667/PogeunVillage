@@ -67,4 +67,4 @@
 | 다 자란 나무 | 옮길 수 없음 | GDD 10번 |
 
 ## 6. 다음 작업
-TASKS.md **1-3 채집**부터 (Phase 1). 테스트는 메뉴 `Pogeun Village > Run EditMode Tests`로 실행.
+TASKS.md **1-4 인벤토리**부터 (Phase 1). 테스트는 메뉴 `Pogeun Village > Run EditMode Tests`로 실행.

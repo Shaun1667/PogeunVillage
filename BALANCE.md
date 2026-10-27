@@ -126,6 +126,9 @@
 | `fruitPerDay` | 3 | 열매 나무에 매일 아침 열림 |
 | `fruitMaxOnTree` | 3 | 나무에 달릴 수 있는 최대 개수 (아침마다 3개로 채워짐) |
 | 흔들기 | 전부 떨어짐 | 달린 열매 최대 3개 |
+| 게임 시작 때 | 3 | `fruitMaxOnTree`만큼 달려 있음 (1-3) |
+
+데이터 위치: `Data/GatheringRules.asset` (`GatheringRules`), 물건 정의 `Data/Items/`(Apple · Peach · Flower). 아침 다시 열림(`FruitTree.Refill`)은 2-1 하루 루프에서 연결. 떨어지는 거리 · 시간은 9번
 
 ### 검산 케이스
 | # | 상황 | 결과 |
@@ -199,7 +202,9 @@
 | `markerBobHeight` / `markerBobSpeed` | 0.12 / 1.5 | 마커 통통 튐 높이(m) · 속도(회/초) |
 | `interactWiggleAngle` / `interactWiggleTime` | 6 / 0.3 | 임시 반응 흔들림 각도(도) · 시간(초) — 1-3 이후 실제 동작으로 교체 |
 
-대상 크기(`Interactable.radius`, 로컬 m) · 마커 높이: 나무 0.4 · 3.7(침엽수 4) / 게시판 1 · 2 / 우체통 0.3 · 1.5 — 맵 생성 메뉴에서 지정
+| `fruitDropRadius` / `fruitFallTime` | 1.1 / 0.35 | 흔든 나무에서 열매가 떨어지는 거리(나무 중심에서, m) · 시간(초) (1-3) |
+
+대상 크기(`Interactable.radius`, 로컬 m) · 마커 높이: 나무 0.4 · 3.7(침엽수 4) / 게시판 1 · 2 / 우체통 0.3 · 1.5 / 떨어진 열매 0.2 · 0.7 / 꽃 0.15 · 0.75 — 맵 생성 메뉴에서 지정
 
 ### 검산 케이스
 | # | 상황 | 결과 |

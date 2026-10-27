@@ -36,7 +36,7 @@ namespace PogeunVillage
             bool pressed = (Keyboard.current?.fKey.wasPressedThisFrame ?? false)
                            || (Gamepad.current?.buttonSouth.wasPressedThisFrame ?? false);
             if (pressed && Target)
-                Target.Interact(settings);
+                Target.Interact(this);
         }
 
         Interactable FindTarget()
@@ -58,7 +58,8 @@ namespace PogeunVillage
 
         void SetTarget(Interactable target)
         {
-            if (Target == target)
+            // 주워져 파괴된 대상은 Unity 비교로 null과 같아 보이므로 참조로 비교해 꼭 알림
+            if (ReferenceEquals(Target, target))
                 return;
             Target = target;
             TargetChanged?.Invoke(target);

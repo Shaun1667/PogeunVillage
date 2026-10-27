@@ -38,3 +38,5 @@ MonoBehaviour:
   markerBobSpeed: 1.5
   interactWiggleAngle: 6
   interactWiggleTime: 0.3
+  fruitDropRadius: 1.1
+  fruitFallTime: 0.35
