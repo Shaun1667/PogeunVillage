@@ -65,7 +65,7 @@ namespace PogeunVillage.EditorTools
         static ItemDefinition appleItem, peachItem, flowerItem;
         static Pickup pickupPrefab;
         static ToolDefinition[] tools;
-        static ItemDefinition woodItem;
+        static ItemDefinition woodItem, flowerClumpItem, saplingItem;
         static GameObject stumpPrefab;
         static readonly List<(Vector2 a, Vector2 b)> Paths = new();
         static readonly List<Vector3> Occupied = new(); // x, z, radius
@@ -105,6 +105,8 @@ namespace PogeunVillage.EditorTools
             flowerItem = EnsureItem("Flower", "꽃");
             pickupPrefab = BuildPickupPrefab();
             woodItem = EnsureItem("Wood", "목재");
+            flowerClumpItem = EnsureItem("FlowerClump", "꽃 포기", GroundObjectKind.Flower);
+            saplingItem = EnsureItem("Sapling", "묘목", GroundObjectKind.Sapling);
             stumpPrefab = BuildStumpPrefab();
             EnsureFolder(ToolDir);
             tools = new[]
@@ -143,6 +145,7 @@ namespace PogeunVillage.EditorTools
 
             var player = BuildPlayer();
             BuildGroundCursor(player.GetComponent<PlayerTools>(), ground);
+            BuildShovel(player, ground);
             var cam = BuildCamera(player.transform);
             player.GetComponent<PlayerController>().cameraTransform = cam.transform;
 
@@ -448,7 +451,10 @@ namespace PogeunVillage.EditorTools
             var toolBox = Prim(PrimitiveType.Cube, "ToolBox", parent, OnGround(PlazaCenter.x - 4f, PlazaCenter.y - 3f, 0.3f), new Vector3(1f, 0.6f, 0.7f), Mat("ToolBox", "#E07A5F"), collider: true);
             toolBox.transform.localRotation = Quaternion.Euler(0f, 30f, 0f);
             AddInteractable(toolBox, "도구 상자", InteractableKind.ToolBox, radius: 0.5f, markerHeight: 1.5f); // 높이 배율 0.6 → 상자 중심 위 0.9m
-            toolBox.AddComponent<ToolBox>().tools = tools;
+            var toolBoxGiver = toolBox.AddComponent<ToolBox>();
+            toolBoxGiver.tools = tools;
+            toolBoxGiver.sapling = saplingItem;
+            toolBoxGiver.saplingCount = 3;
         }
 
         static void BuildHouse(Transform parent, HouseInfo info)
@@ -863,7 +869,69 @@ namespace PogeunVillage.EditorTools
             var ground = new GameObject("GroundGrid").AddComponent<VillageGround>();
             ground.transform.SetParent(world, false);
             ground.data = data;
+            var placer = ground.gameObject.AddComponent<GroundPlacer>();
+            placer.holePrefab = BuildHolePrefab();
+            placer.saplingPrefab = BuildSaplingPrefab();
+            placer.flowerPrefab = BuildPlantedFlowerPrefab();
             return ground;
+        }
+
+        // 삽 동작 · 구멍에 빠지기 (1-8)
+        static void BuildShovel(GameObject player, VillageGround ground)
+        {
+            var shovel = player.AddComponent<ShovelUser>();
+            shovel.settings = settings;
+            shovel.ground = ground;
+            shovel.interactor = player.GetComponent<PlayerInteractor>();
+            shovel.inventory = player.GetComponent<PlayerInventory>();
+            shovel.flowerClumpItem = flowerClumpItem;
+
+            var fall = player.AddComponent<PlayerHoleFall>();
+            fall.settings = settings;
+            fall.ground = ground;
+            fall.controller = player.GetComponent<PlayerController>();
+        }
+
+        static GameObject SavePrefab(GameObject root, string name)
+        {
+            var prefab = PrefabUtility.SaveAsPrefabAsset(root, $"{PrefabDir}/{name}.prefab");
+            Object.DestroyImmediate(root);
+            return prefab;
+        }
+
+        // 삽으로 판 구멍: F로 심기
+        static GameObject BuildHolePrefab()
+        {
+            var root = new GameObject("Hole");
+            Prim(PrimitiveType.Cylinder, "Pit", root.transform, new Vector3(0f, 0.015f, 0f), new Vector3(0.75f, 0.01f, 0.75f), Mat("HolePit", "#5B4430", rim: 0f), castShadows: false);
+            Prim(PrimitiveType.Cylinder, "Rim", root.transform, new Vector3(0f, 0.01f, 0f), new Vector3(0.9f, 0.01f, 0.9f), Mat("HoleRim", "#9C7A55", rim: 0f), castShadows: false);
+            AddInteractable(root, "구멍", InteractableKind.Hole, radius: 0.35f, markerHeight: 0.6f, wiggle: false);
+            root.AddComponent<GridObject>().kind = GroundObjectKind.Hole;
+            root.AddComponent<HolePlanter>().plantables = new[] { saplingItem, flowerClumpItem };
+            return SavePrefab(root, "Hole");
+        }
+
+        // 심은 묘목(성장은 1-9)
+        static GameObject BuildSaplingPrefab()
+        {
+            var root = new GameObject("Sapling");
+            Prim(PrimitiveType.Cylinder, "Stem", root.transform, new Vector3(0f, 0.25f, 0f), new Vector3(0.06f, 0.25f, 0.06f), Mat("Trunk", "#A57A52"), castShadows: false);
+            Prim(PrimitiveType.Sphere, "Leaf", root.transform, new Vector3(0f, 0.55f, 0f), new Vector3(0.3f, 0.22f, 0.3f), Mat("Leaves", "#6FC27A"), castShadows: false);
+            root.AddComponent<GridObject>().kind = GroundObjectKind.Sapling;
+            return SavePrefab(root, "Sapling");
+        }
+
+        // 꽃 포기를 심어 난 꽃(꺾을 수 있음)
+        static GameObject BuildPlantedFlowerPrefab()
+        {
+            var root = new GameObject("Flower");
+            Prim(PrimitiveType.Cylinder, "Stem", root.transform, new Vector3(0f, 0.15f, 0f), new Vector3(0.05f, 0.15f, 0.05f), Mat("Stem", "#5BAA5E"), castShadows: false);
+            Prim(PrimitiveType.Sphere, "Petals", root.transform, new Vector3(0f, 0.33f, 0f), new Vector3(0.32f, 0.14f, 0.32f), Mat("Flower_0", "#FF9EC4", rim: 0.25f), castShadows: false);
+            Prim(PrimitiveType.Sphere, "Center", root.transform, new Vector3(0f, 0.4f, 0f), Vector3.one * 0.1f, Mat("FlowerCenter", "#FFD34D"), castShadows: false);
+            AddInteractable(root, "꽃", InteractableKind.Flower, radius: 0.15f, markerHeight: 0.75f, wiggle: false);
+            root.AddComponent<Pickup>().item = flowerItem;
+            root.AddComponent<GridObject>().kind = GroundObjectKind.Flower;
+            return SavePrefab(root, "PlantedFlower");
         }
 
         static void BuildGroundCursor(PlayerTools playerTools, VillageGround ground)
@@ -898,7 +966,7 @@ namespace PogeunVillage.EditorTools
             return asset;
         }
 
-        static ItemDefinition EnsureItem(string id, string displayName)
+        static ItemDefinition EnsureItem(string id, string displayName, GroundObjectKind plantsAs = GroundObjectKind.None)
         {
             string path = $"{ItemDir}/{id}.asset";
             bool isNew = !AssetDatabase.LoadAssetAtPath<ItemDefinition>(path);
@@ -907,6 +975,7 @@ namespace PogeunVillage.EditorTools
             {
                 item.id = id;
                 item.displayName = displayName;
+                item.plantsAs = plantsAs;
                 EditorUtility.SetDirty(item);
             }
             return item;

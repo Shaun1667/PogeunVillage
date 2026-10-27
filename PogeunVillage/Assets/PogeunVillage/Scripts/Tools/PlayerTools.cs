@@ -8,8 +8,8 @@ namespace PogeunVillage
     /// <summary>
     /// 도구 들기 · 바꾸기 · 휘두르기 · 내구도. 결정 (2026-10-27):
     /// 숫자 1~5로 들기(같은 키 = 내려놓기), Space로 휘두르기. 패드는 십자키 좌우로 바꾸고 X로 휘두르기.
-    /// 휘둘렀을 때 앞의 상호작용 대상(PlayerInteractor.Target)이 도구의 hitKinds면 '맞음' → 내구도 -1, 0이면 부서짐.
-    /// 실제 효과(벌목 · 구멍 · 물 주기 …)는 각 기능이 ToolUsed를 구독해 붙입니다.
+    /// 휘둘렀을 때 앞의 상호작용 대상(PlayerInteractor.Target)이 도구의 hitKinds면 '맞음' → 대상에 HitByTool, 내구도 -1, 0이면 부서짐.
+    /// 칸을 다루는 도구(usesGroundCell: 삽 · 물뿌리개)는 대신 플레이어의 IToolAction들에 묻고, 무언가를 했으면 '맞음'.
     /// </summary>
     public class PlayerTools : MonoBehaviour
     {
@@ -34,6 +34,7 @@ namespace PogeunVillage
 
         string[] toolIds;
         Quaternion pivotRest;
+        IToolAction[] actions;
 
         void Awake()
         {
@@ -44,6 +45,7 @@ namespace PogeunVillage
                 return;
             }
             toolIds = Array.ConvertAll(tools, t => t.id);
+            actions = GetComponents<IToolAction>();
             if (swingPivot)
                 pivotRest = swingPivot.localRotation;
             ShowHeld();
@@ -134,11 +136,24 @@ namespace PogeunVillage
             float half = settings.toolSwingTime * 0.5f;
             yield return RotatePivot(0f, 1f, half);
 
-            Interactable target = interactor.Target;
-            bool hit = target && Array.IndexOf(tool.hitKinds, target.kind) >= 0;
-            Debug.Log(hit ? $"[도구] {tool.displayName} → {target.displayName}" : $"[도구] {tool.displayName} 허공", this);
+            bool hit;
+            Interactable target = null;
+            if (tool.usesGroundCell)
+            {
+                // 칸을 다루는 도구: 동작 중 하나라도 무언가를 했으면 맞음
+                hit = false;
+                foreach (var action in actions)
+                    if (action.TryUse(this, tool)) { hit = true; break; }
+                if (!hit) Debug.Log($"[도구] {tool.displayName} 허공", this);
+            }
+            else
+            {
+                target = interactor.Target;
+                hit = target && Array.IndexOf(tool.hitKinds, target.kind) >= 0;
+                Debug.Log(hit ? $"[도구] {tool.displayName} → {target.displayName}" : $"[도구] {tool.displayName} 허공", this);
+            }
             ToolUsed?.Invoke(tool, hit ? target : null);
-            if (hit)
+            if (hit && target)
                 target.ReceiveToolHit(this, tool);
             bool stillHeld = inventory.Inventory.Slots[slot].itemId == tool.id;
             if (hit && stillHeld && inventory.Inventory.UseDurability(slot))

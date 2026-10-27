@@ -76,6 +76,14 @@ namespace PogeunVillage
         [Tooltip("휘두를 때 도구가 앞으로 꺾이는 각도(도)")]
         public float toolSwingAngle = 70f;
 
+        [Header("구멍")]
+        [Tooltip("구멍 칸 가운데에서 이 거리(m) 안으로 들어가면 빠짐")]
+        public float holeFallRadius = 0.3f;
+        [Tooltip("빠지면 움직일 수 없는 시간(초)")]
+        public float holeStuckTime = 1.5f;
+        [Tooltip("빠졌을 때 몸이 내려가는 깊이(m)")]
+        public float holeSinkDepth = 0.45f;
+
         [Header("땅 칸 표시")]
         [Tooltip("플레이어 중심에서 이 거리(m) 앞의 점이 든 칸을 '앞 칸'으로 봅니다.")]
         public float groundCursorReach = 0.9f;

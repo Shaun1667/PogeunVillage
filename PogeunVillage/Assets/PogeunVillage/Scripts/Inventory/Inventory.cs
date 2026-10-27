@@ -128,6 +128,16 @@ namespace PogeunVillage
             return broken;
         }
 
+        /// <summary>그 칸에서 하나 뺌(마지막 하나면 칸이 빔).</summary>
+        public void RemoveOne(int index)
+        {
+            var slot = slots[index];
+            if (slot.IsEmpty)
+                throw new InvalidOperationException($"{index}번 칸이 비어 있습니다.");
+            slots[index] = slot.count == 1 ? default : new InventorySlot(slot.itemId, slot.count - 1, slot.durability);
+            SlotChanged?.Invoke(index);
+        }
+
         int Put(int index, string itemId, int maxStack, int amount)
         {
             int added = Math.Min(maxStack - slots[index].count, amount);

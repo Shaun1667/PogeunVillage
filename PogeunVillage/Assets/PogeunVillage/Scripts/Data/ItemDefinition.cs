@@ -13,5 +13,7 @@ namespace PogeunVillage
         public string displayName;
         [Tooltip("인벤토리 한 칸에 겹칠 수 있는 최대 개수 (BALANCE.md 10번)")]
         [Min(1)] public int maxStack = 10;
+        [Tooltip("구멍에 심으면 무엇이 되는지(꽃 포기 → 꽃, 묘목 → 묘목). None이면 심을 수 없음")]
+        public GroundObjectKind plantsAs;
     }
 }

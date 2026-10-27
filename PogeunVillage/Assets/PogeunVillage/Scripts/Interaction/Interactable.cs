@@ -17,6 +17,7 @@ namespace PogeunVillage
         ToolBox,
         ForestTree,  // 맵 가장자리 숲: 흔들 수는 있지만 벨 수 없음
         Stump,
+        Hole,
     }
 
     /// <summary>

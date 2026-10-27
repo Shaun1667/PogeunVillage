@@ -62,9 +62,9 @@
 | ~~도끼 열매~~ (확정 2026-10-27) | 베어지는 순간(5번째)에만 떨어짐 | GDD 4-7 |
 | 묘목 가속 | 물 준 날은 그날 하루 더 성장(하루 +2) → 매일 물이면 3일 | GDD 4-8 · BALANCE 8 |
 | 꽃 번식 칸 | 상하좌우 빈 칸 중 무작위 1칸 | GDD 4-8 |
-| 구멍 사라짐 | 주민이 빠졌다 나올 때만(플레이어는 아님) | GDD 4-8-1 |
+| ~~구멍 사라짐~~ (확정 2026-10-27) | 주민이 빠졌다 나올 때만(플레이어는 아님) | GDD 4-8-1 |
 | 구멍 -2 | 하루 상한 · 괴롭히기 연속과 별개, 하한 -20 적용 | GDD 10번 |
 | 다 자란 나무 | 옮길 수 없음 | GDD 10번 |
 
 ## 6. 다음 작업
-TASKS.md **1-8 삽**부터 (Phase 1). 테스트는 메뉴 `Pogeun Village > Run EditMode Tests` · `Run PlayMode Tests`로 실행(결과: `Temp/PogeunVillageTestResults_{EditMode|PlayMode}.txt`). PlayMode는 플레이 모드에 들어갔다 나오므로 씬에 저장 안 한 변경이 있으면 먼저 저장.
+TASKS.md **1-9 물뿌리개 · 묘목 · 꽃**부터 (Phase 1). 테스트는 메뉴 `Pogeun Village > Run EditMode Tests` · `Run PlayMode Tests`로 실행(결과: `Temp/PogeunVillageTestResults_{EditMode|PlayMode}.txt`). PlayMode는 플레이 모드에 들어갔다 나오므로 씬에 저장 안 한 변경이 있으면 먼저 저장.

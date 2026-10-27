@@ -10,6 +10,9 @@ namespace PogeunVillage
     public class ToolBox : MonoBehaviour
     {
         public ToolDefinition[] tools = new ToolDefinition[5];
+        [Tooltip("임시: 묘목도 함께 줌(결정 2026-10-27, 1-8). 2-2 상점이 생기면 상자와 함께 없앰")]
+        public ItemDefinition sapling;
+        public int saplingCount = 3;
 
         Interactable interactable;
 
@@ -27,7 +30,9 @@ namespace PogeunVillage
             }
             foreach (var tool in tools)
                 if (tool && !inventory.TryAddTool(tool))
-                    break;
+                    return;
+            if (sapling && saplingCount > 0)
+                inventory.TryAdd(sapling, saplingCount);
         }
     }
 }
