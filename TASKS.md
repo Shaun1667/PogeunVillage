@@ -39,8 +39,11 @@
   - 유지: `Settings/SampleSceneProfile.asset` — 이름과 달리 `PC_RPAsset` · `Mobile_RPAsset`의 기본 볼륨 프로파일이라 지우면 렌더링이 바뀜. `InputSystem_Actions.inputactions` — Input System 프로젝트 설정이 참조
   - 테스트: 추가 없음 — 전체 1개 통과
   - 참고: MCP 명령으로 `AssetDatabase.DeleteAsset`이 "사용자 상호작용 필요"로 막혀 `git rm`으로 지우고 에디터에서 새로고침함. `ProjectSettings.asset`의 `templateDefaultScene`은 지운 SampleScene 경로를 가리키지만 템플릿 제작용 값이라 그대로 둠
-- [ ] **0-5. 데이터 에셋 자리** — 진행 전
-  - `Data/` 폴더와 첫 설정 에셋(예: `WorldSettings` — 휨 반경, 물 높이, 플레이어 속도, 카메라)
+- [x] **0-5. 데이터 에셋 자리** (2026-10-27) — 플레이 확인 대기
+  - 구현: `Scripts/Data/WorldSettings.cs`(ScriptableObject — 휨 반경 · 컬링 배율 · 물 높이 · 플레이어 이동 · 카메라), 에셋 `Data/WorldSettings.asset`(맵 프로토타입 값 그대로), 생성 메뉴 `Create > Pogeun Village > World Settings`
+  - 수치: BALANCE.md 9번
+  - 테스트 2개(`WorldSettingsTests` — 에셋 존재, 걷기 ≤ 달리기 · 기본 거리가 줌 범위 안) — 전체 3개 통과
+  - 참고: 컴포넌트(`CurvedWorld` · `PlayerController` · `CameraFollow`)와 맵 생성 메뉴는 아직 자기 필드 값을 씀 → 1-1에서 이 에셋을 읽도록 바꿈. 걷기 통통 튐(bob) 같은 연출 값은 넣지 않음
 
 ## Phase 1. 핵심 조작 그레이박스 (기본 도형)
 - [ ] **1-1. 이동 · 카메라 정리** — 프로토타입 코드를 데이터 에셋 기반으로, 나무 가림 처리
