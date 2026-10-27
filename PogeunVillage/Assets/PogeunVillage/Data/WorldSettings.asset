@@ -26,3 +26,8 @@ MonoBehaviour:
   cameraZoomSpeed: 0.01
   cameraRotateSpeed: 90
   cameraSmoothTime: 0.15
+  occlusionTargetHeight: 0.7
+  occlusionRadius: 1.2
+  occlusionMargin: 2
+  occlusionSoftness: 0.4
+  occlusionStrength: 0.75

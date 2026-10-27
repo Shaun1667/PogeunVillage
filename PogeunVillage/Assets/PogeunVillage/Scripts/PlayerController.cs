@@ -5,19 +5,12 @@ namespace PogeunVillage
 {
     /// <summary>
     /// 프로토타입용 플레이어 이동. WASD/방향키/왼쪽 스틱으로 이동, Shift/A버튼으로 달리기.
-    /// 물(waterLevel 아래)로는 들어가지 않습니다.
+    /// 물(waterLevel 아래)로는 들어가지 않습니다. 수치는 WorldSettings.
     /// </summary>
     [RequireComponent(typeof(CharacterController))]
     public class PlayerController : MonoBehaviour
     {
-        public float walkSpeed = 4f;
-        public float runSpeed = 7f;
-        public float turnSpeed = 720f;
-        public float gravity = 20f;
-
-        [Tooltip("이 높이보다 낮은 지면(강/바다)으로는 이동하지 않습니다.")]
-        public float waterLevel = -0.3f;
-
+        public WorldSettings settings;
         public Transform cameraTransform;
 
         [Tooltip("걸을 때 통통 튀는 연출을 줄 외형 오브젝트")]
@@ -33,6 +26,12 @@ namespace PogeunVillage
         void Awake()
         {
             controller = GetComponent<CharacterController>();
+            if (!settings)
+            {
+                Debug.LogError($"{name}: WorldSettings가 연결되지 않았습니다.", this);
+                enabled = false;
+                return;
+            }
             if (!cameraTransform && Camera.main)
                 cameraTransform = Camera.main.transform;
             if (visual)
@@ -55,12 +54,12 @@ namespace PogeunVillage
                 Vector3 desired = Vector3.ClampMagnitude(forward * input.y + right * input.x, 1f);
 
                 Quaternion targetRotation = Quaternion.LookRotation(desired);
-                transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, turnSpeed * Time.deltaTime);
+                transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, settings.turnSpeed * Time.deltaTime);
 
-                move = KeepOutOfWater(desired * (running ? runSpeed : walkSpeed));
+                move = KeepOutOfWater(desired * (running ? settings.runSpeed : settings.walkSpeed));
             }
 
-            verticalVelocity = controller.isGrounded ? -2f : verticalVelocity - gravity * Time.deltaTime;
+            verticalVelocity = controller.isGrounded ? -2f : verticalVelocity - settings.gravity * Time.deltaTime;
             controller.Move((move + Vector3.up * verticalVelocity) * Time.deltaTime);
 
             UpdateBob(move.magnitude);
@@ -104,7 +103,7 @@ namespace PogeunVillage
         {
             Vector3 probe = transform.position + move.normalized * (controller.radius + 0.25f) + Vector3.up * 10f;
             if (Physics.Raycast(probe, Vector3.down, out RaycastHit hit, 30f, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
-                return hit.point.y > waterLevel + 0.05f;
+                return hit.point.y > settings.waterLevel + 0.05f;
             return false;
         }
 
@@ -114,7 +113,7 @@ namespace PogeunVillage
                 return;
 
             if (speed > 0.1f)
-                bobTime += Time.deltaTime * bobFrequency * Mathf.Lerp(0.8f, 1.2f, speed / runSpeed);
+                bobTime += Time.deltaTime * bobFrequency * Mathf.Lerp(0.8f, 1.2f, speed / settings.runSpeed);
             else
                 bobTime = Mathf.MoveTowards(bobTime, Mathf.Round(bobTime / Mathf.PI) * Mathf.PI, Time.deltaTime * 6f);
 

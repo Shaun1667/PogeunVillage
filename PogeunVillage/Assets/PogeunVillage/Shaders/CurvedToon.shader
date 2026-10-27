@@ -116,6 +116,8 @@ Shader "PogeunVillage/CurvedToon"
 
             half4 frag(Varyings input) : SV_Target
             {
+                PV_OcclusionClip(input.positionWS, input.positionCS);
+
                 half4 albedo = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, input.uv) * _BaseColor;
                 albedo.rgb *= lerp(half3(1, 1, 1), input.color.rgb, _UseVertexColor);
 
@@ -213,16 +215,25 @@ Shader "PogeunVillage/CurvedToon"
                 UNITY_VERTEX_INPUT_INSTANCE_ID
             };
 
-            float4 vert(Attributes input) : SV_POSITION
+            struct Varyings
+            {
+                float4 positionCS : SV_POSITION;
+                float3 positionWS : TEXCOORD0;
+            };
+
+            Varyings vert(Attributes input)
             {
                 UNITY_SETUP_INSTANCE_ID(input);
-                float3 positionWS, normalWS;
-                PV_GetBentWorld(input.positionOS.xyz, input.normalOS, positionWS, normalWS);
-                return TransformWorldToHClip(positionWS);
+                Varyings output;
+                float3 normalWS;
+                PV_GetBentWorld(input.positionOS.xyz, input.normalOS, output.positionWS, normalWS);
+                output.positionCS = TransformWorldToHClip(output.positionWS);
+                return output;
             }
 
-            half frag() : SV_Target
+            half frag(Varyings input) : SV_Target
             {
+                PV_OcclusionClip(input.positionWS, input.positionCS);
                 return 0;
             }
             ENDHLSL
@@ -253,20 +264,21 @@ Shader "PogeunVillage/CurvedToon"
             {
                 float4 positionCS : SV_POSITION;
                 float3 normalWS : TEXCOORD0;
+                float3 positionWS : TEXCOORD1;
             };
 
             Varyings vert(Attributes input)
             {
                 UNITY_SETUP_INSTANCE_ID(input);
                 Varyings output;
-                float3 positionWS;
-                PV_GetBentWorld(input.positionOS.xyz, input.normalOS, positionWS, output.normalWS);
-                output.positionCS = TransformWorldToHClip(positionWS);
+                PV_GetBentWorld(input.positionOS.xyz, input.normalOS, output.positionWS, output.normalWS);
+                output.positionCS = TransformWorldToHClip(output.positionWS);
                 return output;
             }
 
             half4 frag(Varyings input) : SV_Target
             {
+                PV_OcclusionClip(input.positionWS, input.positionCS);
                 float3 normalWS = normalize(input.normalWS);
             #if defined(_GBUFFER_NORMALS_OCT)
                 float2 octNormal = PackNormalOctQuadEncode(normalWS);

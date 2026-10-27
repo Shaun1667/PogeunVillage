@@ -19,10 +19,10 @@ namespace PogeunVillage.EditorTools
         const string SettingsDir = Root + "/Settings";
         const string TextureDir = Root + "/Textures";
         const string ScenePath = Root + "/Scenes/VillagePrototype.unity";
+        const string WorldSettingsPath = Root + "/Data/WorldSettings.asset";
 
         const int GroundHalfSize = 90;   // 지면 메시 범위(±m), 1m 격자
         const int WaterHalfSize = 130;   // 물 메시 범위(±m), 2m 격자
-        const float WaterLevel = -0.3f;
 
         static readonly Vector2 PlazaCenter = new(-6f, 2f);
         const float PlazaRadius = 6.5f;
@@ -53,6 +53,7 @@ namespace PogeunVillage.EditorTools
         static readonly float[] BridgeZs = { 4f, -24f };
 
         static Shader toonShader;
+        static WorldSettings settings;
         static readonly List<(Vector2 a, Vector2 b)> Paths = new();
         static readonly List<Vector3> Occupied = new(); // x, z, radius
 
@@ -71,6 +72,13 @@ namespace PogeunVillage.EditorTools
             if (!toonShader)
             {
                 Debug.LogError("PogeunVillage/CurvedToon 셰이더를 찾을 수 없습니다.");
+                return;
+            }
+
+            settings = AssetDatabase.LoadAssetAtPath<WorldSettings>(WorldSettingsPath);
+            if (!settings)
+            {
+                Debug.LogError($"{WorldSettingsPath} 를 찾을 수 없습니다.");
                 return;
             }
 
@@ -103,8 +111,8 @@ namespace PogeunVillage.EditorTools
             player.GetComponent<PlayerController>().cameraTransform = cam.transform;
 
             var curved = new GameObject("CurvedWorld").AddComponent<CurvedWorld>();
+            curved.settings = settings;
             curved.focus = player.transform;
-            curved.radius = 110f;
 
             EditorSceneManager.SaveScene(scene, ScenePath);
             AddSceneToBuildSettings(ScenePath);
@@ -334,7 +342,7 @@ namespace PogeunVillage.EditorTools
             mat.SetFloat("_WaveScale", 0.6f);
 
             var water = MeshObject("Water", parent, mesh, mat);
-            water.transform.localPosition = new Vector3(0f, WaterLevel, 0f);
+            water.transform.localPosition = new Vector3(0f, settings.waterLevel, 0f);
             water.GetComponent<MeshRenderer>().shadowCastingMode = ShadowCastingMode.Off;
         }
 
@@ -645,7 +653,7 @@ namespace PogeunVillage.EditorTools
             Prim(PrimitiveType.Sphere, "Eye_R", visual, new Vector3(0.15f, 1.02f, 0.31f), Vector3.one * 0.08f, Mat("Eye", "#3A3340"));
 
             var pc = player.AddComponent<PlayerController>();
-            pc.waterLevel = WaterLevel;
+            pc.settings = settings;
             pc.visual = visual;
             return player;
         }
@@ -666,10 +674,11 @@ namespace PogeunVillage.EditorTools
             data.antialiasing = AntialiasingMode.SubpixelMorphologicalAntiAliasing;
 
             var follow = go.AddComponent<CameraFollow>();
+            follow.settings = settings;
             follow.target = target;
             go.transform.SetPositionAndRotation(
-                target.position + Vector3.up * 0.8f - Quaternion.Euler(follow.pitch, 0f, 0f) * Vector3.forward * follow.distance,
-                Quaternion.Euler(follow.pitch, 0f, 0f));
+                CameraOrbit.Position(target.position + Vector3.up * settings.cameraHeightOffset, settings.cameraPitch, 0f, settings.cameraDistance),
+                CameraOrbit.Rotation(settings.cameraPitch, 0f));
             return cam;
         }
 

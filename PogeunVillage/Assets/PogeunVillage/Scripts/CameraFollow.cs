@@ -4,28 +4,34 @@ using UnityEngine.InputSystem;
 namespace PogeunVillage
 {
     /// <summary>
-    /// 동물의숲 스타일 탑다운 추적 카메라. 마우스 휠로 줌, Q/E로 회전.
+    /// 동물의숲 스타일 탑다운 추적 카메라. 마우스 휠로 줌, Q/E로 회전. 수치는 WorldSettings.
     /// </summary>
     public class CameraFollow : MonoBehaviour
     {
+        public WorldSettings settings;
         public Transform target;
-        public float heightOffset = 0.8f;
 
-        [Range(10f, 80f)] public float pitch = 32f;
-        public float yaw;
-        public float distance = 16f;
-        public Vector2 distanceRange = new(9f, 24f);
-        public float zoomSpeed = 0.01f;
-        public float rotateSpeed = 90f;
-        public float smoothTime = 0.15f;
-
+        // 플레이 중에 바뀌는 상태(에셋에는 쓰지 않음)
+        float yaw;
+        float distance;
         Vector3 focusPoint;
         Vector3 focusVelocity;
+
+        void Awake()
+        {
+            if (!settings)
+            {
+                Debug.LogError($"{name}: WorldSettings가 연결되지 않았습니다.", this);
+                enabled = false;
+                return;
+            }
+            distance = settings.cameraDistance;
+        }
 
         void Start()
         {
             if (target)
-                focusPoint = target.position + Vector3.up * heightOffset;
+                focusPoint = FocusTarget();
             Apply();
         }
 
@@ -36,23 +42,26 @@ namespace PogeunVillage
 
             var mouse = Mouse.current;
             if (mouse != null)
-                distance = Mathf.Clamp(distance - mouse.scroll.ReadValue().y * zoomSpeed, distanceRange.x, distanceRange.y);
+                distance = CameraOrbit.Zoom(distance, mouse.scroll.ReadValue().y, settings.cameraZoomSpeed, settings.cameraDistanceRange);
 
             var keyboard = Keyboard.current;
             if (keyboard != null)
             {
-                if (keyboard.qKey.isPressed) yaw += rotateSpeed * Time.deltaTime;
-                if (keyboard.eKey.isPressed) yaw -= rotateSpeed * Time.deltaTime;
+                if (keyboard.qKey.isPressed) yaw += settings.cameraRotateSpeed * Time.deltaTime;
+                if (keyboard.eKey.isPressed) yaw -= settings.cameraRotateSpeed * Time.deltaTime;
             }
 
-            focusPoint = Vector3.SmoothDamp(focusPoint, target.position + Vector3.up * heightOffset, ref focusVelocity, smoothTime);
+            focusPoint = Vector3.SmoothDamp(focusPoint, FocusTarget(), ref focusVelocity, settings.cameraSmoothTime);
             Apply();
         }
 
+        Vector3 FocusTarget() => target.position + Vector3.up * settings.cameraHeightOffset;
+
         void Apply()
         {
-            Quaternion rotation = Quaternion.Euler(pitch, yaw, 0f);
-            transform.SetPositionAndRotation(focusPoint - rotation * Vector3.forward * distance, rotation);
+            transform.SetPositionAndRotation(
+                CameraOrbit.Position(focusPoint, settings.cameraPitch, yaw, distance),
+                CameraOrbit.Rotation(settings.cameraPitch, yaw));
         }
     }
 }

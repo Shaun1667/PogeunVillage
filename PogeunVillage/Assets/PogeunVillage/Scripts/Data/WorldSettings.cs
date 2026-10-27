@@ -37,5 +37,17 @@ namespace PogeunVillage
         [Tooltip("Q/E 회전 속도(도/초)")]
         public float cameraRotateSpeed = 90f;
         public float cameraSmoothTime = 0.15f;
+
+        [Header("가림 반투명 (카메라와 플레이어 사이 물체)")]
+        [Tooltip("플레이어 발에서 이 높이의 점과 카메라를 잇는 선을 기준으로 판정합니다.")]
+        public float occlusionTargetHeight = 0.7f;
+        [Tooltip("선에서 이 거리(m) 안에 있는 물체가 비쳐 보입니다.")]
+        public float occlusionRadius = 1.2f;
+        [Tooltip("플레이어에서 이 거리(m) 안쪽 물체(발밑 지면 등)는 비치지 않습니다.")]
+        public float occlusionMargin = 2f;
+        [Tooltip("반투명 경계를 부드럽게 넘기는 폭(m)")]
+        public float occlusionSoftness = 0.4f;
+        [Tooltip("가장 많이 비칠 때 빠지는 픽셀 비율(0~1)")]
+        [Range(0f, 1f)] public float occlusionStrength = 0.75f;
     }
 }

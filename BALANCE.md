@@ -171,7 +171,7 @@
 | 8-9 | 같은 시드로 같은 행동 | 같은 꽃이 같은 날 시듦 (결정론) |
 
 ## 9. 월드 · 조작 (2026-10-27, 맵 프로토타입 값 그대로)
-데이터 위치: `Data/WorldSettings.asset` (`WorldSettings`). 컴포넌트가 이 에셋을 읽도록 바꾸는 것은 TASKS 1-1.
+데이터 위치: `Data/WorldSettings.asset` (`WorldSettings`). `CurvedWorld` · `PlayerController` · `CameraFollow`와 맵 생성 메뉴가 읽는다(1-1).
 
 | 키 | 값 | 설명 |
 |---|---|---|
@@ -188,8 +188,15 @@
 | `cameraZoomSpeed` | 0.01 | 휠 한 칸당 거리 변화 배율 |
 | `cameraRotateSpeed` | 90 | Q/E 회전 속도(도/초) |
 | `cameraSmoothTime` | 0.15 | 카메라 따라가기 부드러움(초) |
+| `occlusionTargetHeight` | 0.7 | 가림 판정선의 플레이어 쪽 끝 높이(발 기준, m) (1-1) |
+| `occlusionRadius` | 1.2 | 판정선에서 이 거리 안의 물체가 비침(m) |
+| `occlusionMargin` | 2 | 플레이어에서 이 거리 안쪽은 비치지 않음(발밑 지면 보호, m) |
+| `occlusionSoftness` | 0.4 | 반투명 경계 폭(m) |
+| `occlusionStrength` | 0.75 | 가장 많이 비칠 때 빠지는 픽셀 비율 |
 
 ### 검산 케이스
 | # | 상황 | 결과 |
 |---|---|---|
 | 9-1 | 기본값 | 걷기 ≤ 달리기, 카메라 기본 거리 16이 줌 범위 9 ~ 24 안 |
+| 9-2 | 거리 16에서 휠 +100 (배율 0.01) | 거리 15 |
+| 9-3 | 거리 10에서 휠을 크게 올림 / 20에서 크게 내림 | 9 / 24 (줌 범위에서 멈춤) |
