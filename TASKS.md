@@ -31,6 +31,8 @@
 - [x] **0-3. 어셈블리 · 테스트 기반** (2026-10-27) — 플레이 확인 대기
   - 구현: 런타임 asmdef `Scripts/PogeunVillage.asmdef`(참조: Input System, URP Core/Universal Runtime), 에디터 asmdef `Scripts/Editor/PogeunVillage.Editor.asmdef`(Editor 전용, + Test Runner), EditMode 테스트 asmdef `Tests/EditMode/PogeunVillage.Tests.asmdef`(Editor 전용, `UNITY_INCLUDE_TESTS`, nunit)
   - 구현: 에디터 메뉴 `Pogeun Village/Run EditMode Tests`(`Scripts/Editor/EditModeTestRunner.cs`) — EditMode 테스트 전체 실행, 요약은 콘솔(실패 시 에러), 테스트별 결과는 `Temp/PogeunVillageTestResults.txt`. 이유: MCP 명령 스크립트에서 Test Runner 결과를 받을 수 없어(System.Reflection 금지), 매 작업 자동 검증에 쓰려고
+    → 이후 변경 (2026-10-27): `TestRunMenu.cs`로 이름 변경, 메뉴 `Pogeun Village/Run PlayMode Tests` 추가, 결과 파일은 `Temp/PogeunVillageTestResults_{EditMode|PlayMode}.txt`(테스트별 한 줄 + 마지막 줄 요약). 콜백은 `InitializeOnLoad`로 상시 등록(PlayMode의 도메인 리로드 대응), Test Runner 창에서 돌려도 같은 파일에 남음
+  - 이후 추가 (2026-10-27): **PlayMode 테스트** `Tests/PlayMode/PogeunVillage.PlayModeTests.asmdef`(+ `Unity.InputSystem.TestFramework`). `VillageSceneTest`(InputTestFixture 바탕: VillagePrototype 씬을 열고 가상 키보드 · 마우스 · 패드 추가, 순간이동 · 대기 도우미). 이유: 사용자 요청으로 플레이 확인을 같이 진행 — MCP로 키 이벤트를 큐에 넣는 방식은 에디터가 뒤에 있으면 입력이 버려지고(게임 뷰 포커스) Run In Background가 꺼져 있어 프레임도 멈춰서 믿을 수 없었음. Test Runner는 테스트 동안 백그라운드 실행을 켜 줌
   - 테스트 1개(`AssemblySetupTests` — 테스트 어셈블리가 런타임 어셈블리를 참조) — 전체 1개 통과
   - 참고: 콘솔 경고 3개는 Unity MCP 패키지(`ExecutableIdentityCollector`)가 Claude 실행 파일 서명을 못 읽어 내는 것 — 프로젝트 코드와 무관
 - [x] **0-4. 템플릿 정리** (2026-10-27) — 플레이 확인 대기
@@ -54,6 +56,7 @@
   - 수치: BALANCE.md 9번(가림 반투명 5개 추가)
   - 테스트 4개(`CameraOrbitTests` — 줌, 줌 범위, 거리 · 바라보는 방향, 좌우 회전) — 전체 7개 통과
   - 확인: 플레이어를 나무 뒤에 두고 게임 카메라로 렌더 → 나무의 플레이어 앞 부분만 비침, 지면 · 그림자 · 다른 나무 그대로
+  - 플레이 테스트 (2026-10-27): PlayMode `MovementCameraTests` 11개 통과 — 걷기 · 달리기 속도(±15%), 카메라 기준 이동 · 이동 방향 바라보기, 놓으면 멈춤, 강 쪽으로 3초 걸어도 물 높이 아래 땅을 밟지 않음, 카메라 시작 자세(거리 16 · 각 32°), 휠 줌 1칸 · 최소 9 · 최대 24, Q/E 회전 속도 · 방향, 1초 뒤 따라옴, 게임 카메라에 휨 · 가림 전역값
   - 참고: 걷기 통통 튐(bob) 값은 아직 `PlayerController` 필드(연출 값). 맵 재생성 때 재질 · 메시 · 볼륨 프로파일은 줄바꿈 · 순서만 바뀌어 되돌림. Varco3D 모델용 셰이더를 따로 만들면 `PV_OcclusionClip`도 호출해야 같은 가림 처리가 됨
 - [x] **1-2. 상호작용** (2026-10-27) — 플레이 확인 대기
   - 결정 (2026-10-27): 상호작용 키 = 키보드 F · 패드 A, 패드 달리기는 A → B로 옮김. 이유: 동물의숲과 같은 배치, Q/E(카메라)와 겹치지 않음
@@ -65,6 +68,8 @@
   - 수치: BALANCE.md 9번(상호작용 7개 추가)
   - 테스트 11개(`InteractionTargetingTests`) — 전체 18개 통과
   - 확인: 플레이 모드에서 게시판 앞 1.6m에 서서 바라봄 → 대상 "게시판", 마커가 게시판 위에 켜짐, 상호작용 시 게시판 흔들림. 에디터가 뒤에 있으면 플레이 모드 프레임이 멈춰 있어 일시정지 + Step으로 진행시켜 확인함
+  - 플레이 테스트 (2026-10-27): PlayMode `InteractionTests` 6개 통과 — 게시판을 바라보면 대상 · 마커가 게시판 위, 돌아서면 대상 없음 · 마커 꺼짐, F 한 번 = 상호작용 한 번 + 흔들린 뒤 원래 자세, 패드 A 상호작용, 대상 없을 때 F는 아무 일 없음, 패드 B + 스틱 = 달리기 · 패드 A는 걷기
+  - 피드백: 흔들림 테스트가 0°로 실패 → 에디터가 뒤에 있으면 프레임 간격이 길어 0.3초 흔들림 중간을 한 번에 재면 놓침 → 매 프레임 최대 기울기를 기록하도록 테스트 수정(게임 코드 변경 없음)
   - 참고: 콘솔 로그 "[상호작용] 게시판"은 MCP 콘솔 조회에 나타나지 않아 확인하지 못함(플레이 시작 때 콘솔 지우기 설정 영향으로 추정). 대상 후보는 매 프레임 전체 목록(269개)을 훑음 — 대상이 크게 늘면 공간 분할 검토
 - [x] **1-3. 채집** (2026-10-27) — 플레이 확인 대기
   - 결정 (2026-10-19): 열매 나무는 아침마다 3개로 채워짐(2-1 하루 루프에 연결) — BALANCE 6번, 검산 6-1~6-4
@@ -79,6 +84,8 @@
   - 수치: BALANCE.md 6번(데이터 위치 · 시작 개수), 9번(떨어지는 거리 · 시간)
   - 테스트 8개(`FruitTreeTests` — 검산 6-1~6-3 + 흔든 뒤 채움, `PouchTests` 4개) — 전체 26개 통과
   - 확인(플레이 모드, 일시정지 + Step): 사과나무 흔듦 → 열매 3개가 나무에서 1.1m 땅에 떨어지고 나무엔 0개, 다시 흔들면 아무것도 안 떨어짐 → 떨어진 사과를 바라보고 상호작용 → 주머니 사과 1, 마커 꺼짐 → 꽃 꺾기 → 주머니 꽃 1, 꽃 218 → 217
+  - 플레이 테스트 (2026-10-27): PlayMode `GatheringTests` 3개 통과 — F로 열매 나무 흔들기(나무 0개 · 모습 사라짐 · 3개가 1.1m 땅에, 다시 흔들어도 그대로), 떨어진 열매를 바라보고 F → 주머니 1 · 열매 사라짐 · 대상에서 빠짐, 꽃 F → 주머니 꽃 1 · 꽃 1송이 줄어듦
+  - 피드백: 꽃 테스트가 "다른 꽃이 대상"으로 실패 → 꽃은 한 자리에 3~5송이가 0.7m 안에 모여 있어 옆의 더 가까운 꽃이 고름 규칙대로 잡힘(정상) → 테스트를 "대상이 된 꽃을 꺾음"으로 수정. 참고: 모인 꽃 중 원하는 한 송이를 고르려면 몸을 돌려야 함 — 재미 검증 때 불편하면 꽃 간격 · 대상 범위 재검토
   - 참고: 꽃은 색이 5가지지만 물건은 '꽃' 하나(종류 구분은 꽃 기획 때). 확인 중 한 번에 40프레임을 Step했을 때 Unity 내부 경고(JobTempAlloc)가 났음 — 확인 방법 때문이며 게임 코드와 무관. 주머니 내용은 아직 화면에 안 보임(콘솔 로그만, HUD는 2-3)
 - [ ] **1-4. 인벤토리** — 슬롯 수·겹치기 수량은 데이터
 - [ ] **1-5. 도구 장착 · 전환 · 내구도** — 5종 들기·바꾸기, 50번 쓰면 부서짐 (결정 2026-10-19, GDD 4-7, BALANCE 5번)

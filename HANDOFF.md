@@ -67,4 +67,4 @@
 | 다 자란 나무 | 옮길 수 없음 | GDD 10번 |
 
 ## 6. 다음 작업
-TASKS.md **1-4 인벤토리**부터 (Phase 1). 테스트는 메뉴 `Pogeun Village > Run EditMode Tests`로 실행.
+TASKS.md **1-4 인벤토리**부터 (Phase 1). 테스트는 메뉴 `Pogeun Village > Run EditMode Tests` · `Run PlayMode Tests`로 실행(결과: `Temp/PogeunVillageTestResults_{EditMode|PlayMode}.txt`). PlayMode는 플레이 모드에 들어갔다 나오므로 씬에 저장 안 한 변경이 있으면 먼저 저장.

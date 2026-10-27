@@ -49,12 +49,13 @@
 
 ### 2026-10-27
 - 다른 PC 작업 준비: 방법론 가이드(`claude_all_type_genre.md`)를 저장소에 포함, 인수인계 문서 HANDOFF.md 작성(새 PC 세팅 순서 · 외부 도구 · Varco3D 플로우 구조 · 확인 대기 해석)
-- **0-3 어셈블리 · 테스트 기반**: 런타임 · 에디터 · EditMode 테스트 asmdef, 메뉴 `Pogeun Village > Run EditMode Tests`(결과는 콘솔 + `Temp/PogeunVillageTestResults.txt`), 샘플 테스트 1개 통과
+- **0-3 어셈블리 · 테스트 기반**: 런타임 · 에디터 · EditMode 테스트 asmdef, 메뉴 `Pogeun Village > Run EditMode Tests`(결과는 콘솔 + `Temp/PogeunVillageTestResults_EditMode.txt`), 샘플 테스트 1개 통과
 - **0-4 템플릿 정리**: TutorialInfo · Readme · SampleScene 삭제, 빌드 설정은 VillagePrototype 하나만(시작 씬). SampleSceneProfile은 렌더 파이프라인 기본 볼륨이라 유지
 - **0-5 데이터 에셋 자리**: `Data/WorldSettings.asset`(휨 반경 · 물 높이 · 이동 · 카메라, 프로토타입 값 그대로) + BALANCE 9번, 테스트 2개 추가(전체 3개 통과)
 - **1-1 이동 · 카메라 정리**: 휨 · 이동 · 카메라 컴포넌트가 WorldSettings를 읽음, 카메라 계산을 `CameraOrbit`으로 분리, 카메라와 플레이어 사이 물체를 셰이더 디더링으로 반투명(나무 가림 해결), 맵 재생성. 테스트 4개 추가(전체 7개 통과)
 - **1-2 상호작용**: F · 패드 A로 상호작용(패드 달리기는 B로), 앞쪽 ±60° · 1m 안에서 가장 가까운 대상, 머리 위 노란 마커. 나무 · 게시판 · 우체통 269개 등록, 누르면 임시로 흔들림. 테스트 11개 추가(전체 18개 통과)
 - **1-3 채집**: 사과 · 복숭아 나무 58그루를 흔들면 열매 3개가 땅에 떨어지고 상호작용 키로 하나씩 줍기, 꽃 218송이는 손으로 꺾기(사라짐). 주운 물건은 임시 주머니(개수만, 콘솔 표시). 꽃 규칙 문서 불일치(매일 재생 vs 번식)를 번식 기준으로 정리. 테스트 8개 추가(전체 26개 통과)
+- **PlayMode 테스트 (1-1 ~ 1-3 플레이 확인)**: 가상 키보드 · 마우스 · 패드로 VillagePrototype 씬을 직접 조작하는 PlayMode 테스트 20개 추가(이동 · 카메라 11, 상호작용 6, 채집 3) — 전체 통과. 메뉴 `Pogeun Village > Run PlayMode Tests`. 테스트 2개는 처음에 테스트 쪽 문제(프레임 간격 · 모여 핀 꽃)로 실패해 고침, 게임 코드 변경 없음
 
 ## 3. 핵심 규칙 요약
 
@@ -106,3 +107,4 @@
 | 2026-10-27 | `10.27/1-1/MoveCameraSettings` | 컴포넌트 WorldSettings 연결, 나무 가림 반투명, CameraOrbit |
 | 2026-10-27 | `10.27/1-2/Interaction` | 상호작용 대상 고르기 · 마커 · F/패드 A, 나무 · 게시판 · 우체통 등록 |
 | 2026-10-27 | `10.27/1-3/Gathering` | 나무 흔들기 · 열매 줍기 · 꽃 꺾기, 임시 주머니, 물건 · 채집 규칙 데이터 |
+| 2026-10-27 | `10.27/0-3/PlayModeTests` | PlayMode 테스트 기반 + 1-1 ~ 1-3 플레이 테스트 20개, 테스트 실행 메뉴 PlayMode 추가 |
