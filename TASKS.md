@@ -28,27 +28,27 @@
 - [x] **0-2. 문서 3종 + .gitignore 정리** (2026-10-19)
   - 구현: `CLAUDE.md`, `GDD.md`, `TASKS.md`
   - `.gitignore`: 넓은 패턴(`**/[Tt]emp/` 등) → `/PogeunVillage/…` 경로 기준으로. `/[Aa]ssets/…` 규칙도 하위 폴더 기준으로 수정(기존엔 아무것도 매칭되지 않았음)
-- [x] **0-3. 어셈블리 · 테스트 기반** (2026-10-27) — 플레이 확인 대기
+- [x] **0-3. 어셈블리 · 테스트 기반** (2026-10-27) — 플레이 확인 완료
   - 구현: 런타임 asmdef `Scripts/PogeunVillage.asmdef`(참조: Input System, URP Core/Universal Runtime), 에디터 asmdef `Scripts/Editor/PogeunVillage.Editor.asmdef`(Editor 전용, + Test Runner), EditMode 테스트 asmdef `Tests/EditMode/PogeunVillage.Tests.asmdef`(Editor 전용, `UNITY_INCLUDE_TESTS`, nunit)
   - 구현: 에디터 메뉴 `Pogeun Village/Run EditMode Tests`(`Scripts/Editor/EditModeTestRunner.cs`) — EditMode 테스트 전체 실행, 요약은 콘솔(실패 시 에러), 테스트별 결과는 `Temp/PogeunVillageTestResults.txt`. 이유: MCP 명령 스크립트에서 Test Runner 결과를 받을 수 없어(System.Reflection 금지), 매 작업 자동 검증에 쓰려고
     → 이후 변경 (2026-10-27): `TestRunMenu.cs`로 이름 변경, 메뉴 `Pogeun Village/Run PlayMode Tests` 추가, 결과 파일은 `Temp/PogeunVillageTestResults_{EditMode|PlayMode}.txt`(테스트별 한 줄 + 마지막 줄 요약). 콜백은 `InitializeOnLoad`로 상시 등록(PlayMode의 도메인 리로드 대응), Test Runner 창에서 돌려도 같은 파일에 남음
   - 이후 추가 (2026-10-27): **PlayMode 테스트** `Tests/PlayMode/PogeunVillage.PlayModeTests.asmdef`(+ `Unity.InputSystem.TestFramework`). `VillageSceneTest`(InputTestFixture 바탕: VillagePrototype 씬을 열고 가상 키보드 · 마우스 · 패드 추가, 순간이동 · 대기 도우미). 이유: 사용자 요청으로 플레이 확인을 같이 진행 — MCP로 키 이벤트를 큐에 넣는 방식은 에디터가 뒤에 있으면 입력이 버려지고(게임 뷰 포커스) Run In Background가 꺼져 있어 프레임도 멈춰서 믿을 수 없었음. Test Runner는 테스트 동안 백그라운드 실행을 켜 줌
   - 테스트 1개(`AssemblySetupTests` — 테스트 어셈블리가 런타임 어셈블리를 참조) — 전체 1개 통과
   - 참고: 콘솔 경고 3개는 Unity MCP 패키지(`ExecutableIdentityCollector`)가 Claude 실행 파일 서명을 못 읽어 내는 것 — 프로젝트 코드와 무관
-- [x] **0-4. 템플릿 정리** (2026-10-27) — 플레이 확인 대기
+- [x] **0-4. 템플릿 정리** (2026-10-27) — 플레이 확인 완료
   - 삭제: `Assets/TutorialInfo/`(Readme 스크립트 · 에디터 · 아이콘 · 스타일 · 레이아웃), `Assets/Readme.asset`, `Assets/Scenes/SampleScene.unity`와 빈 `Assets/Scenes/` — GUID 검색으로 빌드 설정 외 참조 없음 확인
   - 시작 씬: 빌드 설정을 `PogeunVillage/Scenes/VillagePrototype.unity` 하나만(0번)으로
   - 유지: `Settings/SampleSceneProfile.asset` — 이름과 달리 `PC_RPAsset` · `Mobile_RPAsset`의 기본 볼륨 프로파일이라 지우면 렌더링이 바뀜. `InputSystem_Actions.inputactions` — Input System 프로젝트 설정이 참조
   - 테스트: 추가 없음 — 전체 1개 통과
   - 참고: MCP 명령으로 `AssetDatabase.DeleteAsset`이 "사용자 상호작용 필요"로 막혀 `git rm`으로 지우고 에디터에서 새로고침함. `ProjectSettings.asset`의 `templateDefaultScene`은 지운 SampleScene 경로를 가리키지만 템플릿 제작용 값이라 그대로 둠
-- [x] **0-5. 데이터 에셋 자리** (2026-10-27) — 플레이 확인 대기
+- [x] **0-5. 데이터 에셋 자리** (2026-10-27) — 플레이 확인 완료
   - 구현: `Scripts/Data/WorldSettings.cs`(ScriptableObject — 휨 반경 · 컬링 배율 · 물 높이 · 플레이어 이동 · 카메라), 에셋 `Data/WorldSettings.asset`(맵 프로토타입 값 그대로), 생성 메뉴 `Create > Pogeun Village > World Settings`
   - 수치: BALANCE.md 9번
   - 테스트 2개(`WorldSettingsTests` — 에셋 존재, 걷기 ≤ 달리기 · 기본 거리가 줌 범위 안) — 전체 3개 통과
   - 참고: 컴포넌트(`CurvedWorld` · `PlayerController` · `CameraFollow`)와 맵 생성 메뉴는 아직 자기 필드 값을 씀 → 1-1에서 이 에셋을 읽도록 바꿈. 걷기 통통 튐(bob) 같은 연출 값은 넣지 않음
 
 ## Phase 1. 핵심 조작 그레이박스 (기본 도형)
-- [x] **1-1. 이동 · 카메라 정리** (2026-10-27) — 플레이 확인 대기
+- [x] **1-1. 이동 · 카메라 정리** (2026-10-27) — 플레이 확인 완료
   - 구현: `CurvedWorld` · `PlayerController` · `CameraFollow`가 `WorldSettings` 에셋을 읽음(컴포넌트의 수치 필드 제거, 연결 안 되면 에러 후 비활성). 줌 거리 · 회전 같은 플레이 중 상태는 컴포넌트 안에만 둠(에셋 덮어쓰기 방지)
   - 구현: `CameraOrbit`(카메라 위치 · 줌 계산, 순수 정적 함수) — `CameraFollow`와 맵 생성 메뉴가 같이 씀
   - 구현: 나무 가림 → `CurvedWorld.hlsl`의 `PV_OcclusionClip` — 카메라와 플레이어 사이 물체를 화면 디더링(4×4 Bayer)으로 반투명. 게임 카메라에서만, 그림자는 그대로, 플레이어 2m 안쪽(발밑 지면)은 제외. CurvedToon의 ForwardLit · DepthOnly · DepthNormals 패스에 적용. 이유: 재질 교체 없이(배칭 유지) 모든 CurvedToon 물체에 적용됨
@@ -58,7 +58,7 @@
   - 확인: 플레이어를 나무 뒤에 두고 게임 카메라로 렌더 → 나무의 플레이어 앞 부분만 비침, 지면 · 그림자 · 다른 나무 그대로
   - 플레이 테스트 (2026-10-27): PlayMode `MovementCameraTests` 11개 통과 — 걷기 · 달리기 속도(±15%), 카메라 기준 이동 · 이동 방향 바라보기, 놓으면 멈춤, 강 쪽으로 3초 걸어도 물 높이 아래 땅을 밟지 않음, 카메라 시작 자세(거리 16 · 각 32°), 휠 줌 1칸 · 최소 9 · 최대 24, Q/E 회전 속도 · 방향, 1초 뒤 따라옴, 게임 카메라에 휨 · 가림 전역값
   - 참고: 걷기 통통 튐(bob) 값은 아직 `PlayerController` 필드(연출 값). 맵 재생성 때 재질 · 메시 · 볼륨 프로파일은 줄바꿈 · 순서만 바뀌어 되돌림. Varco3D 모델용 셰이더를 따로 만들면 `PV_OcclusionClip`도 호출해야 같은 가림 처리가 됨
-- [x] **1-2. 상호작용** (2026-10-27) — 플레이 확인 대기
+- [x] **1-2. 상호작용** (2026-10-27) — 플레이 확인 완료
   - 결정 (2026-10-27): 상호작용 키 = 키보드 F · 패드 A, 패드 달리기는 A → B로 옮김. 이유: 동물의숲과 같은 배치, Q/E(카메라)와 겹치지 않음
   - 결정 (2026-10-27): 대상 선택 = 앞쪽 부채꼴(±60°) 안에서 가장 가까운 것(대상 가장자리까지 1m 이내, 대상과 겹치면 방향 무시, 같은 거리면 먼저 등록된 것). 이유: 몸을 돌려 대상을 바꿀 수 있음
   - 결정 (2026-10-27): 표시 = 대상 머리 위 통통 튀는 노란 구(그레이박스). 안내 글자는 2-3 HUD에서
@@ -71,7 +71,8 @@
   - 플레이 테스트 (2026-10-27): PlayMode `InteractionTests` 6개 통과 — 게시판을 바라보면 대상 · 마커가 게시판 위, 돌아서면 대상 없음 · 마커 꺼짐, F 한 번 = 상호작용 한 번 + 흔들린 뒤 원래 자세, 패드 A 상호작용, 대상 없을 때 F는 아무 일 없음, 패드 B + 스틱 = 달리기 · 패드 A는 걷기
   - 피드백: 흔들림 테스트가 0°로 실패 → 에디터가 뒤에 있으면 프레임 간격이 길어 0.3초 흔들림 중간을 한 번에 재면 놓침 → 매 프레임 최대 기울기를 기록하도록 테스트 수정(게임 코드 변경 없음)
   - 참고: 콘솔 로그 "[상호작용] 게시판"은 MCP 콘솔 조회에 나타나지 않아 확인하지 못함(플레이 시작 때 콘솔 지우기 설정 영향으로 추정). 대상 후보는 매 프레임 전체 목록(269개)을 훑음 — 대상이 크게 늘면 공간 분할 검토
-- [x] **1-3. 채집** (2026-10-27) — 플레이 확인 대기
+- [x] **1-3. 채집** (2026-10-27) — 플레이 확인 완료
+  - 상태 (2026-10-27): 플레이 확인 완료 — 사용자가 확인을 맡김("너가 해줘"), 근거는 PlayMode 플레이 테스트 3개 통과(아래). 0-3 ~ 1-2는 사용자가 확인함
   - 결정 (2026-10-19): 열매 나무는 아침마다 3개로 채워짐(2-1 하루 루프에 연결) — BALANCE 6번, 검산 6-1~6-4
   - 결정 (2026-10-27): 꽃은 손으로 꺾기 — '꽃' 1개, 그 꽃은 사라짐(다시 나지 않고 번식으로만 늘어남). 삽은 1-8에서 통째 회수. GDD 4번 "꽃 매일 재생" 문장을 4-8 기준으로 정리
   - 결정 (2026-10-27): 주운 물건은 임시 주머니(물건별 개수만) → 1-4 인벤토리에서 교체
