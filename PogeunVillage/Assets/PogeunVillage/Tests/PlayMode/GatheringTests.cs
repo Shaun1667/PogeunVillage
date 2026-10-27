@@ -6,19 +6,19 @@ using UnityEngine.TestTools;
 
 namespace PogeunVillage.PlayModeTests
 {
-    /// <summary>1-3 채집 확인 (F로 나무 흔들기 · 떨어진 열매 줍기 · 꽃 꺾기 · 임시 주머니).</summary>
+    /// <summary>1-3 채집 · 1-4 인벤토리 확인 (F로 나무 흔들기 · 떨어진 열매 줍기 · 꽃 꺾기 · 가득 차면 못 주움).</summary>
     public class GatheringTests : VillageSceneTest
     {
         static readonly Vector3 Plaza = new(-6f, 0f, 2f);
 
         PlayerInteractor interactor;
-        Pouch pouch;
+        Inventory inventory;
 
         [UnitySetUp]
         public IEnumerator FindParts()
         {
             interactor = player.GetComponent<PlayerInteractor>();
-            pouch = player.GetComponent<PlayerPouch>().Pouch;
+            inventory = player.GetComponent<PlayerInventory>().Inventory;
             yield break;
         }
 
@@ -71,7 +71,7 @@ namespace PogeunVillage.PlayModeTests
         }
 
         [UnityTest]
-        public IEnumerator FKey_PicksDroppedFruit_IntoPouch()
+        public IEnumerator FKey_PicksDroppedFruit_IntoInventory()
         {
             FruitTreeBehaviour tree = null;
             yield return ShakeNearestTree(t => tree = t);
@@ -85,14 +85,14 @@ namespace PogeunVillage.PlayModeTests
 
             yield return TapF();
             yield return Frames(2);
-            Assert.AreEqual(1, pouch.Get(id), "주머니에 1개");
+            Assert.AreEqual(1, inventory.Count(id), "인벤토리에 1개");
             Assert.IsTrue(fruit == null, "주운 열매는 사라져야 합니다.");
             Assert.AreEqual(2, DroppedNear(tree).Length);
             Assert.IsFalse(ReferenceEquals(fruitTarget, interactor.Target), "주워 사라진 열매가 대상으로 남으면 안 됩니다.");
         }
 
         [UnityTest]
-        public IEnumerator FKey_PicksFlower_IntoPouch()
+        public IEnumerator FKey_PicksFlower_IntoInventory()
         {
             var flowers = Object.FindObjectsByType<Pickup>().Where(p => p.item && p.item.id == "Flower").ToArray();
             var flower = flowers.OrderBy(p => Vector3.Distance(p.transform.position, Plaza)).First();
@@ -106,9 +106,31 @@ namespace PogeunVillage.PlayModeTests
 
             yield return TapF();
             yield return Frames(2);
-            Assert.AreEqual(1, pouch.Get("Flower"));
+            Assert.AreEqual(1, inventory.Count("Flower"));
             Assert.IsTrue(flower == null, "꺾은 꽃은 사라져야 합니다.");
             Assert.AreEqual(flowers.Length - 1, Object.FindObjectsByType<Pickup>().Count(p => p.item && p.item.id == "Flower"));
+        }
+
+        [UnityTest]
+        public IEnumerator FullInventory_FlowerStaysInPlace()
+        {
+            // 겹칠 수 없는 물건으로 모든 칸을 채움
+            for (int i = 0; i < inventory.Slots.Count; i++)
+                Assert.IsTrue(inventory.TryAdd("Filler" + i, 1));
+
+            var flowers = Object.FindObjectsByType<Pickup>().Where(p => p.item && p.item.id == "Flower").ToArray();
+            var near = flowers.OrderBy(p => Vector3.Distance(p.transform.position, Plaza)).First();
+            Teleport(near.transform.position + Vector3.back * 0.7f, Vector3.forward);
+            yield return Frames(3);
+            var flower = interactor.Target.GetComponent<Pickup>();
+            Assert.IsNotNull(flower);
+
+            yield return TapF();
+            yield return Frames(2);
+            Assert.AreEqual(0, inventory.Count("Flower"), "가득 차면 들어가지 않음");
+            Assert.IsTrue(flower != null, "꽃은 그대로 남아야 합니다.");
+            Assert.AreSame(flower.GetComponent<Interactable>(), interactor.Target, "여전히 대상");
+            Assert.AreEqual(flowers.Length, Object.FindObjectsByType<Pickup>().Count(p => p.item && p.item.id == "Flower"));
         }
     }
 }

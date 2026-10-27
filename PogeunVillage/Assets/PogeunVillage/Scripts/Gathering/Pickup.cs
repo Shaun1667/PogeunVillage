@@ -4,7 +4,7 @@ using UnityEngine;
 namespace PogeunVillage
 {
     /// <summary>
-    /// 상호작용하면 주머니에 들어가고 사라지는 물건(떨어진 열매, 꽃).
+    /// 상호작용하면 인벤토리에 들어가고 사라지는 물건(떨어진 열매, 꽃). 인벤토리가 가득 차면 그대로 남습니다.
     /// </summary>
     [RequireComponent(typeof(Interactable))]
     public class Pickup : MonoBehaviour
@@ -19,14 +19,14 @@ namespace PogeunVillage
 
         void OnPicked(Interactable _, PlayerInteractor by)
         {
-            var pouch = by.GetComponent<PlayerPouch>();
-            if (!pouch || !item)
+            var inventory = by.GetComponent<PlayerInventory>();
+            if (!inventory || !item)
             {
-                Debug.LogError($"{name}: 주머니(PlayerPouch) 또는 물건(item)이 없습니다.", this);
+                Debug.LogError($"{name}: 인벤토리(PlayerInventory) 또는 물건(item)이 없습니다.", this);
                 return;
             }
-            pouch.Add(item);
-            Destroy(gameObject);
+            if (inventory.TryAdd(item))
+                Destroy(gameObject);
         }
 
         /// <summary>from에서 to까지 떨어뜨림(점점 빨라짐).</summary>

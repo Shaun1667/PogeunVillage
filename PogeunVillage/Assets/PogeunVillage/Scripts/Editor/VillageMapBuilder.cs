@@ -21,6 +21,7 @@ namespace PogeunVillage.EditorTools
         const string ScenePath = Root + "/Scenes/VillagePrototype.unity";
         const string WorldSettingsPath = Root + "/Data/WorldSettings.asset";
         const string GatheringRulesPath = Root + "/Data/GatheringRules.asset";
+        const string InventoryRulesPath = Root + "/Data/InventoryRules.asset";
         const string ItemDir = Root + "/Data/Items";
         const string PrefabDir = Root + "/Prefabs";
 
@@ -58,6 +59,7 @@ namespace PogeunVillage.EditorTools
         static Shader toonShader;
         static WorldSettings settings;
         static GatheringRules gatheringRules;
+        static InventoryRules inventoryRules;
         static ItemDefinition appleItem, peachItem, flowerItem;
         static Pickup pickupPrefab;
         static readonly List<(Vector2 a, Vector2 b)> Paths = new();
@@ -92,6 +94,7 @@ namespace PogeunVillage.EditorTools
             EnsureFolder(ItemDir);
             EnsureFolder(PrefabDir);
             gatheringRules = EnsureAsset<GatheringRules>(GatheringRulesPath);
+            inventoryRules = EnsureAsset<InventoryRules>(InventoryRulesPath);
             appleItem = EnsureItem("Apple", "사과");
             peachItem = EnsureItem("Peach", "복숭아");
             flowerItem = EnsureItem("Flower", "꽃");
@@ -693,7 +696,7 @@ namespace PogeunVillage.EditorTools
             var interactor = player.AddComponent<PlayerInteractor>();
             interactor.settings = settings;
             BuildInteractionMarker(interactor);
-            player.AddComponent<PlayerPouch>();
+            player.AddComponent<PlayerInventory>().rules = inventoryRules;
             return player;
         }
 
