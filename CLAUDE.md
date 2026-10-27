@@ -4,7 +4,8 @@
 포근 마을 — 작은 둥근 행성 위 마을에서 동물 주민들과 교류하고 마을을 꾸미는 힐링 생활 게임 (레퍼런스: 동물의숲, 두근두근타운, 쁘띠플래닛).
 기획은 GDD.md, 작업 순서와 작업 일지는 TASKS.md, 수치는 BALANCE.md, 진행 현황 요약은 PROGRESS.md(작업 단위가 끝날 때마다 갱신).
 수치는 BALANCE.md와 데이터 에셋(ScriptableObject) 기준이며 코드에 임의로 넣지 않는다.
-방법론: `claude_all_type_genre.md`(장르 무관 협업 가이드)를 따른다.
+방법론: 저장소 루트의 `claude_all_type_genre.md`(장르 무관 협업 가이드)를 따른다.
+다른 PC 세팅 · 외부 도구(Unity MCP · Varco3D · Notion) · Varco3D 플로우 구조 · 확인 대기 중인 해석은 HANDOFF.md.
 
 ## 작업 원칙
 - 한 번에 하나의 기능 단위만. TASKS.md의 현재 항목만 구현한다.

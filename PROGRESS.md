@@ -1,7 +1,8 @@
 # PROGRESS.md — 포근 마을 진행 현황
 
-> 마지막 갱신: 2026-10-23
+> 마지막 갱신: 2026-10-27
 > 세부 기준 문서: 기획 [GDD.md](GDD.md) · 수치 [BALANCE.md](BALANCE.md) · 작업 순서 [TASKS.md](TASKS.md) · 작업 규칙 [CLAUDE.md](CLAUDE.md)
+> 다른 PC에서 이어가기: [HANDOFF.md](HANDOFF.md) · 방법론: [claude_all_type_genre.md](claude_all_type_genre.md)
 > Notion 기획서: 포근 마을 - 게임 기획서 (개인 페이지)
 
 ## 1. 한눈에 보기
@@ -39,6 +40,10 @@
 ### 2026-10-23
 - 문서 · Unity 프로젝트 첫 커밋 (`dev` 브랜치)
 - 진행 현황 문서(이 파일) 작성
+- `dev` → `main` 병합, GitHub 푸시
+
+### 2026-10-27
+- 다른 PC 작업 준비: 방법론 가이드(`claude_all_type_genre.md`)를 저장소에 포함, 인수인계 문서 HANDOFF.md 작성(새 PC 세팅 순서 · 외부 도구 · Varco3D 플로우 구조 · 확인 대기 해석)
 
 ## 3. 핵심 규칙 요약
 
@@ -84,3 +89,5 @@
 | 2026-10-23 | `10.23/0-2/ProjectDocs` | CLAUDE · GDD · TASKS · BALANCE, .gitignore 정리 |
 | 2026-10-23 | `10.23/P-1/MapPrototype` | Unity 프로젝트 + 둥근 행성 맵 프로토타입 |
 | 2026-10-23 | `10.23/0-2/ProgressReport` | 진행 현황 문서(이 파일) |
+| 2026-10-23 | `10.23/0-2/ProgressReportFix` | 저장소 상태 문장 갱신 |
+| 2026-10-27 | `10.27/0-2/HandoffDocs` | HANDOFF.md, 방법론 가이드 포함 |
