@@ -4,7 +4,7 @@ using UnityEngine.InputSystem;
 namespace PogeunVillage
 {
     /// <summary>
-    /// 프로토타입용 플레이어 이동. WASD/방향키/왼쪽 스틱으로 이동, Shift/A버튼으로 달리기.
+    /// 프로토타입용 플레이어 이동. WASD/방향키/왼쪽 스틱으로 이동, Shift/패드 B로 달리기(패드 A는 상호작용).
     /// 물(waterLevel 아래)로는 들어가지 않습니다. 수치는 WorldSettings.
     /// </summary>
     [RequireComponent(typeof(CharacterController))]
@@ -42,7 +42,7 @@ namespace PogeunVillage
         {
             Vector2 input = ReadMoveInput();
             bool running = (Keyboard.current?.leftShiftKey.isPressed ?? false)
-                           || (Gamepad.current?.buttonSouth.isPressed ?? false);
+                           || (Gamepad.current?.buttonEast.isPressed ?? false);
 
             Vector3 move = Vector3.zero;
             if (input.sqrMagnitude > 0.01f)

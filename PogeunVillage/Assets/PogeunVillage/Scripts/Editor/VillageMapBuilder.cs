@@ -406,6 +406,7 @@ namespace PogeunVillage.EditorTools
             Prim(PrimitiveType.Cube, "Post_L", board, new Vector3(-0.8f, 0.7f, 0f), new Vector3(0.15f, 1.4f, 0.15f), wood);
             Prim(PrimitiveType.Cube, "Post_R", board, new Vector3(0.8f, 0.7f, 0f), new Vector3(0.15f, 1.4f, 0.15f), wood);
             Prim(PrimitiveType.Cube, "Board", board, new Vector3(0f, 1.15f, 0f), new Vector3(1.9f, 0.9f, 0.12f), Mat("BoardPaper", "#FFF4D8"), collider: true);
+            AddInteractable(board.gameObject, "게시판", radius: 1f, markerHeight: 2f);
         }
 
         static void BuildHouse(Transform parent, HouseInfo info)
@@ -433,9 +434,13 @@ namespace PogeunVillage.EditorTools
             Prim(PrimitiveType.Cube, "Window_R", house, new Vector3(1.3f, 1.4f, 1.82f), new Vector3(0.8f, 0.8f, 0.08f), glass);
             Prim(PrimitiveType.Cube, "Step", house, new Vector3(0f, -0.05f, 2.15f), new Vector3(1.6f, 0.2f, 0.7f), Mat("Stone", "#E8E2D6"));
 
-            // 우체통
-            Prim(PrimitiveType.Cylinder, "MailboxPost", house, new Vector3(1.9f, 0.45f, 2.9f), new Vector3(0.12f, 0.45f, 0.12f), wood);
-            Prim(PrimitiveType.Cube, "Mailbox", house, new Vector3(1.9f, 1f, 2.9f), new Vector3(0.45f, 0.35f, 0.6f), roof);
+            // 우체통 (흔들림이 우체통에만 걸리도록 묶음)
+            var mailbox = new GameObject("Mailbox").transform;
+            mailbox.SetParent(house, false);
+            mailbox.localPosition = new Vector3(1.9f, 0f, 2.9f);
+            Prim(PrimitiveType.Cylinder, "MailboxPost", mailbox, new Vector3(0f, 0.45f, 0f), new Vector3(0.12f, 0.45f, 0.12f), wood);
+            Prim(PrimitiveType.Cube, "MailboxBox", mailbox, new Vector3(0f, 1f, 0f), new Vector3(0.45f, 0.35f, 0.6f), roof);
+            AddInteractable(mailbox.gameObject, "우체통", radius: 0.3f, markerHeight: 1.5f);
         }
 
         static void BuildBridge(Transform parent, float z)
@@ -547,6 +552,7 @@ namespace PogeunVillage.EditorTools
                     layer.transform.localPosition = new Vector3(0f, 1.1f + i * 0.85f, 0f);
                     layer.transform.localScale = new Vector3(2.4f - i * 0.6f, 1.6f - i * 0.2f, 2.4f - i * 0.6f);
                 }
+                AddInteractable(tree.gameObject, "나무", radius: 0.4f, markerHeight: 4f);
             }
             else
             {
@@ -566,6 +572,7 @@ namespace PogeunVillage.EditorTools
                         Prim(PrimitiveType.Sphere, "Fruit", tree, new Vector3(Mathf.Cos(a) * 1.05f, 2.2f + (i % 2) * 0.5f, Mathf.Sin(a) * 1.05f), Vector3.one * 0.3f, fruit);
                     }
                 }
+                AddInteractable(tree.gameObject, "나무", radius: 0.4f, markerHeight: 3.7f);
             }
         }
 
@@ -655,7 +662,28 @@ namespace PogeunVillage.EditorTools
             var pc = player.AddComponent<PlayerController>();
             pc.settings = settings;
             pc.visual = visual;
+
+            var interactor = player.AddComponent<PlayerInteractor>();
+            interactor.settings = settings;
+            BuildInteractionMarker(interactor);
             return player;
+        }
+
+        static void BuildInteractionMarker(PlayerInteractor interactor)
+        {
+            var marker = new GameObject("InteractionMarker").AddComponent<InteractionMarker>();
+            marker.settings = settings;
+            marker.interactor = interactor;
+            var ball = Prim(PrimitiveType.Sphere, "Ball", marker.transform, Vector3.zero, Vector3.one, Mat("Marker", "#FFD86B", rim: 0.4f), castShadows: false);
+            ball.SetActive(false); // 대상이 생기면 InteractionMarker가 켬
+        }
+
+        static void AddInteractable(GameObject go, string displayName, float radius, float markerHeight)
+        {
+            var interactable = go.AddComponent<Interactable>();
+            interactable.displayName = displayName;
+            interactable.radius = radius;
+            interactable.markerHeight = markerHeight;
         }
 
         static Camera BuildCamera(Transform target)

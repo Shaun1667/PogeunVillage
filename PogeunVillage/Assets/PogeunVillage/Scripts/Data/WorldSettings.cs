@@ -49,5 +49,19 @@ namespace PogeunVillage
         public float occlusionSoftness = 0.4f;
         [Tooltip("가장 많이 비칠 때 빠지는 픽셀 비율(0~1)")]
         [Range(0f, 1f)] public float occlusionStrength = 0.75f;
+
+        [Header("상호작용")]
+        [Tooltip("플레이어에서 대상 가장자리까지 이 거리(m) 안이면 고를 수 있습니다.")]
+        public float interactRange = 1f;
+        [Tooltip("바라보는 방향에서 좌우 이 각도(도) 안의 대상만 고릅니다.")]
+        [Range(10f, 180f)] public float interactHalfAngle = 60f;
+        [Tooltip("대상 위 마커 크기(m)")]
+        public float markerSize = 0.35f;
+        [Tooltip("마커가 위아래로 통통 튀는 높이(m)와 속도(회/초)")]
+        public float markerBobHeight = 0.12f;
+        public float markerBobSpeed = 1.5f;
+        [Tooltip("임시 반응: 상호작용하면 대상이 이 각도(도)로 이 시간(초) 동안 흔들립니다. 1-3 이후 실제 동작으로 교체")]
+        public float interactWiggleAngle = 6f;
+        public float interactWiggleTime = 0.3f;
     }
 }

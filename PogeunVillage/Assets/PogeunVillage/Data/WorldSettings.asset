@@ -31,3 +31,10 @@ MonoBehaviour:
   occlusionMargin: 2
   occlusionSoftness: 0.4
   occlusionStrength: 0.75
+  interactRange: 1
+  interactHalfAngle: 60
+  markerSize: 0.35
+  markerBobHeight: 0.12
+  markerBobSpeed: 1.5
+  interactWiggleAngle: 6
+  interactWiggleTime: 0.3
