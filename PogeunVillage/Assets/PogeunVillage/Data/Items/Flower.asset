@@ -15,3 +15,6 @@ MonoBehaviour:
   id: Flower
   displayName: "\uAF43"
   maxStack: 10
+  plantsAs: 0
+  buyPrice: 0
+  sellPrice: 40

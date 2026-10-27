@@ -67,4 +67,4 @@
 | 다 자란 나무 | 옮길 수 없음 | GDD 10번 |
 
 ## 6. 다음 작업
-TASKS.md **2-2 상점 · 모아**부터 (Phase 2). Phase 1 그레이박스 1-1 ~ 1-9 완료(곤충 · 낚시는 각 파트 기획 후). 개발용 F8 = 다음 날 아침. 테스트는 메뉴 `Pogeun Village > Run EditMode Tests` · `Run PlayMode Tests`로 실행(결과: `Temp/PogeunVillageTestResults_{EditMode|PlayMode}.txt`). PlayMode는 플레이 모드에 들어갔다 나오므로 씬에 저장 안 한 변경이 있으면 먼저 저장.
+TASKS.md **2-3 HUD**부터 (Phase 2). 게임은 6시 시작, 상점은 8시에 열림 — 도구는 광장 서쪽 노점에서 삼. Phase 1 그레이박스 1-1 ~ 1-9 완료(곤충 · 낚시는 각 파트 기획 후). 개발용 F8 = 다음 날 아침. 테스트는 메뉴 `Pogeun Village > Run EditMode Tests` · `Run PlayMode Tests`로 실행(결과: `Temp/PogeunVillageTestResults_{EditMode|PlayMode}.txt`). PlayMode는 플레이 모드에 들어갔다 나오므로 씬에 저장 안 한 변경이 있으면 먼저 저장.

@@ -15,3 +15,6 @@ MonoBehaviour:
   id: Apple
   displayName: "\uC0AC\uACFC"
   maxStack: 10
+  plantsAs: 0
+  buyPrice: 0
+  sellPrice: 100

@@ -15,6 +15,10 @@ MonoBehaviour:
   id: FishingRod
   displayName: "\uB09A\uC2EF\uB300"
   maxStack: 1
+  plantsAs: 0
+  buyPrice: 500
+  sellPrice: 0
   kind: 1
   durability: 50
   hitKinds: 
+  usesGroundCell: 0

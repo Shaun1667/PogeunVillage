@@ -64,7 +64,7 @@ namespace PogeunVillage.PlayModeTests
             Assert.IsTrue(Grid.IsBlocked(Grid.ToCell(new Vector2(0f, -70f))), "바다");
             Assert.IsTrue(Grid.IsBlocked(CellOf(GameObject.Find("House_Rabbit").transform)), "집");
             Assert.IsTrue(Grid.IsBlocked(CellOf(Object.FindAnyObjectByType<FruitTreeBehaviour>())), "나무");
-            Assert.IsTrue(Grid.IsBlocked(CellOf(Object.FindAnyObjectByType<ToolBox>())), "도구 상자");
+            Assert.IsTrue(Grid.IsBlocked(CellOf(Object.FindAnyObjectByType<SellBox>())), "상점 판매함");
             Assert.IsTrue(Grid.IsBlocked(new Vector2Int(1000, 0)), "맵 밖");
             yield break;
         }

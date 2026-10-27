@@ -16,3 +16,5 @@ MonoBehaviour:
   displayName: "\uAF43 \uD3EC\uAE30"
   maxStack: 10
   plantsAs: 1
+  buyPrice: 0
+  sellPrice: 60

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -24,6 +25,7 @@ namespace PogeunVillage.EditorTools
         const string InventoryRulesPath = Root + "/Data/InventoryRules.asset";
         const string GroundGridPath = Root + "/Data/GroundGrid.asset";
         const string DayRulesPath = Root + "/Data/DayRules.asset";
+        const string ShopDataPath = Root + "/Data/ShopData.asset";
         const string ItemDir = Root + "/Data/Items";
         const string PrefabDir = Root + "/Prefabs";
         const string ToolDir = ItemDir + "/Tools";
@@ -67,6 +69,7 @@ namespace PogeunVillage.EditorTools
         static Pickup pickupPrefab;
         static ToolDefinition[] tools;
         static ItemDefinition woodItem, flowerClumpItem, saplingItem;
+        static ShopData shopData;
         static GameObject stumpPrefab;
         static readonly List<(Vector2 a, Vector2 b)> Paths = new();
         static readonly List<Vector3> Occupied = new(); // x, z, radius
@@ -101,13 +104,14 @@ namespace PogeunVillage.EditorTools
             EnsureFolder(PrefabDir);
             gatheringRules = EnsureAsset<GatheringRules>(GatheringRulesPath);
             inventoryRules = EnsureAsset<InventoryRules>(InventoryRulesPath);
-            appleItem = EnsureItem("Apple", "사과");
-            peachItem = EnsureItem("Peach", "복숭아");
-            flowerItem = EnsureItem("Flower", "꽃");
+            appleItem = EnsureItem("Apple", "사과", sellPrice: 100);
+            peachItem = EnsureItem("Peach", "복숭아", sellPrice: 100);
+            flowerItem = EnsureItem("Flower", "꽃", sellPrice: 40);
             pickupPrefab = BuildPickupPrefab();
-            woodItem = EnsureItem("Wood", "목재");
-            flowerClumpItem = EnsureItem("FlowerClump", "꽃 포기", GroundObjectKind.Flower);
-            saplingItem = EnsureItem("Sapling", "묘목", GroundObjectKind.Sapling);
+            woodItem = EnsureItem("Wood", "목재", sellPrice: 20);
+            flowerClumpItem = EnsureItem("FlowerClump", "꽃 포기", GroundObjectKind.Flower, sellPrice: 60);
+            saplingItem = EnsureItem("Sapling", "묘목", GroundObjectKind.Sapling, buyPrice: 300, sellPrice: 150);
+            shopData = EnsureAsset<ShopData>(ShopDataPath);
             stumpPrefab = BuildStumpPrefab();
             EnsureFolder(ToolDir);
             tools = new[]
@@ -148,6 +152,7 @@ namespace PogeunVillage.EditorTools
             BuildGroundCursor(player.GetComponent<PlayerTools>(), ground);
             BuildShovel(player, ground);
             BuildDayCycle(props);
+            BuildShop(props);
             var cam = BuildCamera(player.transform);
             player.GetComponent<PlayerController>().cameraTransform = cam.transform;
 
@@ -448,15 +453,6 @@ namespace PogeunVillage.EditorTools
             Prim(PrimitiveType.Cube, "Post_R", board, new Vector3(0.8f, 0.7f, 0f), new Vector3(0.15f, 1.4f, 0.15f), wood);
             Prim(PrimitiveType.Cube, "Board", board, new Vector3(0f, 1.15f, 0f), new Vector3(1.9f, 0.9f, 0.12f), Mat("BoardPaper", "#FFF4D8"), collider: true);
             AddInteractable(board.gameObject, "게시판", InteractableKind.NoticeBoard, radius: 1f, markerHeight: 2f);
-
-            // 임시 도구 상자 (2-2 상점이 생기면 없앰)
-            var toolBox = Prim(PrimitiveType.Cube, "ToolBox", parent, OnGround(PlazaCenter.x - 4f, PlazaCenter.y - 3f, 0.3f), new Vector3(1f, 0.6f, 0.7f), Mat("ToolBox", "#E07A5F"), collider: true);
-            toolBox.transform.localRotation = Quaternion.Euler(0f, 30f, 0f);
-            AddInteractable(toolBox, "도구 상자", InteractableKind.ToolBox, radius: 0.5f, markerHeight: 1.5f); // 높이 배율 0.6 → 상자 중심 위 0.9m
-            var toolBoxGiver = toolBox.AddComponent<ToolBox>();
-            toolBoxGiver.tools = tools;
-            toolBoxGiver.sapling = saplingItem;
-            toolBoxGiver.saplingCount = 3;
         }
 
         static void BuildHouse(Transform parent, HouseInfo info)
@@ -758,6 +754,7 @@ namespace PogeunVillage.EditorTools
             var inventory = player.AddComponent<PlayerInventory>();
             inventory.rules = inventoryRules;
             BuildPlayerTools(player, visual, inventory, interactor);
+            player.AddComponent<PlayerWallet>().shop = shopData;
             return player;
         }
 
@@ -882,6 +879,61 @@ namespace PogeunVillage.EditorTools
             var morning = new GameObject("MorningRunner").AddComponent<MorningRunner>();
             morning.garden = keeper;
             return ground;
+        }
+
+        // 상점(2-2): 광장 서쪽 노점 — 지붕 · 상점 주인 · 매대 6개(도구 5종 · 묘목) · 판매함. 광장 쪽(동쪽)을 봄
+        static void BuildShop(Transform props)
+        {
+            shopData.catalog = new[] { appleItem, peachItem, flowerItem, woodItem, flowerClumpItem, saplingItem }
+                .Concat(tools).ToArray();
+            EditorUtility.SetDirty(shopData);
+
+            var stall = new GameObject("Shop").transform;
+            stall.SetParent(props, false);
+            stall.localPosition = OnGround(PlazaCenter.x - 4.8f, PlazaCenter.y);
+            stall.localRotation = Quaternion.Euler(0f, 90f, 0f);  // 앞(+z)이 동쪽 = 광장
+
+            var wood = Mat("Wood", "#B98A5E");
+            var awning = Mat("ShopAwning", "#F2A65A", rim: 0.2f);
+            foreach (float x in new[] { -2.6f, 2.6f })
+                Prim(PrimitiveType.Cylinder, "Post", stall, new Vector3(x, 1.2f, -1.2f), new Vector3(0.12f, 1.2f, 0.12f), wood, collider: true);
+            Prim(PrimitiveType.Cube, "Awning", stall, new Vector3(0f, 2.45f, -0.6f), new Vector3(5.6f, 0.12f, 1.8f), awning);
+
+            var keeper = new GameObject("ShopKeeper").transform;
+            keeper.SetParent(stall, false);
+            keeper.localPosition = new Vector3(0f, 0f, -1.2f);
+            Prim(PrimitiveType.Capsule, "Body", keeper, new Vector3(0f, 0.55f, 0f), new Vector3(0.6f, 0.55f, 0.55f), Mat("ShopKeeperBody", "#9AD1B5"), collider: true);
+            Prim(PrimitiveType.Sphere, "Head", keeper, new Vector3(0f, 1.3f, 0f), Vector3.one * 0.6f, Mat("ShopKeeperHead", "#F6E3C8"));
+            AddInteractable(keeper.gameObject, "상점 주인", InteractableKind.ShopKeeper, radius: 0.4f, markerHeight: 1.9f);
+
+            var shop = stall.gameObject.AddComponent<Shop>();
+            shop.data = shopData;
+            shop.dayCycle = Object.FindAnyObjectByType<DayCycle>();
+            shop.keeper = keeper.GetComponent<Interactable>();
+
+            // 매대: 도구 5종 + 묘목, 1m 간격. 위에 물건 모양(그레이박스)
+            var goods = tools.Cast<ItemDefinition>().Append(saplingItem).ToArray();
+            string[] colors = { "#F4F1EA", "#8E6B4A", "#C9D2DC", "#9AA6B2", "#7FB8E6", "#6FC27A" };
+            for (int i = 0; i < goods.Length; i++)
+            {
+                var stand = new GameObject("Stand_" + goods[i].id).transform;
+                stand.SetParent(stall, false);
+                stand.localPosition = new Vector3(-2.5f + i * 1.0f, 0f, 0f);
+                Prim(PrimitiveType.Cube, "Table", stand, new Vector3(0f, 0.4f, 0f), new Vector3(0.8f, 0.8f, 0.6f), wood, collider: true);
+                Prim(PrimitiveType.Sphere, "Goods", stand, new Vector3(0f, 0.95f, 0f), Vector3.one * 0.3f, Mat("ShopGoods_" + goods[i].id, colors[i], rim: 0.3f), castShadows: false);
+                AddInteractable(stand.gameObject, goods[i].displayName, InteractableKind.ShopStand, radius: 0.4f, markerHeight: 1.4f, wiggle: false);
+                var shopStand = stand.gameObject.AddComponent<ShopStand>();
+                shopStand.shop = shop;
+                shopStand.item = goods[i];
+            }
+
+            var sellBox = new GameObject("SellBox").transform;
+            sellBox.SetParent(stall, false);
+            sellBox.localPosition = new Vector3(3.7f, 0f, 0.2f);
+            Prim(PrimitiveType.Cube, "Box", sellBox, new Vector3(0f, 0.35f, 0f), new Vector3(0.8f, 0.7f, 0.8f), Mat("SellBox", "#E07A5F", rim: 0.2f), collider: true);
+            Prim(PrimitiveType.Cube, "Lid", sellBox, new Vector3(0f, 0.72f, 0f), new Vector3(0.9f, 0.06f, 0.9f), wood);
+            AddInteractable(sellBox.gameObject, "판매함", InteractableKind.SellBox, radius: 0.45f, markerHeight: 1.2f, wiggle: false);
+            sellBox.gameObject.AddComponent<SellBox>().shop = shop;
         }
 
         // 게임 시계 · 잠자기(2-1): 광장 임시 침대(F) → 다음 날 아침, 아침 처리는 MorningRunner
@@ -1028,7 +1080,7 @@ namespace PogeunVillage.EditorTools
             return asset;
         }
 
-        static ItemDefinition EnsureItem(string id, string displayName, GroundObjectKind plantsAs = GroundObjectKind.None)
+        static ItemDefinition EnsureItem(string id, string displayName, GroundObjectKind plantsAs = GroundObjectKind.None, int buyPrice = 0, int sellPrice = 0)
         {
             string path = $"{ItemDir}/{id}.asset";
             bool isNew = !AssetDatabase.LoadAssetAtPath<ItemDefinition>(path);
@@ -1038,6 +1090,8 @@ namespace PogeunVillage.EditorTools
                 item.id = id;
                 item.displayName = displayName;
                 item.plantsAs = plantsAs;
+                item.buyPrice = buyPrice;
+                item.sellPrice = sellPrice;
                 EditorUtility.SetDirty(item);
             }
             return item;
@@ -1056,6 +1110,7 @@ namespace PogeunVillage.EditorTools
                 tool.maxStack = 1;
                 tool.hitKinds = hitKinds;
                 tool.usesGroundCell = usesGroundCell;
+                tool.buyPrice = 500;
                 EditorUtility.SetDirty(tool);
             }
             return tool;

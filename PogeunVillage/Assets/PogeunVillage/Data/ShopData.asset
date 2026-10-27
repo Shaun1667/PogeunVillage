@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5a0b58d8442da3b42b7326472c1829b3, type: 3}
+  m_Name: ShopData
+  m_EditorClassIdentifier: PogeunVillage::PogeunVillage.ShopData
+  startingMoa: 3000
+  openHour: 8
+  closeHour: 22
+  catalog:
+  - {fileID: 11400000, guid: 5fcdc7275c24c544fbff2e61c80fc567, type: 2}
+  - {fileID: 11400000, guid: 499e67d60341bb640a3ea6522ede2951, type: 2}
+  - {fileID: 11400000, guid: 43b768f6b91b8c0438653b29b65c318c, type: 2}
+  - {fileID: 11400000, guid: a28503d56d1600c4dab212274b23b6d4, type: 2}
+  - {fileID: 11400000, guid: f7ba1ee7103f7a144993b6ca2f766bfc, type: 2}
+  - {fileID: 11400000, guid: 5fb2dfeef665ce541b77ea31e439de88, type: 2}
+  - {fileID: 11400000, guid: cc37c4ffabf2d174184c459728b96710, type: 2}
+  - {fileID: 11400000, guid: e217ad583c9ac3449b5da08794e717fe, type: 2}
+  - {fileID: 11400000, guid: 728aaf8e4d6faa1489c50d87223ebc06, type: 2}
+  - {fileID: 11400000, guid: 4e02559500060be40a0dd31dbe1cb4f8, type: 2}
+  - {fileID: 11400000, guid: 174db03288958de49a29270e8a673601, type: 2}

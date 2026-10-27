@@ -155,17 +155,5 @@ namespace PogeunVillage.PlayModeTests
             Assert.Greater(Vector2.Distance(stuckAt, Flat(player.position)), 0.3f, "다시 걸어감");
             Assert.AreEqual(GroundObjectKind.Hole, Grid.Get(hole), "구멍은 그대로");
         }
-
-        [UnityTest]
-        public IEnumerator ToolBox_AlsoGivesThreeSaplings()
-        {
-            var box = Object.FindAnyObjectByType<ToolBox>();
-            Vector3 spot = box.transform.position + Vector3.back * 1.0f;
-            Teleport(spot, Vector3.ProjectOnPlane(box.transform.position - spot, Vector3.up));
-            yield return Frames(3);
-            yield return Tap(keyboard.fKey);
-            Assert.AreEqual(box.saplingCount, Inv.Count("Sapling"));
-            Assert.AreEqual(3, box.saplingCount);
-        }
     }
 }

@@ -19,6 +19,9 @@ namespace PogeunVillage
         Stump,
         Hole,
         Bed,
+        ShopStand,
+        SellBox,
+        ShopKeeper,
     }
 
     /// <summary>

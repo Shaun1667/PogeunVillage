@@ -15,6 +15,10 @@ MonoBehaviour:
   id: Axe
   displayName: "\uB3C4\uB07C"
   maxStack: 1
+  plantsAs: 0
+  buyPrice: 500
+  sellPrice: 0
   kind: 2
   durability: 50
   hitKinds: 01000000i
+  usesGroundCell: 0

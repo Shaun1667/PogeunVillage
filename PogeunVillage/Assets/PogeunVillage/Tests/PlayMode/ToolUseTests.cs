@@ -60,23 +60,6 @@ namespace PogeunVillage.PlayModeTests
         }
 
         [UnityTest]
-        public IEnumerator ToolBox_GivesFiveTools_WithFullDurability()
-        {
-            var box = Object.FindAnyObjectByType<ToolBox>();
-            Vector3 spot = box.transform.position + Vector3.back * 1.0f;
-            Teleport(spot, Vector3.ProjectOnPlane(box.transform.position - spot, Vector3.up));
-            yield return Frames(3);
-            Assert.AreSame(box.GetComponent<Interactable>(), interactor.Target, "도구 상자가 대상이어야 합니다.");
-
-            yield return Tap(keyboard.fKey);
-            for (int i = 0; i < tools.tools.Length; i++)
-            {
-                Assert.AreEqual(tools.tools[i].id, Inv.Slots[i].itemId, $"{i + 1}번 칸");
-                Assert.AreEqual(tools.tools[i].durability, Inv.Slots[i].durability);
-            }
-        }
-
-        [UnityTest]
         public IEnumerator NumberKeys_Equip_SameKeyUnequips()
         {
             GiveAllTools();

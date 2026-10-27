@@ -128,6 +128,18 @@ namespace PogeunVillage
             return broken;
         }
 
+        /// <summary>그 칸을 통째로 비움(판매함).</summary>
+        /// <returns>비우기 전 칸</returns>
+        public InventorySlot TakeAll(int index)
+        {
+            var slot = slots[index];
+            if (slot.IsEmpty)
+                throw new InvalidOperationException($"{index}번 칸이 비어 있습니다.");
+            slots[index] = default;
+            SlotChanged?.Invoke(index);
+            return slot;
+        }
+
         /// <summary>그 칸에서 하나 뺌(마지막 하나면 칸이 빔).</summary>
         public void RemoveOne(int index)
         {

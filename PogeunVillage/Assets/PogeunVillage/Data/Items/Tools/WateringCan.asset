@@ -15,6 +15,9 @@ MonoBehaviour:
   id: WateringCan
   displayName: "\uBB3C\uBFCC\uB9AC\uAC1C"
   maxStack: 1
+  plantsAs: 0
+  buyPrice: 500
+  sellPrice: 0
   kind: 4
   durability: 50
   hitKinds: 05000000i
