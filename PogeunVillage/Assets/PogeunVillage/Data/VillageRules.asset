@@ -53,5 +53,6 @@ MonoBehaviour:
   maxResidents: 12
   campSeed: 404
   campWanderRadius: 5
+  moveInThreshold: 5
   holePenalty: 2
   holeStuckSeconds: 3

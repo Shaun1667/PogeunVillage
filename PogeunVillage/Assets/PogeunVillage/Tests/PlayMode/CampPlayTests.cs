@@ -78,7 +78,7 @@ namespace PogeunVillage.PlayModeTests
         }
 
         [UnityTest]
-        public IEnumerator TalkToCamper_LinesOnly_NoFriendship()
+        public IEnumerator TalkToCamper_CampFriendshipShown()
         {
             var camper = village.Camper;
             Vector3 front = camper.transform.forward;
@@ -88,13 +88,15 @@ namespace PogeunVillage.PlayModeTests
 
             yield return Tap(keyboard.fKey);
             Assert.IsTrue(dialogue.IsOpen);
-            Assert.AreEqual($"{camper.Definition.displayName}  캠핑 중", dialogue.speakerText.text);
+            Assert.AreEqual($"{camper.Definition.displayName}  캠핑 중 · 친밀도 1/5", dialogue.speakerText.text, "첫 대화 +1 (3-1)");
             yield return Tap(keyboard.fKey);
-            Assert.IsFalse(dialogue.Current.IsChoosing, "선물하기 없음(3-1)");
+            Assert.IsTrue(dialogue.Current.IsChoosing, "선물하기 / 안녕 (3-1)");
             CollectionAssert.Contains(camper.Definition.campLines, dialogue.lineText.text, "캠핑 대사");
+            yield return Tap(keyboard.downArrowKey);
             yield return Tap(keyboard.fKey);
             Assert.IsFalse(dialogue.IsOpen);
-            Assert.AreEqual(0, village.Friendship.Get(camper.Definition.id), "캠핑 주민 친밀도는 3-1");
+            Assert.AreEqual(1, village.CampStay.Value);
+            Assert.AreEqual(0, village.Friendship.Get(camper.Definition.id), "마을 친밀도와는 따로");
         }
 
         [UnityTest]

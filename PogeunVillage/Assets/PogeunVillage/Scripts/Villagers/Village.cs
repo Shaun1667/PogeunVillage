@@ -10,7 +10,8 @@ namespace PogeunVillage
     /// 친밀도(2-5): 말 걸기 = 그날 첫 대화 +1 → 대사 끝에 '선물하기 / 안녕' → 선물하기면 인벤토리에서 1개 골라 줌(+2, 도구 제외).
     /// 구멍에 빠졌다 나온 주민은 구멍이 없어지고 친밀도가 깎임. 수치는 VillageRules.
     /// 캠핑(2-6): 시작할 때와 매일 아침 마을에 살지 않는 주민 중 1명(어제 온 주민 제외, 꽉 차면 없음)이 텐트에 옴.
-    /// 캠핑 주민과는 대사만(이름 옆 '캠핑 중') — 친밀도 · 선물 · 이주는 3-1.
+    /// 캠핑 주민 이주(3-1): 캠핑 주민과도 같은 대화 · 선물로 친밀도를 올리고(CampStay, 이름 옆 '친밀도 3/5'), 기준에 닿으면 이주 확정 →
+    /// 다음 날 아침 빈 집터 중 무작위에 입주(친밀도는 캠핑 때 값을 이어받음). 아침 순서는 입주(②) → 캠핑 교체(④).
     /// </summary>
     public class Village : MonoBehaviour
     {
@@ -35,10 +36,13 @@ namespace PogeunVillage
         public IReadOnlyList<VillagerBehaviour> Villagers => villagers;
         /// <summary>오늘 캠핑 온 주민(없으면 null)</summary>
         public VillagerBehaviour Camper { get; private set; }
+        /// <summary>오늘 캠핑 주민의 친밀도 · 이주 확정(없으면 null)</summary>
+        public CampStay CampStay { get; private set; }
 
         readonly List<VillagerBehaviour> villagers = new();
         IRandomSource dialogueRandom;
         IRandomSource campRandom;
+        IRandomSource residentRandom;
 
         void Start()
         {
@@ -57,17 +61,15 @@ namespace PogeunVillage
             var ids = new List<string>();
             foreach (var v in rules.villagers)
                 if (v) ids.Add(v.id);
-            Residents = VillageResidents.CreateStarting(plots.Length, ids, rules.startingResidents, new SystemRandomSource(rules.residentSeed));
+            residentRandom = new SystemRandomSource(rules.residentSeed);  // 시작 주민 · 입주 집터를 이어서 고름
+            Residents = VillageResidents.CreateStarting(plots.Length, ids, rules.startingResidents, residentRandom);
 
             for (int i = 0; i < plots.Length; i++)
             {
                 var resident = Find(Residents.Plots[i]);
                 plots[i].Show(resident);
-                if (!resident)
-                    continue;
-                var villager = Instantiate(villagerPrefab, plots[i].DoorPosition, Quaternion.identity, transform);
-                villager.Setup(this, resident, plots[i], new SystemRandomSource(rules.wanderSeed + i), rules.wanderRadius);
-                villagers.Add(villager);
+                if (resident)
+                    SpawnResident(resident, i);
             }
             ChangeCamper(announce: false);
 
@@ -84,6 +86,14 @@ namespace PogeunVillage
                 dayCycle.Clock.PeriodChanged -= OnPeriod;
                 dayCycle.Clock.DayStarted -= OnDay;
             }
+        }
+
+        VillagerBehaviour SpawnResident(VillagerDefinition resident, int plot)
+        {
+            var villager = Instantiate(villagerPrefab, plots[plot].DoorPosition, Quaternion.identity, transform);
+            villager.Setup(this, resident, plots[plot], new SystemRandomSource(rules.wanderSeed + plot), rules.wanderRadius);
+            villagers.Add(villager);
+            return villager;
         }
 
         VillagerDefinition Find(string id) => id == null ? null : Array.Find(rules.villagers, v => v && v.id == id);
@@ -121,8 +131,10 @@ namespace PogeunVillage
                 if (v) ids.Add(v.id);
             var visitor = Find(CampVisits.PickVisitor(ids, Residents.IsResident, yesterday, Residents.Count, rules.maxResidents, campRandom));
             campSite.Show(visitor);
+            CampStay = null;
             if (!visitor)
                 return;
+            CampStay = new CampStay(visitor.id, rules.talkGain, rules.giftGain, rules.dailyGainCap, rules.moveInThreshold);
             Camper = Instantiate(villagerPrefab, campSite.DoorPosition, Quaternion.identity, transform);
             Camper.Setup(this, visitor, campSite, new SystemRandomSource(rules.wanderSeed + plots.Length), rules.campWanderRadius, isCamper: true);
             if (announce)
@@ -143,8 +155,24 @@ namespace PogeunVillage
             dialogue.Close();
             inventoryWindow.Close();
             Friendship.NewDay();
+            MoveInConfirmedCamper();
             ChangeCamper(announce: true);
             StartRoutine();
+        }
+
+        // 어제 이주가 확정된 캠핑 주민이 빈 집터 중 무작위에 입주(GDD 4-5 ②), 친밀도는 캠핑 때 값
+        void MoveInConfirmedCamper()
+        {
+            if (CampStay == null || !CampStay.Confirmed || !Camper)
+                return;
+            var who = Camper.Definition;
+            int plot = Residents.MoveIn(who.id, residentRandom);
+            if (plot < 0)
+                return;
+            plots[plot].Show(who);
+            SpawnResident(who, plot);
+            Friendship.Begin(who.id, CampStay.Value);
+            GameNotice.Post($"[이주] {who.displayName}이(가) 이사 왔어요!", this);
         }
 
         public Vector2? PickWanderTarget(Vector2 from, Vector2 home, float radius, IRandomSource random) =>
@@ -155,21 +183,23 @@ namespace PogeunVillage
         public Dialogue ComposeTalk(VillagerDefinition who) =>
             new(SpeakerOf(who), VillagerTalk.Compose(dayCycle.Clock.Period, who.morningLines, who.daytimeLines, who.eveningLines, who.smallTalk, dialogueRandom), TalkChoices);
 
-        /// <summary>캠핑 주민: 시간대 인사 + 캠핑 대사, 고르기 · 친밀도 없음(3-1)</summary>
-        public Dialogue ComposeCampTalk(VillagerDefinition who) =>
-            new(HudText.CampSpeaker(who.displayName), VillagerTalk.Compose(dayCycle.Clock.Period, who.morningLines, who.daytimeLines, who.eveningLines, who.campLines, dialogueRandom));
+        string CampSpeakerOf(VillagerDefinition who) =>
+            HudText.CampSpeaker(who.displayName, CampStay.Value, CampStay.Threshold, CampStay.Confirmed);
+
+        /// <summary>캠핑 주민: 시간대 인사 + 캠핑 대사 + 고르기. 이주가 확정됐으면 '내일 이사 갈게' 대사만(고르기 없음)</summary>
+        public Dialogue ComposeCampTalk(VillagerDefinition who) => CampStay.Confirmed
+            ? new(CampSpeakerOf(who), new[] { VillagerTalk.PickLine(who.movingLines, dialogueRandom, "내일 이사 갈게!") })
+            : new(CampSpeakerOf(who), VillagerTalk.Compose(dayCycle.Clock.Period, who.morningLines, who.daytimeLines, who.eveningLines, who.campLines, dialogueRandom), TalkChoices);
 
         /// <summary>말 걸기: 첫 대화 친밀도 → 대사 → 선물하기면 선물 고르기 → 고맙다는 말. 모두 끝나면 done</summary>
         public void Talk(VillagerBehaviour villager, Action done)
         {
             var who = villager.Definition;
             if (villager.IsCamper)
-            {
-                dialogue.Open(ComposeCampTalk(who), _ => done());
-                return;
-            }
-            Friendship.Talk(who.id);
-            dialogue.Open(ComposeTalk(who), talk =>
+                CampStay.Talk();
+            else
+                Friendship.Talk(who.id);
+            dialogue.Open(villager.IsCamper ? ComposeCampTalk(who) : ComposeTalk(who), talk =>
             {
                 if (talk.Chosen == GiftChoice)
                     PickGift(villager, done);
@@ -196,10 +226,25 @@ namespace PogeunVillage
             var who = villager.Definition;
             var item = inventoryWindow.ItemAt(slot);
             playerInventory.Inventory.RemoveOne(slot);
-            Friendship.Gift(who.id);
             GameNotice.Post($"[선물] {who.displayName}에게 {item.displayName}을(를) 줬어요", this);
-            string thanks = VillagerTalk.PickLine(who.thanksLines, dialogueRandom, "고마워!");
-            dialogue.Open(new Dialogue(SpeakerOf(who), new[] { thanks }), _ => done());
+            if (!villager.IsCamper)
+            {
+                Friendship.Gift(who.id);
+                string thanks = VillagerTalk.PickLine(who.thanksLines, dialogueRandom, "고마워!");
+                dialogue.Open(new Dialogue(SpeakerOf(who), new[] { thanks }), _ => done());
+                return;
+            }
+
+            bool wasConfirmed = CampStay.Confirmed;
+            CampStay.Gift();
+            string line = VillagerTalk.PickLine(who.thanksLines, dialogueRandom, "고마워!");
+            if (CampStay.Confirmed && !wasConfirmed)
+            {
+                // 이주 확정(결정 2026-10-28): 답례 대신 확정 대사 + 알림
+                line = VillagerTalk.PickLine(who.moveInLines, dialogueRandom, "나 이 마을에 이사 올게!");
+                GameNotice.Post($"[이주] {who.displayName}이(가) 내일 이사 와요!", this);
+            }
+            dialogue.Open(new Dialogue(CampSpeakerOf(who), new[] { line }), _ => done());
         }
 
         /// <summary>그 위치의 칸이 구멍이면 true(주민이 빠짐)</summary>
@@ -218,7 +263,7 @@ namespace PogeunVillage
                 hole.Unregister();
                 Destroy(hole.gameObject);
             }
-            if (!villager.IsCamper)  // 캠핑 주민 친밀도는 3-1에서(캠핑 주민은 괴롭힐 수 없음 — GDD 4-2)
+            if (!villager.IsCamper)  // 캠핑 주민은 괴롭힐 수 없음(GDD 4-2) — 캠핑 친밀도는 그대로
                 Friendship.Lose(villager.Definition.id, rules.holePenalty);
         }
     }

@@ -47,6 +47,9 @@ namespace PogeunVillage
             return Set(id, Math.Max(min, before - amount)) - before;
         }
 
+        /// <summary>처음 값을 정함(캠핑에서 이사 온 주민이 캠핑 때 값을 이어받음, 3-1). 범위 안으로 맞춤, 하루 상한과 별개</summary>
+        public void Begin(string id, int value) => Set(id, Math.Clamp(value, min, max));
+
         /// <summary>새 날: 첫 대화 · 하루 상한을 다시 셈(값은 그대로)</summary>
         public void NewDay()
         {

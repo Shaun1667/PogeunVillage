@@ -54,6 +54,8 @@ namespace PogeunVillage
         public int campSeed = 404;
         [Tooltip("캠핑 주민이 텐트 입구에서 이 거리(m) 안을 돌아다님")]
         public float campWanderRadius = 5f;
+        [Tooltip("캠핑 주민 친밀도가 이 값에 닿으면 이주 확정(3-1). 대화 · 선물 · 하루 상한은 위 친밀도 값과 같음")]
+        public int moveInThreshold = 5;
 
         [Header("구멍에 빠진 주민 (BALANCE 5번 5-8, 2-5)")]
         [Tooltip("빠졌다 나오면 줄어드는 친밀도")]

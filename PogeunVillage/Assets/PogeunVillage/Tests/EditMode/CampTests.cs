@@ -77,7 +77,8 @@ namespace PogeunVillage.Tests
         [Test]
         public void CampSpeaker_Text()
         {
-            Assert.AreEqual("주민 07  캠핑 중", HudText.CampSpeaker("주민 07"));
+            Assert.AreEqual("주민 07  캠핑 중 · 친밀도 3/5", HudText.CampSpeaker("주민 07", 3, 5, false));
+            Assert.AreEqual("주민 07  캠핑 중 · 이사 오기로 함", HudText.CampSpeaker("주민 07", 5, 5, true));
         }
     }
 }
