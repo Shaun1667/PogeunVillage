@@ -66,6 +66,7 @@ namespace PogeunVillage
             {
                 interactable.displayName = definition.displayName;
                 interactable.Interacted += OnTalk;
+                interactable.HitByTool += OnHit;
             }
             if (visual)
                 visualRest = visual.localPosition;
@@ -78,7 +79,11 @@ namespace PogeunVillage
 
         void OnDestroy()
         {
-            if (interactable) interactable.Interacted -= OnTalk;
+            if (interactable)
+            {
+                interactable.Interacted -= OnTalk;
+                interactable.HitByTool -= OnHit;
+            }
         }
 
         /// <summary>현관에서 나옴(아침 · 잠에서 깬 뒤)</summary>
@@ -261,6 +266,8 @@ namespace PogeunVillage
                 transform.rotation = Quaternion.LookRotation(toPlayer);
             village.Talk(this, Resume);
         }
+
+        void OnHit(Interactable _, PlayerTools by, ToolDefinition tool) => village.HitWithTool(this, tool);
 
         static Vector2 Flat(Vector3 v) => new(v.x, v.z);
     }

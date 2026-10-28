@@ -23,6 +23,8 @@ namespace PogeunVillage
         public GameObject noticeRoot;
 
         float noticeUntil;
+        int noticeFrame = -1;
+        readonly System.Collections.Generic.Queue<string> pending = new();
 
         void Start()
         {
@@ -63,7 +65,11 @@ namespace PogeunVillage
 
         void Update()
         {
-            if (Notice.activeSelf && Time.time >= noticeUntil)
+            if (!Notice.activeSelf || Time.time < noticeUntil)
+                return;
+            if (pending.Count > 0)
+                Show(pending.Dequeue());
+            else
                 Notice.SetActive(false);
         }
 
@@ -88,11 +94,27 @@ namespace PogeunVillage
             toolText.text = tool ? HudText.HeldTool(tool.displayName, durability, tool.durability) : "";
         }
 
+        // 새 알림은 바로 바꿔 보여 줌. 단, 같은 프레임에 여러 개가 오면(아침 처리: 떠남 · 입주 · 이사 준비 · 캠핑) 차례로 하나씩 (3-2)
         void OnNotice(string message)
+        {
+            if (Notice.activeSelf && Time.frameCount == noticeFrame)
+            {
+                pending.Enqueue(message);
+                return;
+            }
+            pending.Clear();
+            Show(message);
+        }
+
+        void Show(string message)
         {
             noticeText.text = HudText.Notice(message);
             Notice.SetActive(true);
             noticeUntil = Time.time + settings.hudNoticeSeconds;
+            noticeFrame = Time.frameCount;
         }
+
+        /// <summary>같은 때 와서 차례를 기다리는 알림</summary>
+        public System.Collections.Generic.IReadOnlyCollection<string> PendingNotices => pending;
     }
 }

@@ -57,6 +57,16 @@ namespace PogeunVillage
         [Tooltip("캠핑 주민 친밀도가 이 값에 닿으면 이주 확정(3-1). 대화 · 선물 · 하루 상한은 위 친밀도 값과 같음")]
         public int moveInThreshold = 5;
 
+        [Header("괴롭히기 · 주민 떠남 (BALANCE 2번, 3-2)")]
+        [Tooltip("잠자리채로 연속 이만큼 때릴 때마다 깎임(주민마다 따로 셈)")]
+        [Min(1)] public int bullyHitsPerPenalty = 5;
+        [Tooltip("위 횟수마다 줄어드는 친밀도")]
+        public int bullyPenalty = 2;
+        [Tooltip("마지막으로 때린 뒤 이 시간(실제 초, 일시정지 제외)이 지나면 연속이 끊김")]
+        public float bullyStreakTimeoutSeconds = 180f;
+        [Tooltip("아침에 친밀도가 이 값 이하면 그날 이사 준비 → 다음 날 아침 떠남")]
+        public int leaveThreshold = -20;
+
         [Header("구멍에 빠진 주민 (BALANCE 5번 5-8, 2-5)")]
         [Tooltip("빠졌다 나오면 줄어드는 친밀도")]
         public int holePenalty = 2;

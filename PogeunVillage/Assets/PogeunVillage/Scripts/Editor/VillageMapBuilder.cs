@@ -130,7 +130,7 @@ namespace PogeunVillage.EditorTools
             EnsureFolder(ToolDir);
             tools = new[]
             {
-                EnsureTool("Net", "잠자리채", ToolKind.Net, false),
+                EnsureTool("Net", "잠자리채", ToolKind.Net, false, InteractableKind.Villager),  // 주민 괴롭히기(3-2)
                 EnsureTool("FishingRod", "낚싯대", ToolKind.FishingRod, false),
                 EnsureTool("Axe", "도끼", ToolKind.Axe, false, InteractableKind.Tree),
                 EnsureTool("Shovel", "삽", ToolKind.Shovel, true, InteractableKind.Flower),

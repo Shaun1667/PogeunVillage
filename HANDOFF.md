@@ -56,7 +56,7 @@
 결정 문장을 해석해서 문서에 적은 부분. 해당 작업 착수 때 확인한다.
 | 항목 | 현재 해석 | 위치 |
 |---|---|---|
-| 괴롭히기 "3분" | 실제 시간, 일시정지 중 제외 | GDD 4-3 · BALANCE 2 |
+| ~~괴롭히기 "3분"~~ (확정 2026-10-28) | 실제 시간, 일시정지 중 제외 | GDD 4-3 · BALANCE 2 |
 | 괴롭히기 연속 | 주민마다 따로 셈, 다른 주민을 때려도 끊기지 않음 | GDD 4-3 |
 | 이사 취소 기준 | -20 **초과**(-19 이상)로 회복하면 취소 | GDD 4-3 |
 | ~~도끼 열매~~ (확정 2026-10-27) | 베어지는 순간(5번째)에만 떨어짐 | GDD 4-7 |
@@ -67,4 +67,4 @@
 | 다 자란 나무 | 옮길 수 없음 | GDD 10번 |
 
 ## 6. 다음 작업
-TASKS.md **3-2 괴롭히기 · 주민 떠남**부터 (Phase 3). 캠핑(2-6 · 3-1): 광장 서쪽 끝 텐트에 매일 아침 미거주 주민 1명(`Village.Camper`), 친밀도 5면 이주 확정(`Village.CampStay`) → 다음 아침 입주. 주민(2-4 · 2-5): 임시 20명 중 6명이 집터 12곳에 삶, 주민 앞 F = 대화창 → 끝에 선물하기 / 안녕, 친밀도는 이름 옆 숫자. 창이 플레이어를 멈출 땐 `PlayerLock`. 이름 · 대사는 `Data/Villagers/*.asset`에서 바꿈. HUD(2-3): Tab = 인벤토리 창, 안내는 화면 아래 알림(`GameNotice.Post`). 게임은 6시 시작, 상점은 8시에 열림 — 도구는 광장 서쪽 노점에서 삼. Phase 1 그레이박스 1-1 ~ 1-9 완료(곤충 · 낚시는 각 파트 기획 후). 개발용 F8 = 다음 날 아침. 테스트는 메뉴 `Pogeun Village > Run EditMode Tests` · `Run PlayMode Tests`로 실행(결과: `Temp/PogeunVillageTestResults_{EditMode|PlayMode}.txt`). PlayMode는 플레이 모드에 들어갔다 나오므로 씬에 저장 안 한 변경이 있으면 먼저 저장.
+TASKS.md **3-3 주민 부탁**부터 (Phase 3). 괴롭히기 · 떠남(3-2): 잠자리채로 5번 → -2, -20이면 이사 준비 → 다음 아침 떠남(`Village.Departures`). 캠핑(2-6 · 3-1): 광장 서쪽 끝 텐트에 매일 아침 미거주 주민 1명(`Village.Camper`), 친밀도 5면 이주 확정(`Village.CampStay`) → 다음 아침 입주. 주민(2-4 · 2-5): 임시 20명 중 6명이 집터 12곳에 삶, 주민 앞 F = 대화창 → 끝에 선물하기 / 안녕, 친밀도는 이름 옆 숫자. 창이 플레이어를 멈출 땐 `PlayerLock`. 이름 · 대사는 `Data/Villagers/*.asset`에서 바꿈. HUD(2-3): Tab = 인벤토리 창, 안내는 화면 아래 알림(`GameNotice.Post`). 게임은 6시 시작, 상점은 8시에 열림 — 도구는 광장 서쪽 노점에서 삼. Phase 1 그레이박스 1-1 ~ 1-9 완료(곤충 · 낚시는 각 파트 기획 후). 개발용 F8 = 다음 날 아침. 테스트는 메뉴 `Pogeun Village > Run EditMode Tests` · `Run PlayMode Tests`로 실행(결과: `Temp/PogeunVillageTestResults_{EditMode|PlayMode}.txt`). PlayMode는 플레이 모드에 들어갔다 나오므로 씬에 저장 안 한 변경이 있으면 먼저 저장.

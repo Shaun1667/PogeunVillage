@@ -70,6 +70,23 @@ namespace PogeunVillage.PlayModeTests
         }
 
         [UnityTest]
+        public IEnumerator SameFrameNotices_ShownInTurn_LaterOneReplaces()
+        {
+            GameNotice.Post("[주민] 첫째");
+            GameNotice.Post("[캠핑] 둘째");
+            Assert.AreEqual("첫째", hud.noticeText.text, "같은 프레임에 온 알림은 차례로(3-2)");
+            yield return WaitSeconds(settings.hudNoticeSeconds + 0.1f);
+            Assert.AreEqual("둘째", hud.noticeText.text);
+            Assert.IsTrue(hud.NoticeVisible);
+
+            yield return null;
+            GameNotice.Post("[상점] 셋째");
+            Assert.AreEqual("셋째", hud.noticeText.text, "다른 프레임에 온 새 알림은 바로 바뀜(2-3 그대로)");
+            yield return WaitSeconds(settings.hudNoticeSeconds + 0.1f);
+            Assert.IsFalse(hud.NoticeVisible);
+        }
+
+        [UnityTest]
         public IEnumerator ClosedShop_ShowsNotice()
         {
             var stand = Object.FindObjectsByType<ShopStand>().First(s => s.item.id == "Axe");

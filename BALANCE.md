@@ -49,12 +49,14 @@
 | 괴롭히기 수단 | 잠자리채로 때리기 | 마을 주민만 (캠핑 주민 불가) |
 | `bullyHitsPerPenalty` | 5 | 연속으로 때린 횟수 5회마다 (주민마다 따로 셈) |
 | `bullyPenalty` | -2 | 위 5회마다 친밀도 감소 |
-| `bullyStreakTimeout` | 3분 | 마지막으로 때린 뒤 이 시간이 지나면 연속 횟수 0 (실제 시간, 일시정지 제외 — 해석, 3-2 착수 때 확인) |
+| `bullyStreakTimeoutSeconds` | 180 (3분) | 마지막으로 때린 뒤 이 시간이 지나면 연속 횟수 0 (실제 시간, 일시정지 제외 — 결정 2026-10-28) |
 | 연속 끊김 (행동) | 친밀도 오르는 행동 | 그 주민에게 대화·선물하면 연속 횟수 0 |
 | `friendshipMin` | -20 | 친밀도 하한. 그 아래로 내려가지 않음 |
 | `leaveThreshold` | -20 | 아침에 친밀도가 이 값(= 하한)이면 그날 이사 준비 |
 | 이사 준비 취소 | -20 초과로 회복 | 이사 준비 중인 날에 -19 이상이 되면 취소 |
 | 떠남 | 이사 준비 다음 날 아침 | 집터가 빈 집터가 됨 |
+
+데이터 위치: `Data/VillageRules.asset` (`bullyHitsPerPenalty` · `bullyPenalty` · `bullyStreakTimeoutSeconds` · `leaveThreshold`, 3-2). 맞으면 잠자리채 내구도 -1(캠핑 주민도)
 
 ### 검산 케이스
 | # | 상황 | 결과 |
@@ -234,7 +236,7 @@
 
 | `holeFallRadius` / `holeStuckTime` / `holeSinkDepth` | 0.3 / 1.5 / 0.45 | 구멍 칸 가운데 0.3m 안이면 빠짐 · 1.5초 못 움직임 · 몸이 0.45m 내려감 (결정 2026-10-27, 1-8) |
 | `fruitDropRadius` / `fruitFallTime` | 1.1 / 0.35 | 흔든 나무에서 열매가 떨어지는 거리(나무 중심에서, m) · 시간(초) (1-3) |
-| `hudNoticeSeconds` | 2 | 화면 아래 알림이 떠 있는 시간(초), 새 알림이 오면 바로 바뀜 (결정 2026-10-27, 2-3) |
+| `hudNoticeSeconds` | 2 | 화면 아래 알림이 떠 있는 시간(초), 새 알림이 오면 바로 바뀜 (결정 2026-10-27, 2-3). 같은 프레임에 온 알림은 차례로 2초씩 (3-2) |
 | `inventorySlotColor` / `inventoryCursorColor` / `inventoryPickedColor` | 흰색 0.75 / 노랑 / 하늘색 | 인벤토리 창 칸 · 고른 칸 · 집은 칸 색 (2-3) |
 
 대상 크기(`Interactable.radius`, 로컬 m) · 마커 높이: 나무 0.4 · 3.7(침엽수 4) / 게시판 1 · 2 / 우체통 0.3 · 1.5 / 떨어진 열매 0.2 · 0.7 / 꽃 0.15 · 0.75 — 맵 생성 메뉴에서 지정

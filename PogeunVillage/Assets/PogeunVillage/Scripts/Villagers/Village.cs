@@ -11,7 +11,10 @@ namespace PogeunVillage
     /// 구멍에 빠졌다 나온 주민은 구멍이 없어지고 친밀도가 깎임. 수치는 VillageRules.
     /// 캠핑(2-6): 시작할 때와 매일 아침 마을에 살지 않는 주민 중 1명(어제 온 주민 제외, 꽉 차면 없음)이 텐트에 옴.
     /// 캠핑 주민 이주(3-1): 캠핑 주민과도 같은 대화 · 선물로 친밀도를 올리고(CampStay, 이름 옆 '친밀도 3/5'), 기준에 닿으면 이주 확정 →
-    /// 다음 날 아침 빈 집터 중 무작위에 입주(친밀도는 캠핑 때 값을 이어받음). 아침 순서는 입주(②) → 캠핑 교체(④).
+    /// 다음 날 아침 빈 집터 중 무작위에 입주(친밀도는 캠핑 때 값을 이어받음).
+    /// 괴롭히기 · 떠남(3-2): 잠자리채로 마을 주민을 연속으로 때리면 N번마다 친밀도가 깎이고(대화 · 선물 · 3분이면 연속 끊김),
+    /// 아침에 -20이면 그날 이사 준비 → 회복하지 않으면 다음 날 아침 떠나 집터가 빔. 캠핑 주민은 맞아도 그대로.
+    /// 아침 순서(GDD 4-5): ① 떠남 → ② 입주 → ③ 이사 준비 → ④ 캠핑 교체.
     /// </summary>
     public class Village : MonoBehaviour
     {
@@ -38,6 +41,8 @@ namespace PogeunVillage
         public VillagerBehaviour Camper { get; private set; }
         /// <summary>오늘 캠핑 주민의 친밀도 · 이주 확정(없으면 null)</summary>
         public CampStay CampStay { get; private set; }
+        public BullyStreak Bully { get; private set; }
+        public Departures Departures { get; private set; }
 
         readonly List<VillagerBehaviour> villagers = new();
         IRandomSource dialogueRandom;
@@ -57,6 +62,9 @@ namespace PogeunVillage
             dialogueRandom = new SystemRandomSource(rules.dialogueSeed);
             campRandom = new SystemRandomSource(rules.campSeed);
             Friendship = new Friendship(rules.talkGain, rules.giftGain, rules.dailyGainCap, rules.friendshipMin, rules.friendshipMax);
+            Bully = new BullyStreak(rules.bullyHitsPerPenalty, rules.bullyStreakTimeoutSeconds);
+            Departures = new Departures(rules.leaveThreshold);
+            Friendship.Changed += OnFriendshipChanged;
 
             var ids = new List<string>();
             foreach (var v in rules.villagers)
@@ -155,9 +163,62 @@ namespace PogeunVillage
             dialogue.Close();
             inventoryWindow.Close();
             Friendship.NewDay();
+            LeaveVillagers();
             MoveInConfirmedCamper();
+            StartPreparingToLeave();
             ChangeCamper(announce: true);
             StartRoutine();
+        }
+
+        // ① 이사 준비 중이던 주민이 떠남: 집터가 비고(표지판), 미거주 주민으로 돌아가 다시 캠핑 후보가 됨
+        void LeaveVillagers()
+        {
+            foreach (string id in Departures.TakeLeaving())
+            {
+                int plot = Residents.PlotOf(id);
+                if (plot < 0 || !Residents.MoveOut(id))
+                    continue;
+                plots[plot].Show(null);
+                var villager = villagers.Find(v => v.Definition.id == id);
+                if (villager)
+                {
+                    villagers.Remove(villager);
+                    villager.gameObject.SetActive(false);
+                    Destroy(villager.gameObject);
+                }
+                GameNotice.Post($"[주민] {Find(id).displayName}이(가) 마을을 떠났어요", this);
+            }
+        }
+
+        // ③ 친밀도가 기준(-20) 이하인 주민이 그날 이사 준비
+        void StartPreparingToLeave()
+        {
+            foreach (string id in Departures.StartPreparing(Residents.Plots, Friendship.Get))
+                GameNotice.Post($"[주민] {Find(id).displayName}이(가) 이사를 준비하고 있어요", this);
+        }
+
+        void OnFriendshipChanged(string id, int value)
+        {
+            if (Departures.OnFriendshipChanged(id, value))
+                GameNotice.Post($"[주민] {Find(id).displayName}이(가) 이사를 그만두기로 했어요", this);
+        }
+
+        /// <summary>도구에 맞음: 잠자리채면 흔들리고, 마을 주민이면 연속 횟수를 셈(N번째마다 친밀도 감소 + 알림). 캠핑 주민은 그대로(2-13)</summary>
+        public void HitWithTool(VillagerBehaviour villager, ToolDefinition tool)
+        {
+            if (tool.kind != ToolKind.Net)
+                return;
+            var interactable = villager.GetComponent<Interactable>();
+            if (interactable)
+                interactable.Wiggle(settings);
+            if (villager.IsCamper)
+                return;
+            var who = villager.Definition;
+            if (Bully.Hit(who.id, Time.time))
+            {
+                Friendship.Lose(who.id, rules.bullyPenalty);
+                GameNotice.Post($"[주민] {who.displayName}이(가) 화가 났어요", this);
+            }
         }
 
         // 어제 이주가 확정된 캠핑 주민이 빈 집터 중 무작위에 입주(GDD 4-5 ②), 친밀도는 캠핑 때 값
@@ -178,10 +239,13 @@ namespace PogeunVillage
         public Vector2? PickWanderTarget(Vector2 from, Vector2 home, float radius, IRandomSource random) =>
             WalkMap.PickWanderTarget(from, home, radius, random, ground.Grid, rules.wanderTries, rules.walkCheckStep);
 
-        public string SpeakerOf(VillagerDefinition who) => HudText.Speaker(who.displayName, Friendship.Get(who.id));
+        public string SpeakerOf(VillagerDefinition who) =>
+            HudText.Speaker(who.displayName, Friendship.Get(who.id), Departures.IsPreparing(who.id));
 
+        /// <summary>시간대 인사 + 잡담(이사 준비 중이면 떠날까 하는 말) + 고르기</summary>
         public Dialogue ComposeTalk(VillagerDefinition who) =>
-            new(SpeakerOf(who), VillagerTalk.Compose(dayCycle.Clock.Period, who.morningLines, who.daytimeLines, who.eveningLines, who.smallTalk, dialogueRandom), TalkChoices);
+            new(SpeakerOf(who), VillagerTalk.Compose(dayCycle.Clock.Period, who.morningLines, who.daytimeLines, who.eveningLines,
+                Departures.IsPreparing(who.id) ? who.leavingLines : who.smallTalk, dialogueRandom), TalkChoices);
 
         string CampSpeakerOf(VillagerDefinition who) =>
             HudText.CampSpeaker(who.displayName, CampStay.Value, CampStay.Threshold, CampStay.Confirmed);
@@ -198,7 +262,10 @@ namespace PogeunVillage
             if (villager.IsCamper)
                 CampStay.Talk();
             else
+            {
+                Bully.Reset(who.id);  // 대화하면 괴롭히기 연속이 끊김
                 Friendship.Talk(who.id);
+            }
             dialogue.Open(villager.IsCamper ? ComposeCampTalk(who) : ComposeTalk(who), talk =>
             {
                 if (talk.Chosen == GiftChoice)
@@ -226,9 +293,11 @@ namespace PogeunVillage
             var who = villager.Definition;
             var item = inventoryWindow.ItemAt(slot);
             playerInventory.Inventory.RemoveOne(slot);
-            GameNotice.Post($"[선물] {who.displayName}에게 {item.displayName}을(를) 줬어요", this);
+            string given = $"[선물] {who.displayName}에게 {item.displayName}을(를) 줬어요";
             if (!villager.IsCamper)
             {
+                GameNotice.Post(given, this);
+                Bully.Reset(who.id);
                 Friendship.Gift(who.id);
                 string thanks = VillagerTalk.PickLine(who.thanksLines, dialogueRandom, "고마워!");
                 dialogue.Open(new Dialogue(SpeakerOf(who), new[] { thanks }), _ => done());
@@ -240,10 +309,12 @@ namespace PogeunVillage
             string line = VillagerTalk.PickLine(who.thanksLines, dialogueRandom, "고마워!");
             if (CampStay.Confirmed && !wasConfirmed)
             {
-                // 이주 확정(결정 2026-10-28): 답례 대신 확정 대사 + 알림
+                // 이주 확정(결정 2026-10-28): 답례 대신 확정 대사, 선물 알림 대신 확정 알림
                 line = VillagerTalk.PickLine(who.moveInLines, dialogueRandom, "나 이 마을에 이사 올게!");
                 GameNotice.Post($"[이주] {who.displayName}이(가) 내일 이사 와요!", this);
             }
+            else
+                GameNotice.Post(given, this);
             dialogue.Open(new Dialogue(CampSpeakerOf(who), new[] { line }), _ => done());
         }
 

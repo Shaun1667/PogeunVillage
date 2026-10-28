@@ -54,5 +54,9 @@ MonoBehaviour:
   campSeed: 404
   campWanderRadius: 5
   moveInThreshold: 5
+  bullyHitsPerPenalty: 5
+  bullyPenalty: 2
+  bullyStreakTimeoutSeconds: 180
+  leaveThreshold: -20
   holePenalty: 2
   holeStuckSeconds: 3

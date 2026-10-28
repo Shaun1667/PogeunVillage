@@ -36,6 +36,10 @@ namespace PogeunVillage
         /// <summary>대화창 이름: "주민 01  친밀도 3" (결정 2026-10-28, 2-5: 그레이박스 동안 숫자로 보임)</summary>
         public static string Speaker(string displayName, int friendship) => $"{displayName}  친밀도 {friendship}";
 
+        /// <summary>이사 준비 중인 주민: "주민 01  친밀도 -20 · 이사 준비 중" (3-2)</summary>
+        public static string Speaker(string displayName, int friendship, bool preparingToLeave) =>
+            preparingToLeave ? $"{Speaker(displayName, friendship)} · 이사 준비 중" : Speaker(displayName, friendship);
+
         /// <summary>캠핑 주민 대화창 이름: "주민 07  캠핑 중 · 친밀도 3/5", 확정 뒤 "주민 07  캠핑 중 · 이사 오기로 함" (3-1)</summary>
         public static string CampSpeaker(string displayName, int value, int threshold, bool confirmed) =>
             confirmed ? $"{displayName}  캠핑 중 · 이사 오기로 함" : $"{displayName}  캠핑 중 · 친밀도 {value}/{threshold}";

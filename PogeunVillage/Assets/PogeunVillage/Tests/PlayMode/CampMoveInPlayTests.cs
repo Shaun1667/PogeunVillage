@@ -106,7 +106,8 @@ namespace PogeunVillage.PlayModeTests
             Assert.Less(Vector2.Distance(Flat(villager.transform.position), Flat(plot.DoorPosition)), 0.6f);
             Assert.AreEqual(5, village.Friendship.Get(who.id), "캠핑 때 친밀도 이어받음");
             Assert.AreNotSame(who, Camper ? Camper.Definition : null, "새 캠핑 주민은 다른 주민");
-            StringAssert.Contains("캠핑 왔어요", hud.noticeText.text, "입주 알림 다음에 캠핑 교체(아침 순서 ② → ④)");
+            StringAssert.Contains("이사 왔어요", hud.noticeText.text, "입주 알림 먼저");
+            Assert.IsTrue(hud.PendingNotices.Any(n => n.Contains("캠핑 왔어요")), "다음 차례에 캠핑 교체 알림(아침 순서 ② → ④)");
         }
 
         [UnityTest]
