@@ -14,12 +14,14 @@ namespace PogeunVillage
     /// 다음 날 아침 빈 집터 중 무작위에 입주(친밀도는 캠핑 때 값을 이어받음).
     /// 괴롭히기 · 떠남(3-2): 잠자리채로 마을 주민을 연속으로 때리면 N번마다 친밀도가 깎이고(대화 · 선물 · 3분이면 연속 끊김),
     /// 아침에 -20이면 그날 이사 준비 → 회복하지 않으면 다음 날 아침 떠나 집터가 빔. 캠핑 주민은 맞아도 그대로.
-    /// 아침 순서(GDD 4-5): ① 떠남 → ② 입주 → ③ 이사 준비 → ④ 캠핑 교체.
+    /// 아침 순서(GDD 4-5): ① 떠남 → ② 입주 → ③ 이사 준비 → ④ 캠핑 교체 → 오늘의 부탁.
+    /// 부탁(3-3): 매일 아침 마을 주민 1명이 '물건 N개 가져다줘'(그날만). 다 가지고 말 걸면 '부탁한 것 주기' → 친밀도 +3(상한과 별개) + 모아.
     /// </summary>
     public class Village : MonoBehaviour
     {
-        static readonly string[] TalkChoices = { "선물하기", "안녕" };
-        const int GiftChoice = 0;
+        const string GiveRequestChoice = "부탁한 것 주기", GiftChoice = "선물하기", ByeChoice = "안녕";
+        static readonly string[] TalkChoices = { GiftChoice, ByeChoice };
+        static readonly string[] RequestChoices = { GiveRequestChoice, GiftChoice, ByeChoice };
 
         public VillageRules rules;
         public WorldSettings settings;
@@ -28,6 +30,7 @@ namespace PogeunVillage
         public DialogueWindow dialogue;
         public InventoryWindow inventoryWindow;
         public PlayerInventory playerInventory;
+        public PlayerWallet wallet;
         public HousePlot[] plots = { };
         [Tooltip("캠핑 구역 텐트(집 대신). 입구가 door")]
         public HousePlot campSite;
@@ -43,16 +46,19 @@ namespace PogeunVillage
         public CampStay CampStay { get; private set; }
         public BullyStreak Bully { get; private set; }
         public Departures Departures { get; private set; }
+        /// <summary>오늘의 부탁(없으면 null)</summary>
+        public VillagerRequest Request { get; private set; }
 
         readonly List<VillagerBehaviour> villagers = new();
         IRandomSource dialogueRandom;
         IRandomSource campRandom;
         IRandomSource residentRandom;
+        IRandomSource requestRandom;
 
         void Start()
         {
             if (!rules || !settings || !dayCycle || dayCycle.Clock == null || !ground || ground.Grid == null || !villagerPrefab || plots.Length == 0
-                || !dialogue || !inventoryWindow || !playerInventory || !campSite)
+                || !dialogue || !inventoryWindow || !playerInventory || !wallet || !campSite)
             {
                 Debug.LogError($"{name}: 마을 연결이 비어 있습니다.", this);
                 enabled = false;
@@ -61,6 +67,7 @@ namespace PogeunVillage
             WalkMap = ground.data.CreateWalkMap();
             dialogueRandom = new SystemRandomSource(rules.dialogueSeed);
             campRandom = new SystemRandomSource(rules.campSeed);
+            requestRandom = new SystemRandomSource(rules.requestSeed);
             Friendship = new Friendship(rules.talkGain, rules.giftGain, rules.dailyGainCap, rules.friendshipMin, rules.friendshipMax);
             Bully = new BullyStreak(rules.bullyHitsPerPenalty, rules.bullyStreakTimeoutSeconds);
             Departures = new Departures(rules.leaveThreshold);
@@ -80,6 +87,7 @@ namespace PogeunVillage
                     SpawnResident(resident, i);
             }
             ChangeCamper(announce: false);
+            PickRequest();
 
             dayCycle.Clock.PeriodChanged += OnPeriod;
             dayCycle.Clock.DayStarted += OnDay;
@@ -167,6 +175,7 @@ namespace PogeunVillage
             MoveInConfirmedCamper();
             StartPreparingToLeave();
             ChangeCamper(announce: true);
+            PickRequest();
             StartRoutine();
         }
 
@@ -196,6 +205,23 @@ namespace PogeunVillage
             foreach (string id in Departures.StartPreparing(Residents.Plots, Friendship.Get))
                 GameNotice.Post($"[주민] {Find(id).displayName}이(가) 이사를 준비하고 있어요", this);
         }
+
+        // 오늘의 부탁: 마을 주민(이사 준비 중 제외) 중 1명, 그날만(어제 부탁은 사라짐)
+        void PickRequest()
+        {
+            var candidates = new List<string>();
+            foreach (string id in Residents.Plots)
+                if (id != null && !Departures.IsPreparing(id))
+                    candidates.Add(id);
+            var items = new List<string>();
+            foreach (var item in rules.requestItems)
+                if (item) items.Add(item.id);
+            Request = VillagerRequest.Pick(candidates, items, rules.requestCount.x, rules.requestCount.y, requestRandom);
+        }
+
+        bool HasOpenRequest(string id) => Request != null && !Request.Done && Request.VillagerId == id;
+
+        ItemDefinition RequestItem => Request == null ? null : Array.Find(rules.requestItems, i => i && i.id == Request.ItemId);
 
         void OnFriendshipChanged(string id, int value)
         {
@@ -240,12 +266,25 @@ namespace PogeunVillage
             WalkMap.PickWanderTarget(from, home, radius, random, ground.Grid, rules.wanderTries, rules.walkCheckStep);
 
         public string SpeakerOf(VillagerDefinition who) =>
-            HudText.Speaker(who.displayName, Friendship.Get(who.id), Departures.IsPreparing(who.id));
+            HudText.Speaker(who.displayName, Friendship.Get(who.id), Departures.IsPreparing(who.id), HasOpenRequest(who.id));
 
-        /// <summary>시간대 인사 + 잡담(이사 준비 중이면 떠날까 하는 말) + 고르기</summary>
-        public Dialogue ComposeTalk(VillagerDefinition who) =>
-            new(SpeakerOf(who), VillagerTalk.Compose(dayCycle.Clock.Period, who.morningLines, who.daytimeLines, who.eveningLines,
-                Departures.IsPreparing(who.id) ? who.leavingLines : who.smallTalk, dialogueRandom), TalkChoices);
+        /// <summary>
+        /// 시간대 인사 + 잡담(이사 준비 중이면 떠날까 하는 말, 부탁이 있으면 부탁 대사) + 고르기.
+        /// 부탁한 물건을 다 가지고 있으면 고르기 맨 앞에 '부탁한 것 주기'
+        /// </summary>
+        public Dialogue ComposeTalk(VillagerDefinition who)
+        {
+            IReadOnlyList<string> second = Departures.IsPreparing(who.id) ? who.leavingLines : who.smallTalk;
+            var choices = TalkChoices;
+            if (HasOpenRequest(who.id) && RequestItem)
+            {
+                string template = VillagerTalk.PickLine(who.requestLines, dialogueRandom, "{0} {1}개만 가져다줄 수 있어?");
+                second = new[] { HudText.RequestLine(template, RequestItem.displayName, Request.Count) };
+                if (Request.CanFulfill(playerInventory.Inventory.Count(Request.ItemId)))
+                    choices = RequestChoices;
+            }
+            return new(SpeakerOf(who), VillagerTalk.Compose(dayCycle.Clock.Period, who.morningLines, who.daytimeLines, who.eveningLines, second, dialogueRandom), choices);
+        }
 
         string CampSpeakerOf(VillagerDefinition who) =>
             HudText.CampSpeaker(who.displayName, CampStay.Value, CampStay.Threshold, CampStay.Confirmed);
@@ -268,11 +307,34 @@ namespace PogeunVillage
             }
             dialogue.Open(villager.IsCamper ? ComposeCampTalk(who) : ComposeTalk(who), talk =>
             {
-                if (talk.Chosen == GiftChoice)
+                string chosen = talk.Chosen >= 0 ? talk.Choices[talk.Chosen] : null;
+                if (chosen == GiftChoice)
                     PickGift(villager, done);
+                else if (chosen == GiveRequestChoice)
+                    FulfillRequest(villager, done);
                 else
                     done();
             });
+        }
+
+        // 부탁한 물건을 앞쪽 칸부터 빼고, 친밀도 +3(하루 상한과 별개) · 모아 보상 · 답례
+        void FulfillRequest(VillagerBehaviour villager, Action done)
+        {
+            var who = villager.Definition;
+            var item = RequestItem;
+            if (!HasOpenRequest(who.id) || !item || !playerInventory.Inventory.TryRemove(Request.ItemId, Request.Count))
+            {
+                done();
+                return;
+            }
+            int moa = VillagerRequest.MoaReward(item.sellPrice, Request.Count, rules.requestMoaMultiplier);
+            wallet.Wallet.Earn(moa);
+            Bully.Reset(who.id);
+            Friendship.Reward(who.id, rules.requestFriendshipGain);
+            Request.Complete();
+            GameNotice.Post($"[부탁] {who.displayName}의 부탁을 들어줬어요 (+{HudText.Moa(moa)})", this);
+            string thanks = VillagerTalk.PickLine(who.requestThanksLines, dialogueRandom, "고마워! 이건 답례야.");
+            dialogue.Open(new Dialogue(SpeakerOf(who), new[] { thanks }), _ => done());
         }
 
         void PickGift(VillagerBehaviour villager, Action done)

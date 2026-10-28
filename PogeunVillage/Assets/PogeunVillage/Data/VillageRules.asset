@@ -58,5 +58,14 @@ MonoBehaviour:
   bullyPenalty: 2
   bullyStreakTimeoutSeconds: 180
   leaveThreshold: -20
+  requestItems:
+  - {fileID: 11400000, guid: 5fcdc7275c24c544fbff2e61c80fc567, type: 2}
+  - {fileID: 11400000, guid: 499e67d60341bb640a3ea6522ede2951, type: 2}
+  - {fileID: 11400000, guid: 43b768f6b91b8c0438653b29b65c318c, type: 2}
+  - {fileID: 11400000, guid: a28503d56d1600c4dab212274b23b6d4, type: 2}
+  requestCount: {x: 1, y: 3}
+  requestFriendshipGain: 3
+  requestMoaMultiplier: 2
+  requestSeed: 31
   holePenalty: 2
   holeStuckSeconds: 3

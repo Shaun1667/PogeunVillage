@@ -67,6 +67,18 @@ namespace PogeunVillage
         [Tooltip("아침에 친밀도가 이 값 이하면 그날 이사 준비 → 다음 날 아침 떠남")]
         public int leaveThreshold = -20;
 
+        [Header("주민 부탁 (BALANCE 14번, 3-3)")]
+        [Tooltip("부탁할 수 있는 물건(맵 생성 메뉴가 사과 · 복숭아 · 꽃 · 목재로 채움)")]
+        public ItemDefinition[] requestItems = { };
+        [Tooltip("부탁하는 개수 범위(포함)")]
+        public Vector2Int requestCount = new(1, 3);
+        [Tooltip("들어주면 오르는 친밀도(하루 상한과 별개)")]
+        public int requestFriendshipGain = 3;
+        [Tooltip("보상 모아 = 팔 때 값 × 개수 × 이 배수")]
+        public int requestMoaMultiplier = 2;
+        [Tooltip("오늘의 부탁 고르기 시드")]
+        public int requestSeed = 31;
+
         [Header("구멍에 빠진 주민 (BALANCE 5번 5-8, 2-5)")]
         [Tooltip("빠졌다 나오면 줄어드는 친밀도")]
         public int holePenalty = 2;

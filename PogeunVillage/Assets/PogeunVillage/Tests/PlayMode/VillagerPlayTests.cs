@@ -111,7 +111,7 @@ namespace PogeunVillage.PlayModeTests
 
         VillagerBehaviour StandInFrontOfVillager()
         {
-            var v = village.Villagers[0];
+            var v = village.Villagers.First(x => village.Request == null || village.Request.VillagerId != x.Definition.id);
             Vector3 front = v.transform.forward;
             Teleport(v.transform.position + front * 0.9f, -front);
             return v;

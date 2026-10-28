@@ -30,7 +30,7 @@ namespace PogeunVillage.PlayModeTests
             dialogue = Object.FindAnyObjectByType<DialogueWindow>();
             window = Object.FindAnyObjectByType<InventoryWindow>();
             hud = Object.FindAnyObjectByType<HudView>();
-            villager = village.Villagers[0];
+            villager = village.Villagers.First(x => village.Request == null || village.Request.VillagerId != x.Definition.id);
             yield break;
         }
 

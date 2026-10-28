@@ -1177,6 +1177,7 @@ namespace PogeunVillage.EditorTools
         {
             var rules = EnsureAsset<VillageRules>(VillageRulesPath);
             rules.villagers = EnsureVillagers();
+            rules.requestItems = new[] { appleItem, peachItem, flowerItem, woodItem };  // 부탁할 수 있는 물건(3-3)
             EditorUtility.SetDirty(rules);
 
             var village = new GameObject("Village").AddComponent<Village>();
@@ -1187,6 +1188,7 @@ namespace PogeunVillage.EditorTools
             village.dialogue = dialogue;
             village.inventoryWindow = dialogue.GetComponent<InventoryWindow>();
             village.playerInventory = Object.FindAnyObjectByType<PlayerInventory>();
+            village.wallet = Object.FindAnyObjectByType<PlayerWallet>();
             village.plots = plots;
             village.campSite = campSite;
             village.villagerPrefab = BuildVillagerPrefab();

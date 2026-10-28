@@ -48,7 +48,7 @@ namespace PogeunVillage.PlayModeTests
         [UnityTest]
         public IEnumerator FiveNetHits_Minus2_AngryNotice_UsesDurability()
         {
-            var v = village.Villagers[0];
+            var v = village.Villagers.First(x => village.Request == null || village.Request.VillagerId != x.Definition.id);
             yield return Hold(Net);
             yield return SwingAt(v, 4);
             Assert.AreEqual(0, village.Friendship.Get(v.Definition.id), "4번은 그대로");
@@ -62,7 +62,7 @@ namespace PogeunVillage.PlayModeTests
         [UnityTest]
         public IEnumerator TalkBreaksStreak()
         {
-            var v = village.Villagers[0];
+            var v = village.Villagers.First(x => village.Request == null || village.Request.VillagerId != x.Definition.id);
             yield return Hold(Net);
             yield return SwingAt(v, 4);
             yield return Face(v);
@@ -90,7 +90,7 @@ namespace PogeunVillage.PlayModeTests
         [UnityTest]
         public IEnumerator Minus20_PrepareThenLeave_PlotEmpties()
         {
-            var v = village.Villagers[0];
+            var v = village.Villagers.First(x => village.Request == null || village.Request.VillagerId != x.Definition.id);
             var who = v.Definition;
             var plot = v.Home;
             village.Friendship.Lose(who.id, 20);
@@ -118,7 +118,7 @@ namespace PogeunVillage.PlayModeTests
         [UnityTest]
         public IEnumerator Case2_11_TalkWhilePreparing_Cancels()
         {
-            var v = village.Villagers[0];
+            var v = village.Villagers.First(x => village.Request == null || village.Request.VillagerId != x.Definition.id);
             var who = v.Definition;
             village.Friendship.Lose(who.id, 20);
             yield return Tap(keyboard.f8Key);
@@ -141,7 +141,7 @@ namespace PogeunVillage.PlayModeTests
         [UnityTest]
         public IEnumerator Case2_12_FullVillage_OneLeaves_CamperComesThatMorning()
         {
-            var leaver = village.Villagers[0].Definition;
+            var leaver = village.Villagers.First(x => village.Request == null || village.Request.VillagerId != x.Definition.id).Definition;
             var random = new SystemRandomSource(3);
             foreach (var def in village.rules.villagers)
                 if (village.Residents.Count < village.rules.maxResidents && village.Camper.Definition != def)

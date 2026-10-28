@@ -150,6 +150,24 @@ namespace PogeunVillage
             return slot;
         }
 
+        /// <summary>그 물건을 앞쪽 칸부터 count개 뺌(3-3 부탁). 모자라면 아무것도 빼지 않고 false. 바뀐 칸만 알림</summary>
+        public bool TryRemove(string itemId, int count)
+        {
+            if (count <= 0 || Count(itemId) < count)
+                return false;
+            for (int i = 0; i < slots.Length && count > 0; i++)
+            {
+                var slot = slots[i];
+                if (slot.itemId != itemId || slot.IsEmpty)
+                    continue;
+                int take = Math.Min(slot.count, count);
+                slots[i] = take == slot.count ? default : new InventorySlot(slot.itemId, slot.count - take, slot.durability);
+                count -= take;
+                SlotChanged?.Invoke(i);
+            }
+            return true;
+        }
+
         /// <summary>그 칸에서 하나 뺌(마지막 하나면 칸이 빔).</summary>
         public void RemoveOne(int index)
         {

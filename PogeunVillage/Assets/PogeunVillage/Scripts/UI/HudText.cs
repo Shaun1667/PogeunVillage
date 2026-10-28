@@ -40,6 +40,17 @@ namespace PogeunVillage
         public static string Speaker(string displayName, int friendship, bool preparingToLeave) =>
             preparingToLeave ? $"{Speaker(displayName, friendship)} · 이사 준비 중" : Speaker(displayName, friendship);
 
+        /// <summary>오늘 부탁이 남은 주민: "주민 01  친밀도 3 · 부탁 있음" (3-3)</summary>
+        public static string Speaker(string displayName, int friendship, bool preparingToLeave, bool hasRequest) =>
+            hasRequest ? $"{Speaker(displayName, friendship, preparingToLeave)} · 부탁 있음" : Speaker(displayName, friendship, preparingToLeave);
+
+        /// <summary>부탁 대사: "{0} {1}개" 자리에 물건 이름 · 개수(틀이 잘못돼도 깨지지 않게)</summary>
+        public static string RequestLine(string template, string itemName, int count)
+        {
+            try { return string.Format(template, itemName, count); }
+            catch (System.FormatException) { return $"{itemName} {count}개만 가져다줄 수 있어?"; }
+        }
+
         /// <summary>캠핑 주민 대화창 이름: "주민 07  캠핑 중 · 친밀도 3/5", 확정 뒤 "주민 07  캠핑 중 · 이사 오기로 함" (3-1)</summary>
         public static string CampSpeaker(string displayName, int value, int threshold, bool confirmed) =>
             confirmed ? $"{displayName}  캠핑 중 · 이사 오기로 함" : $"{displayName}  캠핑 중 · 친밀도 {value}/{threshold}";

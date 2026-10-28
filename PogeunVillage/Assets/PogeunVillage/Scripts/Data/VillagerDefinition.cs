@@ -31,6 +31,10 @@ namespace PogeunVillage
         public string[] movingLines = { "내일 이사 갈게! 잘 부탁해.", "어떤 집을 지을지 벌써 설레~" };
         [Tooltip("이사 준비 중일 때 잡담 대신(3-2)")]
         public string[] leavingLines = { "…요즘 이 마을을 떠날까 생각 중이야.", "짐을 싸고 있었어. 별일 없으면 내일 떠날 거야." };
+        [Tooltip("부탁할 때 잡담 대신({0} = 물건 이름, {1} = 개수, 3-3)")]
+        public string[] requestLines = { "부탁이 있는데… {0} {1}개만 가져다줄 수 있어?", "{0} {1}개가 꼭 필요해! 구해 줄래?" };
+        [Tooltip("부탁을 들어줬을 때(3-3)")]
+        public string[] requestThanksLines = { "정말 고마워! 이건 작은 답례야.", "와, 딱 필요했어! 고마워, 이거 받아." };
         [Tooltip("선물을 받았을 때(무작위 1줄, 2-5)")]
         public string[] thanksLines = { "와, 고마워! 소중히 간직할게.", "나한테 주는 거야? 정말 기뻐!" };
     }
