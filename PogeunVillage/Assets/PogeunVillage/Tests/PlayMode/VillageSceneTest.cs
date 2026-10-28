@@ -44,9 +44,19 @@ namespace PogeunVillage.PlayModeTests
             settings = playerController.settings;
             camera = Camera.main;
 
+            // 주민(2-4)이 돌아다니며 대상 · 길을 가로채지 않도록, 주민 테스트가 아니면 마을 주민을 모두 숨김
+            if (!WithVillagers)
+            {
+                var village = Object.FindAnyObjectByType<Village>();
+                if (village) village.gameObject.SetActive(false);
+            }
+
             // 처음 몇 프레임은 착지 · 카메라 자리잡기
             yield return WaitSeconds(0.3f);
         }
+
+        /// <summary>주민을 그대로 둘지(주민 테스트만 true)</summary>
+        protected virtual bool WithVillagers => false;
 
         protected static IEnumerator WaitSeconds(float seconds)
         {

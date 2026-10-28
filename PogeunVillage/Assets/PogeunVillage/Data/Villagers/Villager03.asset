@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1151c35772c410c4c9e731e712d3c98a, type: 3}
+  m_Name: Villager03
+  m_EditorClassIdentifier: PogeunVillage::PogeunVillage.VillagerDefinition
+  id: Villager03
+  displayName: "\uC8FC\uBBFC 03"
+  species: "\uBBF8\uC815"
+  bodyColor: {r: 0.76048, g: 0.7056, b: 0.98, a: 1}
+  accentColor: {r: 0.49199995, g: 0.41, b: 0.82, a: 1}
+  morningLines:
+  - "\uC88B\uC740 \uC544\uCE68! \uC624\uB298\uB3C4 \uD3EC\uADFC\uD55C \uD558\uB8E8\uAC00 \uB420 \uAC83 \uAC19\uC544."
+  - "\uC544\uCE68 \uACF5\uAE30\uAC00 \uC0C1\uCF8C\uD558\uB2E4~"
+  daytimeLines:
+  - "\uC548\uB155! \uC0B0\uCC45\uD558\uAE30 \uB531 \uC88B\uC740 \uB0A0\uC528\uC57C."
+  - "\uC5B4\uB514 \uAC00\uB294 \uAE38\uC774\uC57C?"
+  eveningLines:
+  - "\uBC8C\uC368 \uC800\uB141\uC774\uB124. \uC624\uB298 \uD558\uB8E8\uB294 \uC5B4\uB560\uC5B4?"
+  - "\uB178\uC744\uC774 \uCC38 \uC608\uC058\uB2E4."
+  smallTalk:
+  - "\uAD11\uC7A5 \uBD84\uC218 \uC18C\uB9AC\uB97C \uB4E4\uC73C\uBA74 \uB9C8\uC74C\uC774 \uD3B8\uD574\uC838."
+  - "\uAC15\uAC00\uC5D0 \uAF43\uC774 \uB9CE\uC774 \uD53C\uC5C8\uB354\uB77C."
+  - "\uBB18\uBAA9\uC744 \uC2EC\uC73C\uBA74 \uC5B8\uC820\uAC00 \uD070 \uB098\uBB34\uAC00 \uB41C\uB300."
+  - "\uB098\uBB34\uB97C \uD754\uB4E4\uBA74 \uC5F4\uB9E4\uAC00 \uB5A8\uC5B4\uC9C0\uB294 \uAC70 \uC54C\uC544?"

@@ -17,6 +17,7 @@ namespace PogeunVillage
         [SerializeField, HideInInspector] int width;
         [SerializeField, HideInInspector] int height;
         [SerializeField, HideInInspector] byte[] blocked;  // 1 = 막힘
+        [SerializeField, HideInInspector] byte[] walkable; // 1 = 주민이 걸을 수 있음(2-4)
 
         public int BlockedCount
         {
@@ -37,6 +38,38 @@ namespace PogeunVillage
             blocked = new byte[blockedCells.Length];
             for (int i = 0; i < blockedCells.Length; i++)
                 blocked[i] = blockedCells[i] ? (byte)1 : (byte)0;
+        }
+
+        /// <summary>주민이 걸을 수 있는 칸(2-4). 막힌 칸과 같은 크기. 매번 다시 구움</summary>
+        public void BakeWalkable(bool[] walkableCells)
+        {
+            walkable = new byte[walkableCells.Length];
+            for (int i = 0; i < walkableCells.Length; i++)
+                walkable[i] = walkableCells[i] ? (byte)1 : (byte)0;
+        }
+
+        public int WalkableCount
+        {
+            get
+            {
+                int count = 0;
+                if (walkable != null)
+                    foreach (byte b in walkable) count += b;
+                return count;
+            }
+        }
+
+        public WalkMap CreateWalkMap()
+        {
+            var cells = new bool[width * height];
+            var baked = new bool[width * height];
+            bool hasWalkable = walkable != null && walkable.Length == cells.Length;
+            for (int i = 0; i < cells.Length; i++)
+            {
+                cells[i] = hasWalkable && walkable[i] != 0;
+                baked[i] = blocked[i] != 0;
+            }
+            return new WalkMap(origin, width, height, cells, baked);
         }
 
         public GroundGrid CreateGrid()

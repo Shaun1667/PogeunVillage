@@ -31,10 +31,9 @@ namespace PogeunVillage
         void Update()
         {
             Clock.Advance(Time.deltaTime);
-#if UNITY_EDITOR || DEVELOPMENT_BUILD
-            if (Keyboard.current != null && Keyboard.current.f8Key.wasPressedThisFrame)
+            // 개발용 F8(에디터 · 개발 빌드에서만)
+            if (Debug.isDebugBuild && Keyboard.current != null && Keyboard.current.f8Key.wasPressedThisFrame)
                 Sleep();
-#endif
         }
 
         /// <summary>자고 일어남: 날짜 +1, 아침 시작 시각, 아침 처리</summary>

@@ -1,0 +1,47 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cb5bd8e758364e74993e40ca45e03a25, type: 3}
+  m_Name: VillageRules
+  m_EditorClassIdentifier: PogeunVillage::PogeunVillage.VillageRules
+  villagers:
+  - {fileID: 11400000, guid: b6bd53df372b1db4bb1e455d4e72525f, type: 2}
+  - {fileID: 11400000, guid: 98e1e7926c36b5643a3bbfbcc47eb302, type: 2}
+  - {fileID: 11400000, guid: f092161eac5701746959695976478c31, type: 2}
+  - {fileID: 11400000, guid: f899d9c5094c8114190a723c84d4ac1a, type: 2}
+  - {fileID: 11400000, guid: 56c5bd59a8896a44aafc3b95fc82bbfa, type: 2}
+  - {fileID: 11400000, guid: 51ee6d2514690ec45a9ffa0398c36df0, type: 2}
+  - {fileID: 11400000, guid: b4c10e4649a00584a932fdff7caffdbe, type: 2}
+  - {fileID: 11400000, guid: eb830be6c57ca114c85590f56112466d, type: 2}
+  - {fileID: 11400000, guid: 7d823712861d3df43834b8bbb5669dd4, type: 2}
+  - {fileID: 11400000, guid: 38d52c7fe2440f042b4ea77a4c386a54, type: 2}
+  - {fileID: 11400000, guid: 93e7e14b7356dbd4f99a3fefc746c118, type: 2}
+  - {fileID: 11400000, guid: 07fc2bf8a16f003459e3b7aa07a4aba9, type: 2}
+  - {fileID: 11400000, guid: b032cd371eb3681449a9aeaf4805cd61, type: 2}
+  - {fileID: 11400000, guid: 77abb94addb44724497dfac256da69ce, type: 2}
+  - {fileID: 11400000, guid: 1e562e039b4092a42a0a0e0be2c00d8e, type: 2}
+  - {fileID: 11400000, guid: db591a4691dac754d86aed17cfa932f8, type: 2}
+  - {fileID: 11400000, guid: c9176b715a80540429a8ccf98b3f9d09, type: 2}
+  - {fileID: 11400000, guid: d0cc3a899ef868540a85a82df0a659d6, type: 2}
+  - {fileID: 11400000, guid: 4047e792f0e63674cb8835f4f9c705e2, type: 2}
+  - {fileID: 11400000, guid: e0f440e9b083cc24bac3f77cd48024e5, type: 2}
+  startingResidents: 6
+  residentSeed: 2026
+  wanderSeed: 77
+  dialogueSeed: 19
+  walkSpeed: 1.6
+  turnSpeed: 360
+  wanderRadius: 14
+  pauseSeconds: {x: 1.5, y: 4}
+  stuckSeconds: 1.5
+  wanderTries: 12
+  walkCheckStep: 0.5
+  afterTalkPause: 1.5

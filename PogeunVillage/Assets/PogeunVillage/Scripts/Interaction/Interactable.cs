@@ -22,6 +22,7 @@ namespace PogeunVillage
         ShopStand,
         SellBox,
         ShopKeeper,
+        Villager,
     }
 
     /// <summary>

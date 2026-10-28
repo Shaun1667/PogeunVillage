@@ -29,6 +29,8 @@ namespace PogeunVillage.EditorTools
         const string GroundGridPath = Root + "/Data/GroundGrid.asset";
         const string DayRulesPath = Root + "/Data/DayRules.asset";
         const string ShopDataPath = Root + "/Data/ShopData.asset";
+        const string VillageRulesPath = Root + "/Data/VillageRules.asset";
+        const string VillagerDir = Root + "/Data/Villagers";
         const string FontSourcePath = Root + "/Fonts/Cafe24Ssurround-v2.0.ttf";
         const string FontAssetPath = Root + "/Fonts/Cafe24Ssurround SDF.asset";
         const string ItemDir = Root + "/Data/Items";
@@ -47,21 +49,24 @@ namespace PogeunVillage.EditorTools
         {
             public string name;
             public Vector2 position;
-            public string wall;
-            public string roof;
             public bool onPlateau;
         }
 
+        // 집터 12곳(결정 2026-10-28, 2-4): 예전 집 자리 8곳 + 새 4곳. 주민이 사는 집터에만 집이 보이고 색은 주민 색
         static readonly HouseInfo[] Houses =
         {
-            new() { name = "House_Rabbit", position = new(-22f, 10f), wall = "#FFE4EC", roof = "#F49AB0" },
-            new() { name = "House_Bear", position = new(-24f, -6f), wall = "#E3F6EA", roof = "#7CC7A0" },
-            new() { name = "House_Cat", position = new(-8f, 15f), wall = "#FFF6D6", roof = "#F2B84B" },
-            new() { name = "House_Fox", position = new(-14f, -16f), wall = "#EEE6FA", roof = "#A88BD8" },
-            new() { name = "House_Raccoon", position = new(0f, -16f), wall = "#FFE9DC", roof = "#F08F6E" },
-            new() { name = "House_Sheep", position = new(28f, 4f), wall = "#E2F2FB", roof = "#6FAFD8" },
-            new() { name = "House_Owl", position = new(-16f, 36f), wall = "#FFF8EC", roof = "#C99A6B", onPlateau = true },
-            new() { name = "House_Deer", position = new(4f, 38f), wall = "#FFEDE6", roof = "#E06F6F", onPlateau = true },
+            new() { name = "HousePlot_01", position = new(-22f, 10f) },
+            new() { name = "HousePlot_02", position = new(-24f, -6f) },
+            new() { name = "HousePlot_03", position = new(-8f, 15f) },
+            new() { name = "HousePlot_04", position = new(-14f, -16f) },
+            new() { name = "HousePlot_05", position = new(0f, -16f) },
+            new() { name = "HousePlot_06", position = new(28f, 4f) },
+            new() { name = "HousePlot_07", position = new(-16f, 36f), onPlateau = true },
+            new() { name = "HousePlot_08", position = new(4f, 38f), onPlateau = true },
+            new() { name = "HousePlot_09", position = new(-36f, 14f) },
+            new() { name = "HousePlot_10", position = new(-28f, -24f) },
+            new() { name = "HousePlot_11", position = new(30f, -14f) },
+            new() { name = "HousePlot_12", position = new(34f, 18f) },
         };
 
         static readonly float[] BridgeZs = { 4f, -24f };
@@ -143,8 +148,7 @@ namespace PogeunVillage.EditorTools
             var props = new GameObject("Props").transform;
             props.SetParent(world, false);
             BuildPlaza(props);
-            foreach (var house in Houses)
-                BuildHouse(props, house);
+            var plots = Houses.Select(house => BuildHouse(props, house)).ToArray();
             foreach (float z in BridgeZs)
                 BuildBridge(props, z);
             BuildLamps(props);
@@ -158,7 +162,9 @@ namespace PogeunVillage.EditorTools
             BuildShovel(player, ground);
             BuildDayCycle(props);
             BuildShop(props);
-            BuildHud(player);
+            BakeWalkable(world, ground);
+            var dialogue = BuildHud(player);
+            BuildVillage(plots, ground, dialogue);
             var cam = BuildCamera(player.transform);
             player.GetComponent<PlayerController>().cameraTransform = cam.transform;
 
@@ -461,25 +467,28 @@ namespace PogeunVillage.EditorTools
             AddInteractable(board.gameObject, "게시판", InteractableKind.NoticeBoard, radius: 1f, markerHeight: 2f);
         }
 
-        static void BuildHouse(Transform parent, HouseInfo info)
+        static HousePlot BuildHouse(Transform parent, HouseInfo info)
         {
-            var house = new GameObject(info.name).transform;
-            house.SetParent(parent, false);
-            house.localPosition = OnGround(info.position.x, info.position.y, -0.05f);
+            var plotRoot = new GameObject(info.name).transform;
+            plotRoot.SetParent(parent, false);
+            plotRoot.localPosition = OnGround(info.position.x, info.position.y, -0.05f);
             Vector2 forward = FacingTarget(info) - info.position;
-            house.localRotation = Quaternion.LookRotation(new Vector3(forward.x, 0f, forward.y));
+            plotRoot.localRotation = Quaternion.LookRotation(new Vector3(forward.x, 0f, forward.y));
             Occupied.Add(new Vector3(info.position.x, info.position.y, 4f));
 
-            var wall = Mat("Wall_" + info.name, info.wall);
-            var roof = Mat("Roof_" + info.name, info.roof, rim: 0.2f);
+            // 벽 · 지붕은 공용 재질(흰 바탕) + 주민 색 프로퍼티 블록(HousePlot.Show)
+            var wall = Mat("HouseWall", "#FFFFFF");
+            var roof = Mat("HouseRoof", "#FFFFFF", rim: 0.2f);
             var wood = Mat("Wood", "#B98A5E");
             var glass = Mat("Window", "#BFE7F7", rim: 0.4f);
 
-            Prim(PrimitiveType.Cube, "Body", house, new Vector3(0f, 1f, 0f), new Vector3(4f, 3f, 3.6f), wall, collider: true);
+            var house = new GameObject("House").transform;
+            house.SetParent(plotRoot, false);
+            var body = Prim(PrimitiveType.Cube, "Body", house, new Vector3(0f, 1f, 0f), new Vector3(4f, 3f, 3.6f), wall, collider: true);
             var roofObj = MeshObject("Roof", house, RoofMesh(), roof);
             roofObj.transform.localPosition = new Vector3(0f, 2.5f, 0f);
             roofObj.transform.localScale = new Vector3(4.8f, 1.7f, 4.4f);
-            Prim(PrimitiveType.Cube, "Chimney", house, new Vector3(1.2f, 3.6f, -0.6f), new Vector3(0.5f, 1f, 0.5f), wall);
+            var chimney = Prim(PrimitiveType.Cube, "Chimney", house, new Vector3(1.2f, 3.6f, -0.6f), new Vector3(0.5f, 1f, 0.5f), wall);
             Prim(PrimitiveType.Cube, "Door", house, new Vector3(0f, 0.8f, 1.82f), new Vector3(1f, 1.6f, 0.08f), wood);
             Prim(PrimitiveType.Sphere, "DoorKnob", house, new Vector3(0.3f, 0.8f, 1.88f), Vector3.one * 0.12f, Mat("Gold", "#F2C94C", rim: 0.4f));
             Prim(PrimitiveType.Cube, "Window_L", house, new Vector3(-1.3f, 1.4f, 1.82f), new Vector3(0.8f, 0.8f, 0.08f), glass);
@@ -491,8 +500,28 @@ namespace PogeunVillage.EditorTools
             mailbox.SetParent(house, false);
             mailbox.localPosition = new Vector3(1.9f, 0f, 2.9f);
             Prim(PrimitiveType.Cylinder, "MailboxPost", mailbox, new Vector3(0f, 0.45f, 0f), new Vector3(0.12f, 0.45f, 0.12f), wood);
-            Prim(PrimitiveType.Cube, "MailboxBox", mailbox, new Vector3(0f, 1f, 0f), new Vector3(0.45f, 0.35f, 0.6f), roof);
+            var mailboxBox = Prim(PrimitiveType.Cube, "MailboxBox", mailbox, new Vector3(0f, 1f, 0f), new Vector3(0.45f, 0.35f, 0.6f), roof);
             AddInteractable(mailbox.gameObject, "우체통", InteractableKind.Mailbox, radius: 0.3f, markerHeight: 1.5f);
+
+            // 빈 집터: 낮은 흙판 + 말뚝 표지판
+            var sign = new GameObject("EmptySign").transform;
+            sign.SetParent(plotRoot, false);
+            Prim(PrimitiveType.Cube, "Lot", sign, new Vector3(0f, 0.04f, 0f), new Vector3(4.2f, 0.1f, 3.8f), Mat("EmptyLot", "#D9C49A"));
+            Prim(PrimitiveType.Cube, "Post", sign, new Vector3(0f, 0.5f, 2.3f), new Vector3(0.12f, 1f, 0.12f), wood);
+            Prim(PrimitiveType.Cube, "Board", sign, new Vector3(0f, 0.95f, 2.3f), new Vector3(0.8f, 0.45f, 0.08f), Mat("BoardPaper", "#FFF4D8"));
+            sign.gameObject.SetActive(false);
+
+            var door = new GameObject("Door").transform;
+            door.SetParent(plotRoot, false);
+            door.localPosition = new Vector3(0f, 0.05f, 2.8f);
+
+            var plot = plotRoot.gameObject.AddComponent<HousePlot>();
+            plot.door = door;
+            plot.house = house.gameObject;
+            plot.emptySign = sign.gameObject;
+            plot.wallRenderers = new Renderer[] { body.GetComponent<Renderer>(), chimney.GetComponent<Renderer>() };
+            plot.roofRenderers = new Renderer[] { roofObj.GetComponent<Renderer>(), mailboxBox.GetComponent<Renderer>() };
+            return plot;
         }
 
         static void BuildBridge(Transform parent, float z)
@@ -848,7 +877,7 @@ namespace PogeunVillage.EditorTools
             int count = Mathf.CeilToInt(GroundHalfSize * 2 / size);
             var blocked = new bool[count * count];
             var hits = new Collider[8];
-            var halfExtents = new Vector3(size * 0.45f, 0.9f, size * 0.45f);
+            var halfExtents = new Vector3(size * 0.45f, 1.9f, size * 0.45f);  // 위아래로 넉넉히: 비탈에서는 칸 가운데 높이와 줄기 밑동 높이가 다름
 
             for (int j = 0; j < count; j++)
             for (int i = 0; i < count; i++)
@@ -861,7 +890,7 @@ namespace PogeunVillage.EditorTools
                                  || PlazaMask(x, z) > 0.01f;
                 if (!isBlocked)
                 {
-                    int n = Physics.OverlapBoxNonAlloc(new Vector3(x, h + 1.05f, z), halfExtents, hits, Quaternion.identity, ~0, QueryTriggerInteraction.Ignore);
+                    int n = Physics.OverlapBoxNonAlloc(new Vector3(x, h + 1f, z), halfExtents, hits, Quaternion.identity, ~0, QueryTriggerInteraction.Ignore);
                     for (int k = 0; k < n && !isBlocked; k++)
                         isBlocked = hits[k] != groundCollider;
                 }
@@ -946,7 +975,7 @@ namespace PogeunVillage.EditorTools
             image.raycastTarget = false;
         }
 
-        static void BuildHud(GameObject player)
+        static DialogueWindow BuildHud(GameObject player)
         {
             var font = EnsureFontAsset();
             var canvasGo = new GameObject("HUD", typeof(RectTransform));
@@ -958,6 +987,7 @@ namespace PogeunVillage.EditorTools
             scaler.matchWidthOrHeight = 0.5f;
             var root = canvasGo.transform;
 
+            canvasGo.AddComponent<RuntimeFont>().sourceFont = AssetDatabase.LoadAssetAtPath<Font>(FontSourcePath);
             var hud = canvasGo.AddComponent<HudView>();
             hud.settings = settings;
             hud.dayCycle = Object.FindAnyObjectByType<DayCycle>();
@@ -1010,6 +1040,149 @@ namespace PogeunVillage.EditorTools
             window.panel = panel;
             window.slotBackgrounds = backgrounds;
             window.slotTexts = texts;
+
+            // 대화창(2-4): 화면 아래 이름 + 대사
+            var talkPanel = new GameObject("DialoguePanel", typeof(RectTransform), typeof(Image));
+            talkPanel.transform.SetParent(root, false);
+            var trt = (RectTransform)talkPanel.transform;
+            trt.anchorMin = trt.anchorMax = trt.pivot = new Vector2(0.5f, 0f);
+            trt.anchoredPosition = new Vector2(0f, 110f);  // 왼쪽 아래 든 도구 받침판 위로
+            trt.sizeDelta = new Vector2(1300f, 230f);
+            talkPanel.GetComponent<Image>().color = new Color(1f, 0.97f, 0.92f, 0.95f);
+            var talk = canvasGo.AddComponent<DialogueWindow>();
+            talk.panel = talkPanel;
+            talk.speakerText = HudLabel(talkPanel.transform, "Speaker", font, 40, TextAlignmentOptions.TopLeft, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(40f, -20f), new Vector2(800f, 56f));
+            talk.speakerText.color = Hex("#C0607A");
+            talk.lineText = HudLabel(talkPanel.transform, "Line", font, 40, TextAlignmentOptions.TopLeft, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(40f, -86f), new Vector2(1220f, 130f));
+            var hint = HudLabel(talkPanel.transform, "Hint", font, 28, TextAlignmentOptions.BottomRight, new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-30f, 16f), new Vector2(300f, 40f));
+            hint.text = "F 다음";  // ▶ 같은 기호는 글꼴에 없음
+            talk.pausedWhileOpen = new Behaviour[] { player.GetComponent<PlayerController>(), player.GetComponent<PlayerInteractor>(), player.GetComponent<PlayerTools>(), window };
+            return talk;
+        }
+
+        // ---------------------------------------------------------------- villagers (2-4)
+
+        // 주민 20명(임시 이름 · 색 · 공통 대사). 없을 때만 만들고, 있으면 값을 건드리지 않음(이름 · 대사는 에셋에서 고침)
+        static VillagerDefinition[] EnsureVillagers()
+        {
+            EnsureFolder(VillagerDir);
+            var all = new VillagerDefinition[20];
+            for (int i = 0; i < all.Length; i++)
+            {
+                string id = $"Villager{i + 1:00}";
+                string path = $"{VillagerDir}/{id}.asset";
+                bool isNew = !AssetDatabase.LoadAssetAtPath<VillagerDefinition>(path);
+                var v = EnsureAsset<VillagerDefinition>(path);
+                if (isNew)
+                {
+                    float hue = (i * 7 % 20) / 20f;  // 이웃 번호끼리 색이 비슷하지 않게 섞음
+                    v.id = id;
+                    v.displayName = $"주민 {i + 1:00}";
+                    v.species = "미정";
+                    v.bodyColor = Color.HSVToRGB(hue, 0.28f, 0.98f);
+                    v.accentColor = Color.HSVToRGB(hue, 0.5f, 0.82f);
+                    v.morningLines = new[] { "좋은 아침! 오늘도 포근한 하루가 될 것 같아.", "아침 공기가 상쾌하다~" };
+                    v.daytimeLines = new[] { "안녕! 산책하기 딱 좋은 날씨야.", "어디 가는 길이야?" };
+                    v.eveningLines = new[] { "벌써 저녁이네. 오늘 하루는 어땠어?", "노을이 참 예쁘다." };
+                    v.smallTalk = new[]
+                    {
+                        "광장 분수 소리를 들으면 마음이 편해져.",
+                        "강가에 꽃이 많이 피었더라.",
+                        "묘목을 심으면 언젠가 큰 나무가 된대.",
+                        "나무를 흔들면 열매가 떨어지는 거 알아?",
+                    };
+                    EditorUtility.SetDirty(v);
+                }
+                all[i] = v;
+            }
+            return all;
+        }
+
+        // 주민 그레이박스(동그란 몸 + 머리 + 귀). 색은 VillagerBehaviour가 프로퍼티 블록으로
+        static VillagerBehaviour BuildVillagerPrefab()
+        {
+            var root = new GameObject("Villager");
+            root.layer = 2;  // 물 감지 · 순간이동 레이캐스트가 주민 머리에 맞지 않도록(플레이어와 같음)
+            var controller = root.AddComponent<CharacterController>();
+            controller.height = 1.3f;
+            controller.radius = 0.35f;
+            controller.center = new Vector3(0f, 0.65f, 0f);
+            controller.stepOffset = 0.3f;
+            controller.slopeLimit = 45f;
+
+            var visual = new GameObject("Visual").transform;
+            visual.SetParent(root.transform, false);
+            var body = Mat("VillagerBody", "#FFFFFF", rim: 0.25f);
+            var eye = Mat("Eye", "#3A3340");
+            var b = Prim(PrimitiveType.Capsule, "Body", visual, new Vector3(0f, 0.42f, 0f), new Vector3(0.62f, 0.42f, 0.58f), body);
+            var h = Prim(PrimitiveType.Sphere, "Head", visual, new Vector3(0f, 1.02f, 0f), new Vector3(0.8f, 0.72f, 0.72f), body);
+            var el = Prim(PrimitiveType.Sphere, "Ear_L", visual, new Vector3(-0.26f, 1.38f, 0f), new Vector3(0.26f, 0.26f, 0.14f), body);
+            var er = Prim(PrimitiveType.Sphere, "Ear_R", visual, new Vector3(0.26f, 1.38f, 0f), new Vector3(0.26f, 0.26f, 0.14f), body);
+            Prim(PrimitiveType.Sphere, "Eye_L", visual, new Vector3(-0.15f, 1.08f, 0.33f), Vector3.one * 0.08f, eye);
+            Prim(PrimitiveType.Sphere, "Eye_R", visual, new Vector3(0.15f, 1.08f, 0.33f), Vector3.one * 0.08f, eye);
+
+            AddInteractable(root, "주민", InteractableKind.Villager, radius: 0.4f, markerHeight: 1.9f, wiggle: false);
+            var villager = root.AddComponent<VillagerBehaviour>();
+            villager.bodyRenderers = new Renderer[] { b.GetComponent<Renderer>(), h.GetComponent<Renderer>() };
+            villager.accentRenderers = new Renderer[] { el.GetComponent<Renderer>(), er.GetComponent<Renderer>() };
+            return SavePrefab(root, "Villager").GetComponent<VillagerBehaviour>();
+        }
+
+        static void BuildVillage(HousePlot[] plots, VillageGround ground, DialogueWindow dialogue)
+        {
+            var rules = EnsureAsset<VillageRules>(VillageRulesPath);
+            rules.villagers = EnsureVillagers();
+            EditorUtility.SetDirty(rules);
+
+            var village = new GameObject("Village").AddComponent<Village>();
+            village.rules = rules;
+            village.settings = settings;
+            village.dayCycle = Object.FindAnyObjectByType<DayCycle>();
+            village.ground = ground;
+            village.dialogue = dialogue;
+            village.plots = plots;
+            village.villagerPrefab = BuildVillagerPrefab();
+        }
+
+        // 주민이 걸을 수 있는 칸 굽기: 위에서 내려 쏜 맨 위가 지면(물 · 가파른 비탈 아님) 또는 다리 바닥이고, 그 위에 다른 충돌체가 없으면 걸을 수 있음.
+        // 길 · 광장 · 다리는 걸을 수 있음(놓기 막힘과 다름). 집터의 집은 모두 켜 둔 채 구워 빈 집터도 피함
+        const float WalkMaxSlope = 0.9f;
+
+        static void BakeWalkable(Transform world, VillageGround ground)
+        {
+            var data = ground.data;
+            Collider groundCollider = world.Find("Ground").GetComponent<Collider>();
+            Physics.SyncTransforms();
+
+            float size = data.cellSize;
+            var origin = new Vector2Int(Mathf.FloorToInt(-GroundHalfSize / size), Mathf.FloorToInt(-GroundHalfSize / size));
+            int count = Mathf.CeilToInt(GroundHalfSize * 2 / size);
+            var walkable = new bool[count * count];
+            var hits = new Collider[8];
+            var halfExtents = new Vector3(size * 0.45f, 0.6f, size * 0.45f);
+            int mask = ~(1 << 2);
+
+            for (int j = 0; j < count; j++)
+            for (int i = 0; i < count; i++)
+            {
+                float x = (origin.x + i + 0.5f) * size;
+                float z = (origin.y + j + 0.5f) * size;
+                if (!Physics.Raycast(new Vector3(x, 40f, z), Vector3.down, out RaycastHit top, 80f, mask, QueryTriggerInteraction.Ignore))
+                    continue;
+                bool ok = top.collider == groundCollider
+                    ? top.point.y >= settings.waterLevel + WaterBlockMargin && Slope(x, z) < WalkMaxSlope
+                    : top.collider.name == "Deck";
+                if (ok)
+                {
+                    int n = Physics.OverlapBoxNonAlloc(new Vector3(x, top.point.y + 0.75f, z), halfExtents, hits, Quaternion.identity, mask, QueryTriggerInteraction.Ignore);
+                    for (int k = 0; k < n && ok; k++)
+                        ok = hits[k] == groundCollider || hits[k] == top.collider;
+                }
+                walkable[j * count + i] = ok;
+            }
+
+            data.BakeWalkable(walkable);
+            EditorUtility.SetDirty(data);
         }
 
         // 상점(2-2): 광장 서쪽 노점 — 지붕 · 상점 주인 · 매대 6개(도구 5종 · 묘목) · 판매함. 광장 쪽(동쪽)을 봄
