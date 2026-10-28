@@ -54,7 +54,7 @@ namespace PogeunVillage
             Slot = slot;
             Rotation = 0;
             startedFrame = Time.frameCount;
-            ghost = MakeGhost(definition.prefab);
+            ghost = MakeGhost(definition);
             outline.SetActive(true);
             playerLock.Acquire(this, allowMove: true);
             UpdatePreview();
@@ -129,10 +129,11 @@ namespace PogeunVillage
         }
 
         // 미리보기: 같은 모습만(충돌 · 상호작용 · 칸 등록 없음), 레이캐스트에 맞지 않게
-        static GameObject MakeGhost(GameObject prefab)
+        static GameObject MakeGhost(FurnitureDefinition definition)
         {
-            var go = Instantiate(prefab);
-            go.name = prefab.name + " (미리보기)";
+            var go = Instantiate(definition.prefab);
+            go.name = definition.prefab.name + " (미리보기)";
+            foreach (var p in go.GetComponentsInChildren<PlacedFurniture>(true)) p.Tint(definition);  // 테마 가구 색(3-4d)
             foreach (var c in go.GetComponentsInChildren<Collider>(true)) DestroyImmediate(c);
             foreach (var p in go.GetComponentsInChildren<PlacedFurniture>(true)) DestroyImmediate(p);
             foreach (var g in go.GetComponentsInChildren<GridObject>(true)) DestroyImmediate(g);

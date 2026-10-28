@@ -18,5 +18,7 @@ namespace PogeunVillage
         [Min(0)] public int ratingPoint;
         [Tooltip("상점 판매 · 제작법이 열리는 마을 평가 별(1 = 처음부터, 3-4b · c)")]
         [Range(1, 5)] public int unlockStars = 1;
+        [Tooltip("테마 가구면 그 주민(색 · 세트, 3-4d). 기본 가구는 비움")]
+        public VillagerDefinition themeOwner;
     }
 }

@@ -33,6 +33,17 @@ namespace PogeunVillage
             return BuyResult.Bought;
         }
 
+        /// <summary>
+        /// 오늘의 테마 가구(3-4d): 마을 주민 중 무작위 1명 · 그 주민 테마 가구 중 무작위 1가지. 주민이 없으면 (-1, -1)
+        /// </summary>
+        public static (int resident, int piece) PickTodayTheme(int residentCount, int piecesPerResident, IRandomSource random)
+        {
+            if (residentCount <= 0 || piecesPerResident <= 0)
+                return (-1, -1);
+            int resident = random.Next(residentCount);
+            return (resident, random.Next(piecesPerResident));
+        }
+
         /// <summary>최고 별이 before → after로 오를 때 새로 열리는 것(번호). 처음 닿을 때만(after ≤ before면 없음)</summary>
         public static List<int> NewlyUnlocked(IReadOnlyList<int> unlockStars, int before, int after)
         {

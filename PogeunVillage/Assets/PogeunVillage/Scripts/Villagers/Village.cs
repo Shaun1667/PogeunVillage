@@ -48,6 +48,8 @@ namespace PogeunVillage
         public Departures Departures { get; private set; }
         /// <summary>오늘의 부탁(없으면 null)</summary>
         public VillagerRequest Request { get; private set; }
+        /// <summary>테마 가구 친밀도 보상(3-4d)</summary>
+        public ThemeRewards ThemeRewards { get; private set; }
 
         readonly List<VillagerBehaviour> villagers = new();
         IRandomSource dialogueRandom;
@@ -71,6 +73,7 @@ namespace PogeunVillage
             Friendship = new Friendship(rules.talkGain, rules.giftGain, rules.dailyGainCap, rules.friendshipMin, rules.friendshipMax);
             Bully = new BullyStreak(rules.bullyHitsPerPenalty, rules.bullyStreakTimeoutSeconds);
             Departures = new Departures(rules.leaveThreshold);
+            ThemeRewards = new ThemeRewards(rules.themeRewardThresholds);
             Friendship.Changed += OnFriendshipChanged;
 
             var ids = new List<string>();
@@ -305,6 +308,11 @@ namespace PogeunVillage
                 Bully.Reset(who.id);  // 대화하면 괴롭히기 연속이 끊김
                 Friendship.Talk(who.id);
             }
+            if (!villager.IsCamper)
+            {
+                var talkDone = done;
+                done = () => GiveThemeReward(villager, talkDone);  // 대화(선물 · 부탁까지) 끝에 테마 가구 답례(3-4d)
+            }
             dialogue.Open(villager.IsCamper ? ComposeCampTalk(who) : ComposeTalk(who), talk =>
             {
                 string chosen = talk.Chosen >= 0 ? talk.Choices[talk.Chosen] : null;
@@ -315,6 +323,33 @@ namespace PogeunVillage
                 else
                     done();
             });
+        }
+
+        /// <summary>
+        /// 테마 가구 답례(결정 2026-10-28, 3-4d): 친밀도가 다음 기준에 닿아 있으면 대화 끝에 하나(답례 대사 + 인벤토리).
+        /// 인벤토리에 자리가 없으면 알림만 — 다음 대화 때 다시
+        /// </summary>
+        void GiveThemeReward(VillagerBehaviour villager, Action done)
+        {
+            var who = villager.Definition;
+            int due = ThemeRewards.Due(who.id, Friendship.Get(who.id));
+            var item = due >= 0 && due < who.themeFurniture.Length ? who.themeFurniture[due] : null;
+            if (!item)
+            {
+                done();
+                return;
+            }
+            if (playerInventory.Inventory.SpaceFor(item.id, item.maxStack) < 1)
+            {
+                GameNotice.Post($"[주민] 인벤토리가 가득 차서 {item.displayName}은(는) 다음에 받을게요", this);
+                done();
+                return;
+            }
+            playerInventory.TryAdd(item);
+            ThemeRewards.MarkGiven(who.id);
+            GameNotice.Post($"[주민] {who.displayName}에게 {item.displayName}을(를) 받았어요", this);
+            string template = VillagerTalk.PickLine(who.themeGiftLines, dialogueRandom, "친해진 기념이야! {0}을(를) 줄게.");
+            dialogue.Open(new Dialogue(SpeakerOf(who), new[] { string.Format(template, item.displayName) }), _ => done());
         }
 
         // 부탁한 물건을 앞쪽 칸부터 빼고, 친밀도 +3(하루 상한과 별개) · 모아 보상 · 답례

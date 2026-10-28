@@ -8,7 +8,7 @@ namespace PogeunVillage.PlayModeTests
 {
     /// <summary>
     /// 3-4c 확인 (영업 중 상점 주인 F → 가구 목록 창 · 8가지 · ★ 안 열린 줄 · F 사기(창은 열린 채) · 모아 표시 · 안 열린 가구는 못 삼 ·
-    /// 닫았으면 알림만 · 판매함으로 절반에 되팔기 · 별이 처음 오르면 새 가구 알림 · 임시 가구 상자 없음).
+    /// 닫았으면 알림만 · 판매함으로 절반에 되팔기 · 별이 처음 오르면 새 가구 알림 · 임시 가구 상자 없음). 오늘의 테마 가구 줄은 3-4d.
     /// </summary>
     public class FurnitureShopPlayTests : ToolSceneTest
     {
@@ -52,12 +52,14 @@ namespace PogeunVillage.PlayModeTests
             Assert.IsTrue(window.IsOpen, "가구 목록 창");
             Assert.AreSame(counter, window.Source);
             Assert.AreEqual("가구 사기", window.titleText.text);
-            Assert.AreEqual(8, window.listText.text.Split('\n').Length, "기본 8가지");
+            Assert.AreEqual(9, window.listText.text.Split('\n').Length, "오늘의 테마(3-4d) + 기본 8가지");
+            StringAssert.StartsWith("<color=#C0607A><b>오늘의 테마 · ", window.listText.text, "맨 위");
             StringAssert.Contains("나무 울타리 · 200 모아", window.listText.text);
             StringAssert.Contains("새집 · ★4에 열려요", window.listText.text);
             StringAssert.Contains("3,000 모아", window.footerText.text);
             Assert.AreEqual(0, Inv.Count("Fence"), "여는 F로 사지 않음");
 
+            yield return Tap(keyboard.downArrowKey);              // 나무 울타리(맨 위는 오늘의 테마)
             yield return Tap(keyboard.fKey);
             Assert.AreEqual(1, Inv.Count("Fence"));
             Assert.AreEqual(2800, Wallet.Moa);

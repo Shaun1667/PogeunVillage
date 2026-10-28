@@ -79,6 +79,10 @@ namespace PogeunVillage
         [Tooltip("오늘의 부탁 고르기 시드")]
         public int requestSeed = 31;
 
+        [Header("테마 가구 친밀도 보상 (BALANCE.md 16번, 3-4d)")]
+        [Tooltip("그 주민 친밀도가 처음 닿을 때마다 테마 가구를 하나씩(차례: 화분 · 벤치 · 탁자 · 가로등)")]
+        public int[] themeRewardThresholds = { 10, 25, 45, 70 };
+
         [Header("구멍에 빠진 주민 (BALANCE 5번 5-8, 2-5)")]
         [Tooltip("빠졌다 나오면 줄어드는 친밀도")]
         public int holePenalty = 2;

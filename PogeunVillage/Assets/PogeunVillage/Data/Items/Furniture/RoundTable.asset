@@ -22,3 +22,4 @@ MonoBehaviour:
   woodCost: 6
   ratingPoint: 15
   unlockStars: 3
+  themeOwner: {fileID: 0}

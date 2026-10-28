@@ -51,3 +51,11 @@ MonoBehaviour:
   thanksLines:
   - "\uC640, \uACE0\uB9C8\uC6CC! \uC18C\uC911\uD788 \uAC04\uC9C1\uD560\uAC8C."
   - "\uB098\uD55C\uD14C \uC8FC\uB294 \uAC70\uC57C? \uC815\uB9D0 \uAE30\uBED0!"
+  themeGiftLines:
+  - "\uC6B0\uB9AC \uCE5C\uD574\uC9C4 \uAE30\uB150\uC774\uC57C! {0}\uC744(\uB97C) \uC904\uAC8C."
+  - "\uB108\uD55C\uD14C \uAF2D \uC8FC\uACE0 \uC2F6\uC5C8\uC5B4. {0}\uC774\uC57C!"
+  themeFurniture:
+  - {fileID: 11400000, guid: 45ee7966eba863e4d99a4625064ffffb, type: 2}
+  - {fileID: 11400000, guid: 7ca0bd173eb0db14682cd5c108bce803, type: 2}
+  - {fileID: 11400000, guid: 27ec70fe1a46557469ef7da77050190c, type: 2}
+  - {fileID: 11400000, guid: 79ad4e0f2a894fc4894b84976b7b50ad, type: 2}

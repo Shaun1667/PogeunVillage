@@ -67,5 +67,6 @@ MonoBehaviour:
   requestFriendshipGain: 3
   requestMoaMultiplier: 2
   requestSeed: 31
+  themeRewardThresholds: 0a000000190000002d00000046000000i
   holePenalty: 2
   holeStuckSeconds: 3

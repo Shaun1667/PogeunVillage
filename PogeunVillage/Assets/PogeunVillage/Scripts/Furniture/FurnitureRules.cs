@@ -4,6 +4,8 @@ namespace PogeunVillage
     public static class FurnitureRules
     {
         public const int Directions = 4;
+        /// <summary>주민마다 테마 가구 수(화분 · 벤치 · 탁자 · 가로등, 3-4d)</summary>
+        public const int ThemePieces = 4;
 
         /// <summary>R: 다음 방향(3 다음은 0)</summary>
         public static int NextRotation(int rotation) => ((rotation % Directions) + Directions + 1) % Directions;

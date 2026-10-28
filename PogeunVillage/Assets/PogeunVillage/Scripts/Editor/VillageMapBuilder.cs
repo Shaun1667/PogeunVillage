@@ -86,6 +86,7 @@ namespace PogeunVillage.EditorTools
         static ToolDefinition[] tools;
         static ItemDefinition woodItem, flowerClumpItem, saplingItem;
         static FurnitureDefinition[] furniture;
+        static FurnitureDefinition[] themeFurniture;  // 주민 20명 × 4가지(3-4d)
         static ShopData shopData;
         static GameObject stumpPrefab;
         static readonly List<(Vector2 a, Vector2 b)> Paths = new();
@@ -129,6 +130,7 @@ namespace PogeunVillage.EditorTools
             flowerClumpItem = EnsureItem("FlowerClump", "꽃 포기", GroundObjectKind.Flower, sellPrice: 60);
             saplingItem = EnsureItem("Sapling", "묘목", GroundObjectKind.Sapling, buyPrice: 300, sellPrice: 150);
             furniture = EnsureFurniture();
+            themeFurniture = EnsureThemeFurniture(EnsureVillagers());
             shopData = EnsureAsset<ShopData>(ShopDataPath);
             stumpPrefab = BuildStumpPrefab();
             EnsureFolder(ToolDir);
@@ -1267,6 +1269,7 @@ namespace PogeunVillage.EditorTools
         {
             shopData.catalog = new[] { appleItem, peachItem, flowerItem, woodItem, flowerClumpItem, saplingItem }
                 .Concat(furniture)
+                .Concat(themeFurniture)
                 .Concat(tools).ToArray();
             EditorUtility.SetDirty(shopData);
 
@@ -1576,6 +1579,103 @@ namespace PogeunVillage.EditorTools
             return SavePrefab(root, "Furniture_" + def.id);
         }
 
+        // 테마 가구(3-4d): 주민마다 화분 · 벤치 · 탁자 · 가로등(친밀도 보상 차례). 데이터는 없을 때만, 모양 4가지는 매번(주민 색은 놓을 때 입힘)
+        static readonly (string id, string name)[] ThemeKinds = { ("Planter", "화분"), ("Bench", "벤치"), ("Table", "탁자"), ("Lamp", "가로등") };
+
+        static FurnitureDefinition[] EnsureThemeFurniture(VillagerDefinition[] villagers)
+        {
+            string dir = FurnitureDir + "/Theme";
+            EnsureFolder(dir);
+            var prefabs = ThemeKinds.Select(k => BuildThemePrefab(k.id)).ToArray();
+            var all = new List<FurnitureDefinition>();
+            foreach (var v in villagers)
+            {
+                var set = new FurnitureDefinition[ThemeKinds.Length];
+                for (int k = 0; k < set.Length; k++)
+                {
+                    string id = $"{v.id}_{ThemeKinds[k].id}";
+                    string path = $"{dir}/{id}.asset";
+                    bool isNew = !AssetDatabase.LoadAssetAtPath<FurnitureDefinition>(path);
+                    var item = EnsureAsset<FurnitureDefinition>(path);
+                    if (isNew)
+                    {
+                        item.id = id;
+                        item.displayName = $"{v.displayName}네 {ThemeKinds[k].name}";  // 결정 2026-10-28: 이름은 에셋에서 고침
+                        item.maxStack = 5;
+                        item.buyPrice = 2000;   // BALANCE 16번: 오늘의 테마 가구
+                        item.sellPrice = 1000;
+                        item.ratingPoint = 20;
+                        item.unlockStars = 1;
+                    }
+                    item.prefab = prefabs[k];
+                    item.themeOwner = v;
+                    EditorUtility.SetDirty(item);
+                    set[k] = item;
+                }
+                v.themeFurniture = set;
+                EditorUtility.SetDirty(v);
+                all.AddRange(set);
+            }
+            return all.ToArray();
+        }
+
+        // 테마 가구 모양(그레이박스): 흰 재질 부분에 주민 몸 색 · 포인트 색을 입힘(PlacedFurniture.Tint)
+        static GameObject BuildThemePrefab(string kind)
+        {
+            var root = new GameObject("Theme_" + kind);
+            var t = root.transform;
+            var white = Mat("ThemeFurniture", "#FFFFFF");
+            var body = new List<Renderer>();
+            var accent = new List<Renderer>();
+            Renderer Part(PrimitiveType type, string name, Vector3 pos, Vector3 scale, List<Renderer> into)
+            {
+                var r = Prim(type, name, t, pos, scale, white).GetComponent<Renderer>();
+                into.Add(r);
+                return r;
+            }
+            float markerHeight = 1.2f;
+            Vector3 box = new(0.8f, 1f, 0.8f);
+            switch (kind)
+            {
+                case "Planter":
+                    Part(PrimitiveType.Cylinder, "Pot", new Vector3(0f, 0.22f, 0f), new Vector3(0.5f, 0.22f, 0.5f), body);
+                    Part(PrimitiveType.Cylinder, "Rim", new Vector3(0f, 0.45f, 0f), new Vector3(0.56f, 0.04f, 0.56f), accent);
+                    Prim(PrimitiveType.Sphere, "Bush", t, new Vector3(0f, 0.65f, 0f), new Vector3(0.5f, 0.42f, 0.5f), Mat("Leaves", "#6FC27A"));
+                    Part(PrimitiveType.Sphere, "Bloom", new Vector3(0.1f, 0.85f, 0.1f), Vector3.one * 0.16f, accent);
+                    box = new Vector3(0.56f, 0.86f, 0.56f);
+                    break;
+                case "Bench":
+                    Part(PrimitiveType.Cube, "Seat", new Vector3(0f, 0.4f, 0f), new Vector3(0.9f, 0.1f, 0.4f), body);
+                    Part(PrimitiveType.Cube, "Back", new Vector3(0f, 0.68f, -0.17f), new Vector3(0.9f, 0.4f, 0.07f), body);
+                    foreach (float x in new[] { -0.38f, 0.38f })
+                        Part(PrimitiveType.Cube, "Leg", new Vector3(x, 0.18f, 0f), new Vector3(0.08f, 0.36f, 0.34f), accent);
+                    box = new Vector3(0.9f, 0.88f, 0.4f);
+                    break;
+                case "Table":
+                    Part(PrimitiveType.Cylinder, "Top", new Vector3(0f, 0.6f, 0f), new Vector3(0.82f, 0.05f, 0.82f), body);
+                    Part(PrimitiveType.Cylinder, "Leg", new Vector3(0f, 0.3f, 0f), new Vector3(0.14f, 0.3f, 0.14f), accent);
+                    Part(PrimitiveType.Cylinder, "Foot", new Vector3(0f, 0.03f, 0f), new Vector3(0.45f, 0.03f, 0.45f), accent);
+                    box = new Vector3(0.82f, 0.65f, 0.82f);
+                    break;
+                case "Lamp":
+                    Part(PrimitiveType.Cylinder, "Pole", new Vector3(0f, 0.85f, 0f), new Vector3(0.1f, 0.85f, 0.1f), accent);
+                    Part(PrimitiveType.Cylinder, "Cap", new Vector3(0f, 2.08f, 0f), new Vector3(0.42f, 0.05f, 0.42f), body);
+                    Prim(PrimitiveType.Sphere, "Light", t, new Vector3(0f, 1.85f, 0f), Vector3.one * 0.32f, Mat("LampGlow", "#FFF1B8", rim: 0.3f));
+                    box = new Vector3(0.3f, 2.1f, 0.3f);
+                    markerHeight = 2.5f;
+                    break;
+            }
+            var collider = root.AddComponent<BoxCollider>();
+            collider.center = new Vector3(0f, box.y * 0.5f, 0f);
+            collider.size = box;
+            AddInteractable(root, "테마 가구", InteractableKind.Furniture, radius: 0.4f, markerHeight: markerHeight, wiggle: false);
+            root.AddComponent<GridObject>().kind = GroundObjectKind.Furniture;
+            var placed = root.AddComponent<PlacedFurniture>();
+            placed.bodyRenderers = body.ToArray();
+            placed.accentRenderers = accent.ToArray();
+            return SavePrefab(root, "Furniture_Theme_" + kind);
+        }
+
         // 작업대(3-4b): 광장 동쪽(동쪽 길 입구 북쪽), 광장 쪽(서쪽)을 봄
         static void BuildWorkbench(Transform props)
         {
@@ -1645,6 +1745,8 @@ namespace PogeunVillage.EditorTools
             counter.wallet = player.GetComponent<PlayerWallet>();
             counter.rater = rater;
             counter.window = window;
+            counter.village = Object.FindAnyObjectByType<Village>();
+            counter.morning = Object.FindAnyObjectByType<MorningRunner>();
             shop.furnitureCounter = counter;
         }
 

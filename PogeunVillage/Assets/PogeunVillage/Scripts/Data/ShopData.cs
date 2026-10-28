@@ -17,5 +17,7 @@ namespace PogeunVillage
         [Range(0, 24)] public int closeHour = 22;
         [Tooltip("판매함이 값을 알아보는 물건 목록(팔 수 있는 물건은 여기 있어야 함)")]
         public ItemDefinition[] catalog = new ItemDefinition[0];
+        [Tooltip("오늘의 테마 가구(3-4d)를 고르는 난수 시드")]
+        public int themeSeed = 2028;
     }
 }

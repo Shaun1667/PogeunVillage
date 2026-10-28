@@ -411,6 +411,7 @@
 | 새집 | 구매 | — | 1500 | 750 | 15 | ★4 |
 
 ### 테마 가구 (주민 20명 × 4가지)
+데이터 위치: `Data/Items/Furniture/Theme/*.asset`(값 · 점수), `VillageRules.themeRewardThresholds`(친밀도 기준), `ShopData.themeSeed`. 3-4d에서 제안값 그대로 씀(2026-10-28).
 | 키 | 값 | 설명 |
 |---|---|---|
 | 종류 | 벤치 · 탁자 · 화분 · 가로등의 테마판 | 주민마다 4가지, 주민 색 · 컨셉 |

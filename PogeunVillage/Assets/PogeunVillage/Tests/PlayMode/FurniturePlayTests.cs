@@ -167,7 +167,7 @@ namespace PogeunVillage.PlayModeTests
         public void BasicFurniture_EightKinds_FromBalance()
         {
             var shop = Object.FindAnyObjectByType<Shop>();
-            var furniture = shop.data.catalog.OfType<FurnitureDefinition>().ToList();
+            var furniture = shop.data.catalog.OfType<FurnitureDefinition>().Where(f => !f.themeOwner).ToList();
             CollectionAssert.AreEquivalent(new[] { "Fence", "Crate", "Planter", "LogStool", "Bench", "RoundTable", "StreetLamp", "Birdhouse" },
                 furniture.Select(f => f.id).ToArray());
             var bench = furniture.Single(f => f.id == "Bench");
