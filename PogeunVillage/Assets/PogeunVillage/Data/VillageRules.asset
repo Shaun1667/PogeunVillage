@@ -50,5 +50,8 @@ MonoBehaviour:
   dailyGainCap: 5
   friendshipMin: -20
   friendshipMax: 100
+  maxResidents: 12
+  campSeed: 404
+  campWanderRadius: 5
   holePenalty: 2
   holeStuckSeconds: 3

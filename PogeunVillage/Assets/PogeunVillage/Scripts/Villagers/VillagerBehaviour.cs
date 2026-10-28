@@ -32,6 +32,9 @@ namespace PogeunVillage
         public HousePlot Home { get; private set; }
         public State Current { get; private set; } = State.Home;
         public Vector2? Target { get; private set; }
+        /// <summary>캠핑 방문 주민(2-6): 집 대신 텐트, 둘레를 좁게 돌아다님</summary>
+        public bool IsCamper { get; private set; }
+        public float WanderRadius { get; private set; }
 
         static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
 
@@ -48,13 +51,15 @@ namespace PogeunVillage
         float holeUntil;
         Vector3 visualRest;
 
-        public void Setup(Village owner, VillagerDefinition definition, HousePlot home, IRandomSource wanderRandom)
+        public void Setup(Village owner, VillagerDefinition definition, HousePlot home, IRandomSource wanderRandom, float wanderRadius, bool isCamper = false)
         {
             village = owner;
             Definition = definition;
             Home = home;
             random = wanderRandom;
-            name = "Villager_" + definition.id;
+            WanderRadius = wanderRadius;
+            IsCamper = isCamper;
+            name = (isCamper ? "Camper_" : "Villager_") + definition.id;
             controller = GetComponent<CharacterController>();
             interactable = GetComponent<Interactable>();
             if (interactable)
@@ -150,7 +155,7 @@ namespace PogeunVillage
         void PickTarget()
         {
             Vector3 door = Home.DoorPosition;
-            Target = village.PickWanderTarget(Flat(transform.position), new Vector2(door.x, door.z), random);
+            Target = village.PickWanderTarget(Flat(transform.position), new Vector2(door.x, door.z), WanderRadius, random);
             if (Target == null)
             {
                 Pause(village.rules.pauseSeconds.x);  // 갈 곳이 없으면 잠시 뒤 다시

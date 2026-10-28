@@ -47,6 +47,14 @@ namespace PogeunVillage
         public int friendshipMin = -20;
         public int friendshipMax = 100;
 
+        [Header("캠핑 구역 (BALANCE 1번 · 13번, 2-6)")]
+        [Tooltip("마을 최대 인원(이주 확정 주민 포함). 꽉 차면 캠핑 주민이 오지 않음")]
+        public int maxResidents = 12;
+        [Tooltip("캠핑 방문 주민 고르기 시드")]
+        public int campSeed = 404;
+        [Tooltip("캠핑 주민이 텐트 입구에서 이 거리(m) 안을 돌아다님")]
+        public float campWanderRadius = 5f;
+
         [Header("구멍에 빠진 주민 (BALANCE 5번 5-8, 2-5)")]
         [Tooltip("빠졌다 나오면 줄어드는 친밀도")]
         public int holePenalty = 2;

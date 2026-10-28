@@ -36,6 +36,9 @@ namespace PogeunVillage
         /// <summary>대화창 이름: "주민 01  친밀도 3" (결정 2026-10-28, 2-5: 그레이박스 동안 숫자로 보임)</summary>
         public static string Speaker(string displayName, int friendship) => $"{displayName}  친밀도 {friendship}";
 
+        /// <summary>캠핑 주민 대화창 이름: "주민 07  캠핑 중" (2-6, 친밀도는 3-1)</summary>
+        public static string CampSpeaker(string displayName) => $"{displayName}  캠핑 중";
+
         /// <summary>대화창 고르기: 고른 것만 강조색 · 굵게, 한 줄에 하나</summary>
         public static string Choices(System.Collections.Generic.IReadOnlyList<string> choices, int cursor, string highlightHex)
         {

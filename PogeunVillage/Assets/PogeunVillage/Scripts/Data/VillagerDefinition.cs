@@ -23,6 +23,8 @@ namespace PogeunVillage
         public string[] daytimeLines = { };
         public string[] eveningLines = { };
         public string[] smallTalk = { };
+        [Tooltip("캠핑 왔을 때 잡담 대신 하는 말(무작위 1줄, 2-6)")]
+        public string[] campLines = { "이 마을 참 포근하다… 며칠 머물러도 될까?", "캠핑하기 딱 좋은 곳이네! 너는 여기 살아?" };
         [Tooltip("선물을 받았을 때(무작위 1줄, 2-5)")]
         public string[] thanksLines = { "와, 고마워! 소중히 간직할게.", "나한테 주는 거야? 정말 기뻐!" };
     }

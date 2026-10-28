@@ -71,6 +71,10 @@ namespace PogeunVillage.EditorTools
 
         static readonly float[] BridgeZs = { 4f, -24f };
 
+        // 캠핑 구역(결정 2026-10-28, 2-6): 마을 중간 좌측 = 광장 서쪽 끝, 텐트 입구는 광장 쪽
+        static readonly Vector2 CampPosition = new(-38f, -4f);
+        static Vector2 CampDoor => CampPosition + (PlazaCenter - CampPosition).normalized * 2.4f;
+
         static Shader toonShader;
         static WorldSettings settings;
         static GatheringRules gatheringRules;
@@ -149,6 +153,7 @@ namespace PogeunVillage.EditorTools
             props.SetParent(world, false);
             BuildPlaza(props);
             var plots = Houses.Select(house => BuildHouse(props, house)).ToArray();
+            var campSite = BuildCamp(props);
             foreach (float z in BridgeZs)
                 BuildBridge(props, z);
             BuildLamps(props);
@@ -164,7 +169,7 @@ namespace PogeunVillage.EditorTools
             BuildShop(props);
             BakeWalkable(world, ground);
             var dialogue = BuildHud(player);
-            BuildVillage(plots, ground, dialogue);
+            BuildVillage(plots, campSite, ground, dialogue);
             var cam = BuildCamera(player.transform);
             player.GetComponent<PlayerController>().cameraTransform = cam.transform;
 
@@ -228,6 +233,7 @@ namespace PogeunVillage.EditorTools
         static void BuildPaths()
         {
             Paths.Clear();
+            Paths.Add((PlazaCenter, CampDoor));
             foreach (var house in Houses)
             {
                 Vector2 door = DoorPoint(house);
@@ -1134,7 +1140,40 @@ namespace PogeunVillage.EditorTools
             return SavePrefab(root, "Villager").GetComponent<VillagerBehaviour>();
         }
 
-        static void BuildVillage(HousePlot[] plots, VillageGround ground, DialogueWindow dialogue)
+        // 캠핑 구역: 그레이박스 텐트(삼각 지붕 모양) + 입구 천 + 모닥불. 집 대신 HousePlot을 써서 캠핑 주민이 입구에서 나오고 들어감(집 · 표지판 없음)
+        static HousePlot BuildCamp(Transform parent)
+        {
+            var camp = new GameObject("CampSite").transform;
+            camp.SetParent(parent, false);
+            camp.localPosition = OnGround(CampPosition.x, CampPosition.y, -0.05f);
+            Vector2 forward = PlazaCenter - CampPosition;
+            camp.localRotation = Quaternion.LookRotation(new Vector3(forward.x, 0f, forward.y));
+            Occupied.Add(new Vector3(CampPosition.x, CampPosition.y, 4f));
+
+            // 지붕 메시는 용마루가 X축 → 90° 돌려 삼각 박공이 입구(+Z)를 보게 함. 길이(로컬 X) 3.2 → 앞뒤 ±1.6
+            var tent = MeshObject("Tent", camp, RoofMesh(), Mat("Tent", "#F4B9A0", rim: 0.2f));
+            tent.transform.localRotation = Quaternion.Euler(0f, 90f, 0f);
+            tent.transform.localScale = new Vector3(3.2f, 2.2f, 2.8f);
+            tent.AddComponent<BoxCollider>();
+            Prim(PrimitiveType.Cube, "Flap", camp, new Vector3(0f, 0.55f, 1.62f), new Vector3(0.8f, 1.1f, 0.05f), Mat("TentFlap", "#E58F78"));
+            var stone = Mat("Stone", "#E8E2D6");
+            for (int i = 0; i < 6; i++)
+            {
+                float a = i * Mathf.PI / 3f;
+                Prim(PrimitiveType.Sphere, "FireStone", camp, new Vector3(1.8f + Mathf.Cos(a) * 0.4f, 0.08f, 2.4f + Mathf.Sin(a) * 0.4f), new Vector3(0.22f, 0.16f, 0.22f), stone);
+            }
+            Prim(PrimitiveType.Sphere, "Fire", camp, new Vector3(1.8f, 0.2f, 2.4f), new Vector3(0.3f, 0.35f, 0.3f), Mat("CampFire", "#FFB347", rim: 0.5f), castShadows: false);
+
+            var door = new GameObject("Door").transform;
+            door.SetParent(camp, false);
+            door.localPosition = new Vector3(0f, 0.05f, 2.4f);
+
+            var site = camp.gameObject.AddComponent<HousePlot>();
+            site.door = door;
+            return site;
+        }
+
+        static void BuildVillage(HousePlot[] plots, HousePlot campSite, VillageGround ground, DialogueWindow dialogue)
         {
             var rules = EnsureAsset<VillageRules>(VillageRulesPath);
             rules.villagers = EnsureVillagers();
@@ -1149,6 +1188,7 @@ namespace PogeunVillage.EditorTools
             village.inventoryWindow = dialogue.GetComponent<InventoryWindow>();
             village.playerInventory = Object.FindAnyObjectByType<PlayerInventory>();
             village.plots = plots;
+            village.campSite = campSite;
             village.villagerPrefab = BuildVillagerPrefab();
         }
 

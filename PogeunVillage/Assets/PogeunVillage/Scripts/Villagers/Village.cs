@@ -9,6 +9,8 @@ namespace PogeunVillage
     /// 시계를 구독해 밤이 되면 집으로, 잠에서 깨면(새 날) 모두 현관에서 다시 나오게 함. 대사는 대사용 난수로 고름.
     /// 친밀도(2-5): 말 걸기 = 그날 첫 대화 +1 → 대사 끝에 '선물하기 / 안녕' → 선물하기면 인벤토리에서 1개 골라 줌(+2, 도구 제외).
     /// 구멍에 빠졌다 나온 주민은 구멍이 없어지고 친밀도가 깎임. 수치는 VillageRules.
+    /// 캠핑(2-6): 시작할 때와 매일 아침 마을에 살지 않는 주민 중 1명(어제 온 주민 제외, 꽉 차면 없음)이 텐트에 옴.
+    /// 캠핑 주민과는 대사만(이름 옆 '캠핑 중') — 친밀도 · 선물 · 이주는 3-1.
     /// </summary>
     public class Village : MonoBehaviour
     {
@@ -23,20 +25,25 @@ namespace PogeunVillage
         public InventoryWindow inventoryWindow;
         public PlayerInventory playerInventory;
         public HousePlot[] plots = { };
+        [Tooltip("캠핑 구역 텐트(집 대신). 입구가 door")]
+        public HousePlot campSite;
         public VillagerBehaviour villagerPrefab;
 
         public VillageResidents Residents { get; private set; }
         public Friendship Friendship { get; private set; }
         public WalkMap WalkMap { get; private set; }
         public IReadOnlyList<VillagerBehaviour> Villagers => villagers;
+        /// <summary>오늘 캠핑 온 주민(없으면 null)</summary>
+        public VillagerBehaviour Camper { get; private set; }
 
         readonly List<VillagerBehaviour> villagers = new();
         IRandomSource dialogueRandom;
+        IRandomSource campRandom;
 
         void Start()
         {
             if (!rules || !settings || !dayCycle || dayCycle.Clock == null || !ground || ground.Grid == null || !villagerPrefab || plots.Length == 0
-                || !dialogue || !inventoryWindow || !playerInventory)
+                || !dialogue || !inventoryWindow || !playerInventory || !campSite)
             {
                 Debug.LogError($"{name}: 마을 연결이 비어 있습니다.", this);
                 enabled = false;
@@ -44,6 +51,7 @@ namespace PogeunVillage
             }
             WalkMap = ground.data.CreateWalkMap();
             dialogueRandom = new SystemRandomSource(rules.dialogueSeed);
+            campRandom = new SystemRandomSource(rules.campSeed);
             Friendship = new Friendship(rules.talkGain, rules.giftGain, rules.dailyGainCap, rules.friendshipMin, rules.friendshipMax);
 
             var ids = new List<string>();
@@ -58,9 +66,10 @@ namespace PogeunVillage
                 if (!resident)
                     continue;
                 var villager = Instantiate(villagerPrefab, plots[i].DoorPosition, Quaternion.identity, transform);
-                villager.Setup(this, resident, plots[i], new SystemRandomSource(rules.wanderSeed + i));
+                villager.Setup(this, resident, plots[i], new SystemRandomSource(rules.wanderSeed + i), rules.wanderRadius);
                 villagers.Add(villager);
             }
+            ChangeCamper(announce: false);
 
             dayCycle.Clock.PeriodChanged += OnPeriod;
             dayCycle.Clock.DayStarted += OnDay;
@@ -82,18 +91,49 @@ namespace PogeunVillage
         void StartRoutine()
         {
             bool outside = VillagerTalk.IsOutside(dayCycle.Clock.Period);
-            foreach (var v in villagers)
+            foreach (var v in AllVillagers())
             {
                 if (outside) v.ComeOut();
                 else v.StayHome();
             }
         }
 
+        IEnumerable<VillagerBehaviour> AllVillagers()
+        {
+            foreach (var v in villagers)
+                yield return v;
+            if (Camper)
+                yield return Camper;
+        }
+
+        // 캠핑 주민 교체(GDD 4-5 ④): 어제 온 주민 제외, 꽉 차면 없음. 아침에 바뀔 때만 화면 알림
+        void ChangeCamper(bool announce)
+        {
+            string yesterday = Camper ? Camper.Definition.id : null;
+            if (Camper)
+            {
+                Camper.gameObject.SetActive(false);
+                Destroy(Camper.gameObject);
+                Camper = null;
+            }
+            var ids = new List<string>();
+            foreach (var v in rules.villagers)
+                if (v) ids.Add(v.id);
+            var visitor = Find(CampVisits.PickVisitor(ids, Residents.IsResident, yesterday, Residents.Count, rules.maxResidents, campRandom));
+            campSite.Show(visitor);
+            if (!visitor)
+                return;
+            Camper = Instantiate(villagerPrefab, campSite.DoorPosition, Quaternion.identity, transform);
+            Camper.Setup(this, visitor, campSite, new SystemRandomSource(rules.wanderSeed + plots.Length), rules.campWanderRadius, isCamper: true);
+            if (announce)
+                GameNotice.Post($"[캠핑] 오늘은 {visitor.displayName}이(가) 캠핑 왔어요", this);
+        }
+
         void OnPeriod(DayPeriod period)
         {
             if (VillagerTalk.IsOutside(period))
                 return;
-            foreach (var v in villagers)
+            foreach (var v in AllVillagers())
                 v.GoHome();
         }
 
@@ -103,21 +143,31 @@ namespace PogeunVillage
             dialogue.Close();
             inventoryWindow.Close();
             Friendship.NewDay();
+            ChangeCamper(announce: true);
             StartRoutine();
         }
 
-        public Vector2? PickWanderTarget(Vector2 from, Vector2 home, IRandomSource random) =>
-            WalkMap.PickWanderTarget(from, home, rules.wanderRadius, random, ground.Grid, rules.wanderTries, rules.walkCheckStep);
+        public Vector2? PickWanderTarget(Vector2 from, Vector2 home, float radius, IRandomSource random) =>
+            WalkMap.PickWanderTarget(from, home, radius, random, ground.Grid, rules.wanderTries, rules.walkCheckStep);
 
         public string SpeakerOf(VillagerDefinition who) => HudText.Speaker(who.displayName, Friendship.Get(who.id));
 
         public Dialogue ComposeTalk(VillagerDefinition who) =>
             new(SpeakerOf(who), VillagerTalk.Compose(dayCycle.Clock.Period, who.morningLines, who.daytimeLines, who.eveningLines, who.smallTalk, dialogueRandom), TalkChoices);
 
+        /// <summary>캠핑 주민: 시간대 인사 + 캠핑 대사, 고르기 · 친밀도 없음(3-1)</summary>
+        public Dialogue ComposeCampTalk(VillagerDefinition who) =>
+            new(HudText.CampSpeaker(who.displayName), VillagerTalk.Compose(dayCycle.Clock.Period, who.morningLines, who.daytimeLines, who.eveningLines, who.campLines, dialogueRandom));
+
         /// <summary>말 걸기: 첫 대화 친밀도 → 대사 → 선물하기면 선물 고르기 → 고맙다는 말. 모두 끝나면 done</summary>
         public void Talk(VillagerBehaviour villager, Action done)
         {
             var who = villager.Definition;
+            if (villager.IsCamper)
+            {
+                dialogue.Open(ComposeCampTalk(who), _ => done());
+                return;
+            }
             Friendship.Talk(who.id);
             dialogue.Open(ComposeTalk(who), talk =>
             {
@@ -168,7 +218,8 @@ namespace PogeunVillage
                 hole.Unregister();
                 Destroy(hole.gameObject);
             }
-            Friendship.Lose(villager.Definition.id, rules.holePenalty);
+            if (!villager.IsCamper)  // 캠핑 주민 친밀도는 3-1에서(캠핑 주민은 괴롭힐 수 없음 — GDD 4-2)
+                Friendship.Lose(villager.Definition.id, rules.holePenalty);
         }
     }
 }

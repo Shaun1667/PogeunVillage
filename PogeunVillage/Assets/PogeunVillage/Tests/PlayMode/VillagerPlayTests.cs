@@ -85,7 +85,7 @@ namespace PogeunVillage.PlayModeTests
             Assert.IsTrue(village.Villagers.All(v => v.Current is VillagerBehaviour.State.GoingHome or VillagerBehaviour.State.Home));
 
             float end = Time.time + 25f;
-            while (Time.time < end && village.Villagers.Any(v => v.gameObject.activeSelf))
+            while (Time.time < end && (village.Villagers.Any(v => v.gameObject.activeSelf) || (village.Camper && village.Camper.gameObject.activeSelf)))
                 yield return null;
             Assert.IsTrue(village.Villagers.All(v => !v.gameObject.activeSelf), "밤에는 모두 집 안");
             Assert.IsTrue(Interactable.All.All(i => i.kind != InteractableKind.Villager), "집 안 주민에게는 말을 걸 수 없음");
