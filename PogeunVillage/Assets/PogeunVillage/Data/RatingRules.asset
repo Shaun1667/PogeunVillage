@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f364d5fb6059a144d9f1363497efa2e1, type: 3}
+  m_Name: RatingRules
+  m_EditorClassIdentifier: PogeunVillage::PogeunVillage.RatingRules
+  flowerPoint: 1
+  residentPoint: 10
+  friendshipPoint: 1
+  grownTreePoint: 10
+  starThresholds: 2c0100009001000026020000ee020000i
+  firstGoalStars: 3

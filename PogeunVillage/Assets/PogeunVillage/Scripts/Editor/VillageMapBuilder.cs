@@ -30,6 +30,7 @@ namespace PogeunVillage.EditorTools
         const string DayRulesPath = Root + "/Data/DayRules.asset";
         const string ShopDataPath = Root + "/Data/ShopData.asset";
         const string VillageRulesPath = Root + "/Data/VillageRules.asset";
+        const string RatingRulesPath = Root + "/Data/RatingRules.asset";
         const string VillagerDir = Root + "/Data/Villagers";
         const string FontSourcePath = Root + "/Fonts/Cafe24Ssurround-v2.0.ttf";
         const string FontAssetPath = Root + "/Fonts/Cafe24Ssurround SDF.asset";
@@ -170,6 +171,7 @@ namespace PogeunVillage.EditorTools
             BakeWalkable(world, ground);
             var dialogue = BuildHud(player);
             BuildVillage(plots, campSite, ground, dialogue);
+            BuildRating(ground, dialogue);
             var cam = BuildCamera(player.transform);
             player.GetComponent<PlayerController>().cameraTransform = cam.transform;
 
@@ -1171,6 +1173,25 @@ namespace PogeunVillage.EditorTools
             var site = camp.gameObject.AddComponent<HousePlot>();
             site.door = door;
             return site;
+        }
+
+        // 마을 평가(3-5): HUD 시계 · 모아 아래 "마을 ★☆☆☆☆", 광장 게시판 F = 항목별 점수
+        static void BuildRating(VillageGround ground, DialogueWindow dialogue)
+        {
+            var canvas = dialogue.transform;
+            ((RectTransform)canvas.Find("ClockPlate")).sizeDelta = new Vector2(380f, 200f);
+            var label = HudLabel(canvas, "Rating", EnsureFontAsset(), 40, TextAlignmentOptions.TopRight, new Vector2(1f, 1f), new Vector2(1f, 1f),
+                new Vector2(-40f, -150f), new Vector2(600f, 56f));
+
+            var rater = new GameObject("VillageRater").AddComponent<VillageRater>();
+            rater.rules = EnsureAsset<RatingRules>(RatingRulesPath);
+            rater.village = Object.FindAnyObjectByType<Village>();
+            rater.ground = ground;
+            rater.garden = ground.GetComponent<GardenKeeper>();
+            rater.morning = Object.FindAnyObjectByType<MorningRunner>();
+            rater.noticeBoard = GameObject.Find("NoticeBoard").GetComponent<Interactable>();
+            rater.dialogue = dialogue;
+            rater.ratingText = label;
         }
 
         static void BuildVillage(HousePlot[] plots, HousePlot campSite, VillageGround ground, DialogueWindow dialogue)
