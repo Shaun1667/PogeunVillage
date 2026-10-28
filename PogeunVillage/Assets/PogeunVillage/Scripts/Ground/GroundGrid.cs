@@ -12,6 +12,7 @@ namespace PogeunVillage
         Sapling,
         Hole,
         Stump,
+        Furniture,
     }
 
     /// <summary>

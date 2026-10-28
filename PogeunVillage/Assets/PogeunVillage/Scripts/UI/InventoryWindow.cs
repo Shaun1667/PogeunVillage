@@ -21,6 +21,8 @@ namespace PogeunVillage
         public ShopData catalogSource;
         public PlayerInventory inventory;
         public PlayerLock playerLock;
+        [Tooltip("가구 칸을 F로 고르면 놓기 모드(3-4a)")]
+        public FurniturePlacer furniturePlacer;
         public GameObject panel;
         public TMP_Text titleText;
         public Image[] slotBackgrounds = Array.Empty<Image>();
@@ -171,6 +173,14 @@ namespace PogeunVillage
             {
                 if (inventory.Inventory.Slots[Cursor].IsEmpty)
                     return;
+                // 가구 칸을 처음 고르면 창을 닫고 놓기 모드(3-4a). 가구 칸으로 맞바꾸기는 다른 칸을 먼저 집으면 됨
+                if (furniturePlacer && ItemAt(Cursor) is FurnitureDefinition furniture)
+                {
+                    int slot = Cursor;
+                    SetOpen(false);
+                    furniturePlacer.Begin(slot, furniture);
+                    return;
+                }
                 Picked = Cursor;
                 Tint(Picked);
                 return;

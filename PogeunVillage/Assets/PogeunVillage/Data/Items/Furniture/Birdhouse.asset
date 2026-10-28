@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6274cc1af90df27499b5057c1e89fd26, type: 3}
+  m_Name: Birdhouse
+  m_EditorClassIdentifier: PogeunVillage::PogeunVillage.FurnitureDefinition
+  id: Birdhouse
+  displayName: "\uC0C8\uC9D1"
+  maxStack: 5
+  plantsAs: 0
+  buyPrice: 1500
+  sellPrice: 750
+  prefab: {fileID: 5159342810532976726, guid: 2572b2f9be2affc4f8e22c9b0d748d99, type: 3}
+  woodCost: 0
+  ratingPoint: 15
+  unlockStars: 4

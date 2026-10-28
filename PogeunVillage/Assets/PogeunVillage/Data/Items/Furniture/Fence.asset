@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6274cc1af90df27499b5057c1e89fd26, type: 3}
+  m_Name: Fence
+  m_EditorClassIdentifier: PogeunVillage::PogeunVillage.FurnitureDefinition
+  id: Fence
+  displayName: "\uB098\uBB34 \uC6B8\uD0C0\uB9AC"
+  maxStack: 5
+  plantsAs: 0
+  buyPrice: 200
+  sellPrice: 100
+  prefab: {fileID: 4364567922817629230, guid: 2b37c718f2f06224492701bae4d1cd07, type: 3}
+  woodCost: 2
+  ratingPoint: 5
+  unlockStars: 1

@@ -23,6 +23,7 @@ namespace PogeunVillage
         SellBox,
         ShopKeeper,
         Villager,
+        Furniture,
     }
 
     /// <summary>

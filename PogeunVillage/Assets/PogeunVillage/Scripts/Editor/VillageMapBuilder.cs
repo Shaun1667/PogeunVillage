@@ -37,6 +37,7 @@ namespace PogeunVillage.EditorTools
         const string ItemDir = Root + "/Data/Items";
         const string PrefabDir = Root + "/Prefabs";
         const string ToolDir = ItemDir + "/Tools";
+        const string FurnitureDir = ItemDir + "/Furniture";
 
         const int GroundHalfSize = 90;   // 지면 메시 범위(±m), 1m 격자
         const int WaterHalfSize = 130;   // 물 메시 범위(±m), 2m 격자
@@ -84,6 +85,7 @@ namespace PogeunVillage.EditorTools
         static Pickup pickupPrefab;
         static ToolDefinition[] tools;
         static ItemDefinition woodItem, flowerClumpItem, saplingItem;
+        static FurnitureDefinition[] furniture;
         static ShopData shopData;
         static GameObject stumpPrefab;
         static readonly List<(Vector2 a, Vector2 b)> Paths = new();
@@ -126,6 +128,7 @@ namespace PogeunVillage.EditorTools
             woodItem = EnsureItem("Wood", "목재", sellPrice: 20);
             flowerClumpItem = EnsureItem("FlowerClump", "꽃 포기", GroundObjectKind.Flower, sellPrice: 60);
             saplingItem = EnsureItem("Sapling", "묘목", GroundObjectKind.Sapling, buyPrice: 300, sellPrice: 150);
+            furniture = EnsureFurniture();
             shopData = EnsureAsset<ShopData>(ShopDataPath);
             stumpPrefab = BuildStumpPrefab();
             EnsureFolder(ToolDir);
@@ -168,10 +171,12 @@ namespace PogeunVillage.EditorTools
             BuildShovel(player, ground);
             BuildDayCycle(props);
             BuildShop(props);
+            BuildTempFurnitureBox(props);
             BakeWalkable(world, ground);
             var dialogue = BuildHud(player);
             BuildVillage(plots, campSite, ground, dialogue);
             BuildRating(ground, dialogue);
+            BuildFurniture(player, ground, dialogue);
             var cam = BuildCamera(player.transform);
             player.GetComponent<PlayerController>().cameraTransform = cam.transform;
 
@@ -1046,7 +1051,8 @@ namespace PogeunVillage.EditorTools
             window.inventory = player.GetComponent<PlayerInventory>();
             // 창이 열린 동안 플레이어 조작 멈춤(2-5: 인벤토리 · 대화 · 선물 고르기가 함께 씀)
             var playerLock = player.AddComponent<PlayerLock>();
-            playerLock.controlled = new Behaviour[] { player.GetComponent<PlayerController>(), player.GetComponent<PlayerInteractor>(), player.GetComponent<PlayerTools>() };
+            playerLock.controlled = new Behaviour[] { player.GetComponent<PlayerInteractor>(), player.GetComponent<PlayerTools>() };
+            playerLock.movement = player.GetComponent<PlayerController>();  // 가구 놓기 모드는 걷기 허용(3-4a)
             window.playerLock = playerLock;
             window.titleText = title;
             window.panel = panel;
@@ -1260,6 +1266,7 @@ namespace PogeunVillage.EditorTools
         static void BuildShop(Transform props)
         {
             shopData.catalog = new[] { appleItem, peachItem, flowerItem, woodItem, flowerClumpItem, saplingItem }
+                .Concat(furniture)
                 .Concat(tools).ToArray();
             EditorUtility.SetDirty(shopData);
 
@@ -1426,8 +1433,18 @@ namespace PogeunVillage.EditorTools
         static void BuildGroundCursor(PlayerTools playerTools, VillageGround ground)
         {
             var cursor = new GameObject("GroundCursor").AddComponent<GroundCursor>();
+            var outline = CellOutline(cursor.transform, ground);
+            cursor.settings = settings;
+            cursor.ground = ground;
+            cursor.tools = playerTools;
+            cursor.outline = outline;
+        }
+
+        // 칸 테두리(얇은 사각형 4변): 앞 칸 표시 · 가구 놓기 미리보기가 씀
+        static GameObject CellOutline(Transform parent, VillageGround ground)
+        {
             var outline = new GameObject("Outline");
-            outline.transform.SetParent(cursor.transform, false);
+            outline.transform.SetParent(parent, false);
             var mat = Mat("GroundCursor", "#FFFFFF", rim: 0f);
             float half = ground.data.cellSize * 0.5f;
             const float thickness = 0.06f, lift = 0.03f;
@@ -1439,10 +1456,158 @@ namespace PogeunVillage.EditorTools
                 Vector3 scale = alongX ? new Vector3(half * 2f, 0.02f, thickness) : new Vector3(thickness, 0.02f, half * 2f);
                 Prim(PrimitiveType.Cube, "Edge", outline.transform, position, scale, mat, castShadows: false);
             }
-            cursor.settings = settings;
-            cursor.ground = ground;
-            cursor.tools = playerTools;
-            cursor.outline = outline;
+            return outline;
+        }
+
+        // ---------------------------------------------------------------- furniture (3-4a)
+
+        // 기본 가구 8가지(BALANCE 16번). 없을 때만 만들고 값은 건드리지 않음. 모습(프리팹)은 매번 다시 만듦
+        static FurnitureDefinition[] EnsureFurniture()
+        {
+            EnsureFolder(FurnitureDir);
+            var list = new[]
+            {
+                EnsureFurnitureItem("Fence", "나무 울타리", wood: 2, buy: 200, sell: 100, points: 5, stars: 1),
+                EnsureFurnitureItem("Crate", "나무 상자", wood: 3, buy: 300, sell: 150, points: 5, stars: 1),
+                EnsureFurnitureItem("Planter", "화분", wood: 0, buy: 400, sell: 200, points: 10, stars: 1),
+                EnsureFurnitureItem("LogStool", "통나무 의자", wood: 4, buy: 400, sell: 200, points: 10, stars: 2),
+                EnsureFurnitureItem("Bench", "나무 벤치", wood: 8, buy: 800, sell: 400, points: 15, stars: 2),
+                EnsureFurnitureItem("RoundTable", "둥근 탁자", wood: 6, buy: 600, sell: 300, points: 15, stars: 3),
+                EnsureFurnitureItem("StreetLamp", "가로등", wood: 0, buy: 1200, sell: 600, points: 15, stars: 3),
+                EnsureFurnitureItem("Birdhouse", "새집", wood: 0, buy: 1500, sell: 750, points: 15, stars: 4),
+            };
+            foreach (var f in list)
+            {
+                f.prefab = BuildFurniturePrefab(f);
+                EditorUtility.SetDirty(f);
+            }
+            return list;
+        }
+
+        static FurnitureDefinition EnsureFurnitureItem(string id, string displayName, int wood, int buy, int sell, int points, int stars)
+        {
+            string path = $"{FurnitureDir}/{id}.asset";
+            bool isNew = !AssetDatabase.LoadAssetAtPath<FurnitureDefinition>(path);
+            var item = EnsureAsset<FurnitureDefinition>(path);
+            if (isNew)
+            {
+                item.id = id;
+                item.displayName = displayName;
+                item.maxStack = 5;  // 결정 2026-10-28: 한 칸에 5개
+                item.woodCost = wood;
+                item.buyPrice = buy;
+                item.sellPrice = sell;
+                item.ratingPoint = points;
+                item.unlockStars = stars;
+                EditorUtility.SetDirty(item);
+            }
+            return item;
+        }
+
+        // 그레이박스 가구(1칸 안, 앞 = +Z). 충돌 · 상호작용 · 칸 등록 · 놓인 가구
+        static GameObject BuildFurniturePrefab(FurnitureDefinition def)
+        {
+            var root = new GameObject(def.id);
+            var t = root.transform;
+            var wood = Mat("Wood", "#B98A5E");
+            var plank = Mat("Plank", "#D6AE7B");
+            float markerHeight = 1.2f;
+            Vector3 box = new(0.8f, 1f, 0.8f);
+            switch (def.id)
+            {
+                case "Fence":
+                    foreach (float x in new[] { -0.4f, 0.4f })
+                        Prim(PrimitiveType.Cube, "Post", t, new Vector3(x, 0.4f, 0f), new Vector3(0.1f, 0.8f, 0.1f), wood);
+                    Prim(PrimitiveType.Cube, "RailTop", t, new Vector3(0f, 0.6f, 0f), new Vector3(0.9f, 0.08f, 0.06f), plank);
+                    Prim(PrimitiveType.Cube, "RailLow", t, new Vector3(0f, 0.3f, 0f), new Vector3(0.9f, 0.08f, 0.06f), plank);
+                    box = new Vector3(0.9f, 0.8f, 0.2f);
+                    break;
+                case "Crate":
+                    Prim(PrimitiveType.Cube, "Box", t, new Vector3(0f, 0.3f, 0f), new Vector3(0.6f, 0.6f, 0.6f), plank);
+                    box = new Vector3(0.6f, 0.6f, 0.6f);
+                    markerHeight = 1f;
+                    break;
+                case "Planter":
+                    Prim(PrimitiveType.Cylinder, "Pot", t, new Vector3(0f, 0.2f, 0f), new Vector3(0.45f, 0.2f, 0.45f), Mat("Pot", "#D9825B"));
+                    Prim(PrimitiveType.Sphere, "Bush", t, new Vector3(0f, 0.55f, 0f), new Vector3(0.5f, 0.4f, 0.5f), Mat("Leaves", "#6FC27A"));
+                    box = new Vector3(0.5f, 0.75f, 0.5f);
+                    break;
+                case "LogStool":
+                    Prim(PrimitiveType.Cylinder, "Log", t, new Vector3(0f, 0.22f, 0f), new Vector3(0.4f, 0.22f, 0.4f), Mat("Trunk", "#A57A52"));
+                    Prim(PrimitiveType.Cylinder, "Top", t, new Vector3(0f, 0.445f, 0f), new Vector3(0.36f, 0.01f, 0.36f), Mat("StumpTop", "#E8C99A"));
+                    box = new Vector3(0.4f, 0.45f, 0.4f);
+                    markerHeight = 0.9f;
+                    break;
+                case "Bench":
+                    Prim(PrimitiveType.Cube, "Seat", t, new Vector3(0f, 0.4f, 0f), new Vector3(0.9f, 0.08f, 0.38f), plank);
+                    Prim(PrimitiveType.Cube, "Back", t, new Vector3(0f, 0.65f, -0.17f), new Vector3(0.9f, 0.35f, 0.06f), plank);
+                    foreach (float x in new[] { -0.38f, 0.38f })
+                        Prim(PrimitiveType.Cube, "Leg", t, new Vector3(x, 0.2f, 0f), new Vector3(0.08f, 0.4f, 0.32f), wood);
+                    box = new Vector3(0.9f, 0.85f, 0.4f);
+                    break;
+                case "RoundTable":
+                    Prim(PrimitiveType.Cylinder, "Top", t, new Vector3(0f, 0.6f, 0f), new Vector3(0.8f, 0.04f, 0.8f), plank);
+                    Prim(PrimitiveType.Cylinder, "Leg", t, new Vector3(0f, 0.3f, 0f), new Vector3(0.12f, 0.3f, 0.12f), wood);
+                    box = new Vector3(0.8f, 0.65f, 0.8f);
+                    break;
+                case "StreetLamp":
+                    Prim(PrimitiveType.Cylinder, "Pole", t, new Vector3(0f, 0.9f, 0f), new Vector3(0.1f, 0.9f, 0.1f), Mat("LampPole", "#5E5A66"));
+                    Prim(PrimitiveType.Sphere, "Light", t, new Vector3(0f, 1.9f, 0f), Vector3.one * 0.3f, Mat("LampGlow", "#FFF1B8", rim: 0.3f));
+                    box = new Vector3(0.25f, 2f, 0.25f);
+                    markerHeight = 2.4f;
+                    break;
+                case "Birdhouse":
+                    Prim(PrimitiveType.Cylinder, "Pole", t, new Vector3(0f, 0.6f, 0f), new Vector3(0.08f, 0.6f, 0.08f), wood);
+                    Prim(PrimitiveType.Cube, "House", t, new Vector3(0f, 1.35f, 0f), new Vector3(0.35f, 0.35f, 0.35f), Mat("Birdhouse", "#8FC1E3"));
+                    Prim(PrimitiveType.Sphere, "Hole", t, new Vector3(0f, 1.38f, 0.17f), new Vector3(0.1f, 0.1f, 0.04f), Mat("Eye", "#3A3340"));
+                    var roof = MeshObject("Roof", t, RoofMesh(), Mat("BirdhouseRoof", "#E07A5F"));
+                    roof.transform.localPosition = new Vector3(0f, 1.52f, 0f);
+                    roof.transform.localScale = new Vector3(0.45f, 0.2f, 0.45f);
+                    box = new Vector3(0.2f, 1.7f, 0.2f);
+                    markerHeight = 2f;
+                    break;
+            }
+            var collider = root.AddComponent<BoxCollider>();
+            collider.center = new Vector3(0f, box.y * 0.5f, 0f);
+            collider.size = box;
+            AddInteractable(root, def.displayName, InteractableKind.Furniture, radius: 0.4f, markerHeight: markerHeight, wiggle: false);
+            root.AddComponent<GridObject>().kind = GroundObjectKind.Furniture;
+            root.AddComponent<PlacedFurniture>();
+            return SavePrefab(root, "Furniture_" + def.id);
+        }
+
+        // 임시 가구 상자(3-4a, 3-4b · c가 생기면 없앰): 광장 북서쪽
+        static void BuildTempFurnitureBox(Transform props)
+        {
+            var box = new GameObject("TempFurnitureBox").transform;
+            box.SetParent(props, false);
+            box.localPosition = OnGround(PlazaCenter.x - 2.5f, PlazaCenter.y + 4.8f);
+            box.localRotation = Quaternion.Euler(0f, 180f, 0f);
+            Prim(PrimitiveType.Cube, "Box", box, new Vector3(0f, 0.35f, 0f), new Vector3(0.9f, 0.7f, 0.7f), Mat("TempFurnitureBox", "#C9A0DC", rim: 0.2f), collider: true);
+            Prim(PrimitiveType.Cube, "Lid", box, new Vector3(0f, 0.72f, 0f), new Vector3(1f, 0.06f, 0.8f), Mat("Wood", "#B98A5E"));
+            AddInteractable(box.gameObject, "임시 가구 상자", InteractableKind.ToolBox, radius: 0.5f, markerHeight: 1.2f, wiggle: true);
+            box.gameObject.AddComponent<TempFurnitureBox>().items = furniture;
+        }
+
+        // 가구 놓기 · 들기(3-4a): 놓인 가구 관리자, 플레이어 놓기 모드(+ 칸 테두리), 인벤토리 창 연결
+        static void BuildFurniture(GameObject player, VillageGround ground, DialogueWindow dialogue)
+        {
+            var inventory = player.GetComponent<PlayerInventory>();
+            var keeper = new GameObject("Furniture").AddComponent<FurnitureKeeper>();
+            keeper.ground = ground;
+            keeper.inventory = inventory;
+            keeper.dialogue = dialogue;
+
+            var placer = player.AddComponent<FurniturePlacer>();
+            placer.settings = settings;
+            placer.keeper = keeper;
+            placer.inventory = inventory;
+            placer.playerLock = player.GetComponent<PlayerLock>();
+            var holder = new GameObject("FurniturePreview").transform;
+            placer.outline = CellOutline(holder, ground);
+            dialogue.GetComponent<InventoryWindow>().furniturePlacer = placer;
+
+            Object.FindAnyObjectByType<TempFurnitureBox>().inventory = inventory;
         }
 
         static T EnsureAsset<T>(string path) where T : ScriptableObject
