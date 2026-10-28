@@ -4,21 +4,36 @@ using UnityEngine;
 namespace PogeunVillage
 {
     /// <summary>
-    /// 광장 작업대 어댑터(결정 2026-10-28, 3-4b): F = 제작 창. 제작법은 목재 가구, 열림은 마을 평가 별(VillageRater, 아침 기준).
+    /// 광장 작업대 어댑터(결정 2026-10-28, 3-4b): F = 제작 창(목록 창). 제작법은 목재 가구, 열림은 마을 평가 별(VillageRater, 아침 기준).
     /// 규칙은 CraftRules, 결과는 알림으로.
     /// </summary>
-    public class Workbench : MonoBehaviour
+    public class Workbench : MonoBehaviour, IListSource
     {
         [Tooltip("제작법(목재가 드는 가구, 창에 이 차례로)")]
         public FurnitureDefinition[] recipes = { };
         public ItemDefinition wood;
         public PlayerInventory inventory;
         public VillageRater rater;
-        public CraftWindow window;
+        public ListWindow window;
 
         /// <summary>지금 마을 평가 별(평가 전이면 1)</summary>
         public int Stars => rater ? Math.Max(1, rater.Current.stars) : 1;
         public int Wood => inventory.Inventory.Count(wood.id);
+
+        public string Title => "작업대";
+        public string Hint => "F 만들기 · Tab 닫기";
+        public int Count => recipes.Length;
+        public string Footer => $"가진 목재 {Wood}개";
+
+        public string Line(int index)
+        {
+            var r = recipes[index];
+            return HudText.Unlockable(r.displayName, $"목재 {r.woodCost}", r.unlockStars, Stars);
+        }
+
+        public bool Usable(int index) => FurnitureRules.IsUnlocked(recipes[index].unlockStars, Stars) && Wood >= recipes[index].woodCost;
+
+        public void Choose(int index) => Craft(recipes[index]);
 
         Interactable interactable;
 

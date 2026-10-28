@@ -67,12 +67,12 @@ namespace PogeunVillage
             return text.ToString();
         }
 
-        /// <summary>제작 창 한 줄(3-4b): "나무 울타리 · 목재 2", 안 열렸으면 "통나무 의자 · ★2에 열려요"</summary>
-        public static string Recipe(string displayName, int woodCost, int unlockStars, int stars) =>
-            CraftRules.IsUnlocked(unlockStars, stars) ? $"{displayName} · 목재 {woodCost}" : $"{displayName} · ★{unlockStars}에 열려요";
+        /// <summary>목록 창 한 줄(3-4b · c): "나무 울타리 · 목재 2", 안 열렸으면 "통나무 의자 · ★2에 열려요"</summary>
+        public static string Unlockable(string displayName, string detail, int unlockStars, int stars) =>
+            FurnitureRules.IsUnlocked(unlockStars, stars) ? $"{displayName} · {detail}" : $"{displayName} · ★{unlockStars}에 열려요";
 
-        /// <summary>제작 창 목록: 고른 줄은 강조, 지금 못 만드는 줄은 흐리게</summary>
-        public static string RecipeList(System.Collections.Generic.IReadOnlyList<string> lines, System.Collections.Generic.IReadOnlyList<bool> usable,
+        /// <summary>목록 창: 고른 줄은 강조, 지금 못 고르는 줄은 흐리게</summary>
+        public static string ListLines(System.Collections.Generic.IReadOnlyList<string> lines, System.Collections.Generic.IReadOnlyList<bool> usable,
             int cursor, string highlightHex, string mutedHex)
         {
             var text = new System.Text.StringBuilder();

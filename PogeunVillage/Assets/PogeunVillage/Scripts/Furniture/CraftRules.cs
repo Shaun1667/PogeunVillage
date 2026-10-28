@@ -19,13 +19,11 @@ namespace PogeunVillage
         /// <summary>목재가 드는 가구만 작업대에서 만듦(0이면 구매만)</summary>
         public static bool IsRecipe(int woodCost) => woodCost > 0;
 
-        public static bool IsUnlocked(int unlockStars, int stars) => stars >= unlockStars;
-
         public static CraftResult Craft(Inventory inventory, string woodId, int woodMaxStack, int woodCost,
             string furnitureId, int furnitureMaxStack, int unlockStars, int stars)
         {
             if (!IsRecipe(woodCost)) throw new ArgumentOutOfRangeException(nameof(woodCost), "목재가 들지 않는 가구는 만들 수 없습니다.");
-            if (!IsUnlocked(unlockStars, stars))
+            if (!FurnitureRules.IsUnlocked(unlockStars, stars))
                 return CraftResult.Locked;
             if (!inventory.TryRemove(woodId, woodCost))
                 return CraftResult.NotEnoughWood;

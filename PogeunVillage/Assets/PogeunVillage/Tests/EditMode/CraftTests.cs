@@ -33,9 +33,9 @@ namespace PogeunVillage.Tests
         [Test]
         public void Locked_UntilStars()  // 16-5 (제작: ★1이면 울타리 · 상자만)
         {
-            Assert.IsTrue(CraftRules.IsUnlocked(1, 1));
-            Assert.IsFalse(CraftRules.IsUnlocked(2, 1));
-            Assert.IsTrue(CraftRules.IsUnlocked(2, 3));
+            Assert.IsTrue(FurnitureRules.IsUnlocked(1, 1));
+            Assert.IsFalse(FurnitureRules.IsUnlocked(2, 1));
+            Assert.IsTrue(FurnitureRules.IsUnlocked(2, 3));
             var inv = new Inventory(5);
             inv.TryAdd("Wood", 30, 20);
             Assert.AreEqual(CraftResult.Locked, Craft(inv, 4, "LogStool", unlockStars: 2, stars: 1));
@@ -72,9 +72,9 @@ namespace PogeunVillage.Tests
         [Test]
         public void RecipeText_LockedShowsStars_MutedWhenUnusable()
         {
-            Assert.AreEqual("나무 울타리 · 목재 2", HudText.Recipe("나무 울타리", 2, 1, 1));
-            Assert.AreEqual("통나무 의자 · ★2에 열려요", HudText.Recipe("통나무 의자", 4, 2, 1));
-            string list = HudText.RecipeList(new[] { "A", "B", "C" }, new[] { true, false, true }, 0, "#111111", "#999999");
+            Assert.AreEqual("나무 울타리 · 목재 2", HudText.Unlockable("나무 울타리", "목재 2", 1, 1));
+            Assert.AreEqual("통나무 의자 · ★2에 열려요", HudText.Unlockable("통나무 의자", "목재 4", 2, 1));
+            string list = HudText.ListLines(new[] { "A", "B", "C" }, new[] { true, false, true }, 0, "#111111", "#999999");
             Assert.AreEqual("<color=#111111><b>A</b></color>\n<color=#999999>B</color>\nC", list);
         }
     }

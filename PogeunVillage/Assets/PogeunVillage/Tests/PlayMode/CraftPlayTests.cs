@@ -13,7 +13,7 @@ namespace PogeunVillage.PlayModeTests
     public class CraftPlayTests : ToolSceneTest
     {
         Workbench bench;
-        CraftWindow window;
+        ListWindow window;
         InventoryWindow inventoryWindow;
         HudView hud;
 
@@ -21,7 +21,7 @@ namespace PogeunVillage.PlayModeTests
         public IEnumerator FindWorkbench()
         {
             bench = Object.FindAnyObjectByType<Workbench>();
-            window = Object.FindAnyObjectByType<CraftWindow>();
+            window = Object.FindAnyObjectByType<ListWindow>();
             inventoryWindow = Object.FindAnyObjectByType<InventoryWindow>();
             hud = Object.FindAnyObjectByType<HudView>();
             Assert.IsNotNull(bench);
@@ -48,13 +48,13 @@ namespace PogeunVillage.PlayModeTests
             Assert.IsFalse(player.GetComponent<PlayerController>().enabled);
             Assert.AreEqual(0, Inv.Count("Fence"), "여는 F로 만들지 않음");
             StringAssert.Contains("나무 울타리 · 목재 2", window.listText.text);
-            StringAssert.Contains("가진 목재 5개", window.woodText.text);
+            StringAssert.Contains("가진 목재 5개", window.footerText.text);
 
             yield return Tap(keyboard.fKey);
             Assert.AreEqual(1, Inv.Count("Fence"));
             Assert.AreEqual(3, Inv.Count("Wood"));
             Assert.IsTrue(window.IsOpen, "만들어도 창은 열린 채");
-            StringAssert.Contains("가진 목재 3개", window.woodText.text);
+            StringAssert.Contains("가진 목재 3개", window.footerText.text);
             StringAssert.Contains("만들었어요", hud.noticeText.text);
 
             yield return Tap(keyboard.fKey);

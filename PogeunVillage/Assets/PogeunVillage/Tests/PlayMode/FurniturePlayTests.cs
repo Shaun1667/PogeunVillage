@@ -7,7 +7,7 @@ using UnityEngine.TestTools;
 namespace PogeunVillage.PlayModeTests
 {
     /// <summary>
-    /// 3-4a 확인 (임시 가구 상자 · Tab 창에서 가구 F → 놓기 모드 · 걸을 수 있음 · 앞 칸 미리보기 · R / 패드 RB 돌리기 · F 놓기 ·
+    /// 3-4a 확인 (Tab 창에서 가구 F → 놓기 모드 · 걸을 수 있음 · 앞 칸 미리보기 · R / 패드 RB 돌리기 · F 놓기 ·
     /// 못 놓는 칸 · Tab 그만두기 · 놓인 가구 F → 들기 / 그대로 · 가득 차면 못 듦 · 한 칸에 5개).
     /// </summary>
     public class FurniturePlayTests : ToolSceneTest
@@ -44,20 +44,6 @@ namespace PogeunVillage.PlayModeTests
             Assert.IsFalse(window.IsOpen, "가구를 고르면 창이 닫힘");
             Assert.IsTrue(placer.IsPlacing, "놓기 모드");
             report(spot + Vector2Int.up);
-        }
-
-        [UnityTest]
-        public IEnumerator TempBox_GivesFurnitureInTurn()
-        {
-            var box = Object.FindAnyObjectByType<TempFurnitureBox>();
-            Teleport(box.transform.position + Vector3.back * 1.1f, Vector3.forward);
-            yield return Frames(3);
-            Assert.AreSame(box.GetComponent<Interactable>(), interactor.Target);
-            yield return Tap(keyboard.fKey);
-            yield return Tap(keyboard.fKey);
-            Assert.AreEqual(1, Inv.Count("Fence"));
-            Assert.AreEqual(1, Inv.Count("Crate"));
-            StringAssert.Contains("꺼냈어요", hud.noticeText.text);
         }
 
         [UnityTest]

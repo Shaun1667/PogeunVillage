@@ -45,14 +45,6 @@ namespace PogeunVillage.Tests
         }
 
         [Test]
-        public void TempBox_GivesInTurn_ThenWraps()
-        {
-            Assert.AreEqual(1, FurnitureRules.NextInBox(0, 8));
-            Assert.AreEqual(0, FurnitureRules.NextInBox(7, 8));
-            Assert.AreEqual(0, FurnitureRules.NextInBox(0, 0));
-        }
-
-        [Test]
         public void StackOfFive_SixthGoesToNextSlot()
         {
             var inv = new Inventory(3);

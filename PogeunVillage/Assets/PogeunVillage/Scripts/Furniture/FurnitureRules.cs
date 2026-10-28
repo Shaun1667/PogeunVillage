@@ -14,7 +14,7 @@ namespace PogeunVillage
         /// <summary>풀밭 빈 칸이면 놓을 수 있음(길 · 광장 · 물 · 건물 · 나무 · 바위 · 다른 것이 있는 칸은 안 됨)</summary>
         public static bool CanPlace(GroundGrid grid, UnityEngine.Vector2Int cell) => grid.CanPlace(cell);
 
-        /// <summary>임시 가구 상자(3-4a): 차례로 하나씩, 끝나면 처음부터</summary>
-        public static int NextInBox(int index, int count) => count <= 0 ? 0 : (index + 1) % count;
+        /// <summary>상점 판매 · 제작법은 마을 평가 별이 닿으면 열림(3-4b · c)</summary>
+        public static bool IsUnlocked(int unlockStars, int stars) => stars >= unlockStars;
     }
 }

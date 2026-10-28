@@ -171,7 +171,6 @@ namespace PogeunVillage.EditorTools
             BuildShovel(player, ground);
             BuildDayCycle(props);
             BuildShop(props);
-            BuildTempFurnitureBox(props);
             BuildWorkbench(props);
             BakeWalkable(world, ground);
             var dialogue = BuildHud(player);
@@ -1577,19 +1576,6 @@ namespace PogeunVillage.EditorTools
             return SavePrefab(root, "Furniture_" + def.id);
         }
 
-        // 임시 가구 상자(3-4a, 3-4b · c가 생기면 없앰): 광장 북서쪽
-        static void BuildTempFurnitureBox(Transform props)
-        {
-            var box = new GameObject("TempFurnitureBox").transform;
-            box.SetParent(props, false);
-            box.localPosition = OnGround(PlazaCenter.x - 2.5f, PlazaCenter.y + 4.8f);
-            box.localRotation = Quaternion.Euler(0f, 180f, 0f);
-            Prim(PrimitiveType.Cube, "Box", box, new Vector3(0f, 0.35f, 0f), new Vector3(0.9f, 0.7f, 0.7f), Mat("TempFurnitureBox", "#C9A0DC", rim: 0.2f), collider: true);
-            Prim(PrimitiveType.Cube, "Lid", box, new Vector3(0f, 0.72f, 0f), new Vector3(1f, 0.06f, 0.8f), Mat("Wood", "#B98A5E"));
-            AddInteractable(box.gameObject, "임시 가구 상자", InteractableKind.ToolBox, radius: 0.5f, markerHeight: 1.2f, wiggle: true);
-            box.gameObject.AddComponent<TempFurnitureBox>().items = furniture;
-        }
-
         // 작업대(3-4b): 광장 동쪽(동쪽 길 입구 북쪽), 광장 쪽(서쪽)을 봄
         static void BuildWorkbench(Transform props)
         {
@@ -1626,30 +1612,40 @@ namespace PogeunVillage.EditorTools
             placer.outline = CellOutline(holder, ground);
             dialogue.GetComponent<InventoryWindow>().furniturePlacer = placer;
 
-            Object.FindAnyObjectByType<TempFurnitureBox>().inventory = inventory;
-
-            // 작업대 제작 창(3-4b): 가운데 목록 + 가진 목재
+            // 목록 창(3-4b 작업대 제작 · 3-4c 상점 가구): 가운데 제목 · 목록(8줄) · 아래 가진 것 · 안내
             var font = EnsureFontAsset();
-            var panel = new GameObject("CraftPanel", typeof(RectTransform), typeof(Image));
+            var panel = new GameObject("ListPanel", typeof(RectTransform), typeof(Image));
             panel.transform.SetParent(dialogue.transform, false);
             var prt = (RectTransform)panel.transform;
             prt.anchorMin = prt.anchorMax = prt.pivot = new Vector2(0.5f, 0.5f);
-            prt.sizeDelta = new Vector2(760f, 520f);
+            prt.sizeDelta = new Vector2(760f, 620f);
             panel.GetComponent<Image>().color = new Color(1f, 0.97f, 0.92f, 0.92f);
-            HudLabel(panel.transform, "Title", font, 40, TextAlignmentOptions.Top, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -12f), new Vector2(700f, 56f)).text = "작업대";
-            var window = dialogue.gameObject.AddComponent<CraftWindow>();
+            var window = dialogue.gameObject.AddComponent<ListWindow>();
             window.panel = panel;
-            window.listText = HudLabel(panel.transform, "List", font, 38, TextAlignmentOptions.TopLeft, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(50f, -90f), new Vector2(660f, 300f));
-            window.woodText = HudLabel(panel.transform, "Wood", font, 34, TextAlignmentOptions.BottomLeft, new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(50f, 24f), new Vector2(400f, 48f));
-            var hint = HudLabel(panel.transform, "Hint", font, 28, TextAlignmentOptions.BottomRight, new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-30f, 28f), new Vector2(360f, 40f));
-            hint.text = "F 만들기 · Tab 닫기";
+            window.titleText = HudLabel(panel.transform, "Title", font, 40, TextAlignmentOptions.Top, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -12f), new Vector2(700f, 56f));
+            window.listText = HudLabel(panel.transform, "List", font, 38, TextAlignmentOptions.TopLeft, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(50f, -90f), new Vector2(660f, 420f));
+            window.footerText = HudLabel(panel.transform, "Footer", font, 34, TextAlignmentOptions.BottomLeft, new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(50f, 24f), new Vector2(400f, 48f));
+            window.hintText = HudLabel(panel.transform, "Hint", font, 28, TextAlignmentOptions.BottomRight, new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-30f, 28f), new Vector2(300f, 40f));
             window.playerLock = player.GetComponent<PlayerLock>();
+            window.inventory = inventory;
+            var rater = Object.FindAnyObjectByType<VillageRater>();
 
             var workbench = Object.FindAnyObjectByType<Workbench>();
             workbench.wood = woodItem;
             workbench.inventory = inventory;
-            workbench.rater = Object.FindAnyObjectByType<VillageRater>();
+            workbench.rater = rater;
             workbench.window = window;
+
+            // 상점 가구(3-4c): 상점 주인 F → 목록 창
+            var shop = Object.FindAnyObjectByType<Shop>();
+            var counter = shop.gameObject.AddComponent<FurnitureCounter>();
+            counter.shop = shop;
+            counter.furniture = furniture;
+            counter.inventory = inventory;
+            counter.wallet = player.GetComponent<PlayerWallet>();
+            counter.rater = rater;
+            counter.window = window;
+            shop.furnitureCounter = counter;
         }
 
         static T EnsureAsset<T>(string path) where T : ScriptableObject
