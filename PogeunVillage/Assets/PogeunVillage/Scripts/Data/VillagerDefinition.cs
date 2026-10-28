@@ -23,5 +23,7 @@ namespace PogeunVillage
         public string[] daytimeLines = { };
         public string[] eveningLines = { };
         public string[] smallTalk = { };
+        [Tooltip("선물을 받았을 때(무작위 1줄, 2-5)")]
+        public string[] thanksLines = { "와, 고마워! 소중히 간직할게.", "나한테 주는 거야? 정말 기뻐!" };
     }
 }

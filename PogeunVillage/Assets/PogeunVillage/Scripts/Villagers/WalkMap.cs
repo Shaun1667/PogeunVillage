@@ -5,7 +5,7 @@ namespace PogeunVillage
 {
     /// <summary>
     /// 주민이 걸을 수 있는 칸(엔진 상태 없음). 맵 생성 메뉴가 구운 '걸을 수 있는 칸'(물 · 절벽 · 충돌체 제외, 길 · 광장 · 다리는 걸을 수 있음)에
-    /// 지금 땅 칸 상태를 더함: 무언가 놓인 칸(꽃 · 묘목 · 구멍 · 밑동)과 나중에 막힌 칸(다 자란 나무)은 피함.
+    /// 지금 땅 칸 상태를 더함: 무언가 놓인 칸(꽃 · 묘목 · 밑동)과 나중에 막힌 칸(다 자란 나무)은 피함. 구멍 칸은 걸음(빠질 수 있음, 2-5).
     /// 칸 번호는 GroundGrid와 같음.
     /// </summary>
     public class WalkMap
@@ -36,7 +36,8 @@ namespace PogeunVillage
             if (cell.x < origin.x || cell.y < origin.y || cell.x >= origin.x + width || cell.y >= origin.y + height)
                 return false;
             int i = (cell.y - origin.y) * width + (cell.x - origin.x);
-            if (!walkable[i] || live.Get(cell) != GroundObjectKind.None)
+            var placed = live.Get(cell);
+            if (!walkable[i] || (placed != GroundObjectKind.None && placed != GroundObjectKind.Hole))
                 return false;
             return !live.IsBlocked(cell) || bakedBlocked[i];
         }

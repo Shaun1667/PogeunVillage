@@ -32,6 +32,21 @@ namespace PogeunVillage
             if (durability > 0) return $"{displayName} ({durability})";
             return count > 1 ? $"{displayName} ×{count}" : displayName;
         }
+
+        /// <summary>대화창 이름: "주민 01  친밀도 3" (결정 2026-10-28, 2-5: 그레이박스 동안 숫자로 보임)</summary>
+        public static string Speaker(string displayName, int friendship) => $"{displayName}  친밀도 {friendship}";
+
+        /// <summary>대화창 고르기: 고른 것만 강조색 · 굵게, 한 줄에 하나</summary>
+        public static string Choices(System.Collections.Generic.IReadOnlyList<string> choices, int cursor, string highlightHex)
+        {
+            var text = new System.Text.StringBuilder();
+            for (int i = 0; i < choices.Count; i++)
+            {
+                if (i > 0) text.Append('\n');
+                text.Append(i == cursor ? $"<color={highlightHex}><b>{choices[i]}</b></color>" : choices[i]);
+            }
+            return text.ToString();
+        }
     }
 
     /// <summary>

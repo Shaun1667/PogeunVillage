@@ -4,7 +4,8 @@ namespace PogeunVillage
 {
     /// <summary>
     /// 주민 한 명의 어댑터(결정 2026-10-28): 집 현관에서 나와 걸을 수 있는 칸 중 무작위 지점으로 걸어가 잠시 멈추기를 반복하고,
-    /// 밤이 되면 현관으로 돌아가 사라짐. F로 말을 걸면 멈추고 플레이어를 보며 대화창을 엶.
+    /// 밤이 되면 현관으로 돌아가 사라짐. F로 말을 걸면 멈추고 플레이어를 보며 대화 · 선물(Village.Talk)을 함.
+    /// 걷다가 구멍 칸에 들어서면 빠져서 잠시 못 움직이고, 나오면 Village가 구멍을 없애고 친밀도를 깎음(2-5).
     /// 일과 시작 · 끝은 Village가 시계 이벤트로 부름. 목표 고르기는 WalkMap(순수).
     /// </summary>
     [RequireComponent(typeof(CharacterController))]
@@ -17,12 +18,15 @@ namespace PogeunVillage
             Pausing,
             Talking,
             GoingHome,
+            InHole,
         }
 
         [Tooltip("몸 · 머리(주민 몸 색)")]
         public Renderer[] bodyRenderers = { };
         [Tooltip("귀(주민 강조 색)")]
         public Renderer[] accentRenderers = { };
+        [Tooltip("구멍에 빠지면 내려가는 겉모습")]
+        public Transform visual;
 
         public VillagerDefinition Definition { get; private set; }
         public HousePlot Home { get; private set; }
@@ -39,7 +43,10 @@ namespace PogeunVillage
         float stuckCheckAt;
         Vector3 stuckCheckFrom;
         float verticalVelocity;
-        State beforeTalk;
+        State resumeAs;          // 대화 · 구멍이 끝나면 돌아갈 상태(걷기 또는 집에 가기)
+        Vector2Int holeCell;
+        float holeUntil;
+        Vector3 visualRest;
 
         public void Setup(Village owner, VillagerDefinition definition, HousePlot home, IRandomSource wanderRandom)
         {
@@ -55,6 +62,8 @@ namespace PogeunVillage
                 interactable.displayName = definition.displayName;
                 interactable.Interacted += OnTalk;
             }
+            if (visual)
+                visualRest = visual.localPosition;
             var block = new MaterialPropertyBlock();
             block.SetColor(BaseColorId, definition.bodyColor);
             foreach (var r in bodyRenderers) if (r) r.SetPropertyBlock(block);
@@ -71,6 +80,7 @@ namespace PogeunVillage
         public void ComeOut()
         {
             gameObject.SetActive(true);
+            if (visual) visual.localPosition = visualRest;
             Place(Home.DoorPosition);
             transform.rotation = Quaternion.LookRotation(Vector3.ProjectOnPlane(Home.door ? Home.door.forward : Vector3.forward, Vector3.up));
             Pause(village.rules.pauseSeconds.x);
@@ -84,14 +94,14 @@ namespace PogeunVillage
             gameObject.SetActive(false);
         }
 
-        /// <summary>밤: 현관으로 걸어감(닿으면 사라짐). 대화 중이면 대화가 끝난 뒤</summary>
+        /// <summary>밤: 현관으로 걸어감(닿으면 사라짐). 대화 중 · 구멍 안이면 그게 끝난 뒤</summary>
         public void GoHome()
         {
             if (Current == State.Home)
                 return;
-            if (Current == State.Talking)
+            if (Current is State.Talking or State.InHole)
             {
-                beforeTalk = State.GoingHome;
+                resumeAs = State.GoingHome;
                 return;
             }
             StartGoingHome();
@@ -130,6 +140,10 @@ namespace PogeunVillage
                 case State.Talking:
                     Fall();
                     break;
+                case State.InHole:
+                    if (Time.time >= holeUntil)
+                        ClimbOut();
+                    break;
             }
         }
 
@@ -148,6 +162,12 @@ namespace PogeunVillage
 
         void WalkToTarget(VillageRules rules)
         {
+            if (village.HoleAt(transform.position, out Vector2Int hole))
+            {
+                FallIntoHole(hole);
+                return;
+            }
+
             Vector2 to = Target.Value - Flat(transform.position);
             if (to.magnitude < 0.3f)
             {
@@ -175,6 +195,35 @@ namespace PogeunVillage
             }
         }
 
+        // 구멍 칸에 들어서면 빠짐: 칸 가운데로 옮겨 몸이 내려가고 잠시 못 움직임
+        void FallIntoHole(Vector2Int cell)
+        {
+            resumeAs = Current == State.GoingHome ? State.GoingHome : State.Walking;
+            Current = State.InHole;
+            Target = null;
+            holeCell = cell;
+            holeUntil = Time.time + village.rules.holeStuckSeconds;
+            Vector2 center = village.ground.Grid.CellCenter(cell);
+            Place(new Vector3(center.x, transform.position.y, center.y));
+            if (visual) visual.localPosition = visualRest + Vector3.down * village.settings.holeSinkDepth;
+            GameNotice.Post($"[주민] {Definition.displayName}이(가) 구멍에 빠졌어요!", this);
+        }
+
+        void ClimbOut()
+        {
+            if (visual) visual.localPosition = visualRest;
+            village.ClimbedOutOfHole(this, holeCell);
+            Resume();
+        }
+
+        void Resume()
+        {
+            if (resumeAs == State.GoingHome)
+                StartGoingHome();
+            else
+                Pause(village.rules.afterTalkPause);
+        }
+
         void Fall()
         {
             if (!controller.enabled)
@@ -198,22 +247,14 @@ namespace PogeunVillage
 
         void OnTalk(Interactable _, PlayerInteractor by)
         {
-            if (Current == State.Talking || !village.dialogue)
+            if (Current is State.Talking or State.InHole or State.Home || !village.dialogue)
                 return;
-            beforeTalk = Current == State.GoingHome ? State.GoingHome : State.Walking;
+            resumeAs = Current == State.GoingHome ? State.GoingHome : State.Walking;
             Current = State.Talking;
             Vector3 toPlayer = Vector3.ProjectOnPlane(by.transform.position - transform.position, Vector3.up);
             if (toPlayer.sqrMagnitude > 1e-4f)
                 transform.rotation = Quaternion.LookRotation(toPlayer);
-            village.dialogue.Open(village.ComposeTalk(Definition), EndTalk);
-        }
-
-        void EndTalk()
-        {
-            if (beforeTalk == State.GoingHome)
-                StartGoingHome();
-            else
-                Pause(village.rules.afterTalkPause);
+            village.Talk(this, Resume);
         }
 
         static Vector2 Flat(Vector3 v) => new(v.x, v.z);

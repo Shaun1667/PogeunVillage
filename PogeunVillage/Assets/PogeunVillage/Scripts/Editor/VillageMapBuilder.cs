@@ -1036,7 +1036,11 @@ namespace PogeunVillage.EditorTools
             window.settings = settings;
             window.catalogSource = shopData;
             window.inventory = player.GetComponent<PlayerInventory>();
-            window.pausedWhileOpen = new Behaviour[] { player.GetComponent<PlayerController>(), player.GetComponent<PlayerInteractor>(), player.GetComponent<PlayerTools>() };
+            // 창이 열린 동안 플레이어 조작 멈춤(2-5: 인벤토리 · 대화 · 선물 고르기가 함께 씀)
+            var playerLock = player.AddComponent<PlayerLock>();
+            playerLock.controlled = new Behaviour[] { player.GetComponent<PlayerController>(), player.GetComponent<PlayerInteractor>(), player.GetComponent<PlayerTools>() };
+            window.playerLock = playerLock;
+            window.titleText = title;
             window.panel = panel;
             window.slotBackgrounds = backgrounds;
             window.slotTexts = texts;
@@ -1054,9 +1058,10 @@ namespace PogeunVillage.EditorTools
             talk.speakerText = HudLabel(talkPanel.transform, "Speaker", font, 40, TextAlignmentOptions.TopLeft, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(40f, -20f), new Vector2(800f, 56f));
             talk.speakerText.color = Hex("#C0607A");
             talk.lineText = HudLabel(talkPanel.transform, "Line", font, 40, TextAlignmentOptions.TopLeft, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(40f, -86f), new Vector2(1220f, 130f));
-            var hint = HudLabel(talkPanel.transform, "Hint", font, 28, TextAlignmentOptions.BottomRight, new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-30f, 16f), new Vector2(300f, 40f));
-            hint.text = "F 다음";  // ▶ 같은 기호는 글꼴에 없음
-            talk.pausedWhileOpen = new Behaviour[] { player.GetComponent<PlayerController>(), player.GetComponent<PlayerInteractor>(), player.GetComponent<PlayerTools>(), window };
+            talk.choiceText = HudLabel(talkPanel.transform, "Choices", font, 40, TextAlignmentOptions.TopRight, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-40f, -20f), new Vector2(320f, 130f));
+            talk.hintText = HudLabel(talkPanel.transform, "Hint", font, 28, TextAlignmentOptions.BottomRight, new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-30f, 16f), new Vector2(400f, 40f));
+            talk.hintText.text = "F 다음";  // ▶ 같은 기호는 글꼴에 없음
+            talk.playerLock = playerLock;
             return talk;
         }
 
@@ -1125,6 +1130,7 @@ namespace PogeunVillage.EditorTools
             var villager = root.AddComponent<VillagerBehaviour>();
             villager.bodyRenderers = new Renderer[] { b.GetComponent<Renderer>(), h.GetComponent<Renderer>() };
             villager.accentRenderers = new Renderer[] { el.GetComponent<Renderer>(), er.GetComponent<Renderer>() };
+            villager.visual = visual;
             return SavePrefab(root, "Villager").GetComponent<VillagerBehaviour>();
         }
 
@@ -1140,6 +1146,8 @@ namespace PogeunVillage.EditorTools
             village.dayCycle = Object.FindAnyObjectByType<DayCycle>();
             village.ground = ground;
             village.dialogue = dialogue;
+            village.inventoryWindow = dialogue.GetComponent<InventoryWindow>();
+            village.playerInventory = Object.FindAnyObjectByType<PlayerInventory>();
             village.plots = plots;
             village.villagerPrefab = BuildVillagerPrefab();
         }

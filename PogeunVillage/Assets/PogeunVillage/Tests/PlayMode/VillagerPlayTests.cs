@@ -127,7 +127,7 @@ namespace PogeunVillage.PlayModeTests
             yield return Tap(keyboard.fKey);
             Assert.IsTrue(dialogue.IsOpen);
             Assert.AreEqual(VillagerBehaviour.State.Talking, v.Current);
-            Assert.AreEqual(v.Definition.displayName, dialogue.speakerText.text);
+            StringAssert.StartsWith(v.Definition.displayName, dialogue.speakerText.text, "이름(뒤에 친밀도, 2-5)");
             CollectionAssert.Contains(v.Definition.morningLines, dialogue.lineText.text, "6시 = 아침 인사");
             Assert.AreEqual(2, dialogue.Current.LineCount);
 
@@ -142,6 +142,7 @@ namespace PogeunVillage.PlayModeTests
             yield return Tap(keyboard.fKey);
             Assert.IsTrue(dialogue.IsOpen);
             CollectionAssert.Contains(v.Definition.smallTalk, dialogue.lineText.text, "둘째 줄 = 잡담");
+            yield return Tap(keyboard.downArrowKey);  // 고르기: 안녕(2-5)
             yield return Tap(keyboard.fKey);
             Assert.IsFalse(dialogue.IsOpen, "마지막 줄 다음에 닫힘");
             Assert.AreEqual(VillagerBehaviour.State.Pausing, v.Current);
@@ -173,6 +174,7 @@ namespace PogeunVillage.PlayModeTests
             yield return Tap(gamepad.buttonSouth);
             Assert.IsTrue(dialogue.IsOpen);
             yield return Tap(gamepad.buttonSouth);
+            yield return Tap(gamepad.dpad.down);      // 고르기: 안녕(2-5)
             yield return Tap(gamepad.buttonSouth);
             Assert.IsFalse(dialogue.IsOpen);
         }

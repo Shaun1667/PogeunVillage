@@ -67,4 +67,4 @@
 | 다 자란 나무 | 옮길 수 없음 | GDD 10번 |
 
 ## 6. 다음 작업
-TASKS.md **2-5 선물 · 친밀도**부터 (Phase 2). 주민(2-4): 임시 20명 중 6명이 집터 12곳에 삶, 주민 앞 F = 대화창. 이름 · 대사는 `Data/Villagers/*.asset`에서 바꿈. HUD(2-3): Tab = 인벤토리 창, 안내는 화면 아래 알림(`GameNotice.Post`). 게임은 6시 시작, 상점은 8시에 열림 — 도구는 광장 서쪽 노점에서 삼. Phase 1 그레이박스 1-1 ~ 1-9 완료(곤충 · 낚시는 각 파트 기획 후). 개발용 F8 = 다음 날 아침. 테스트는 메뉴 `Pogeun Village > Run EditMode Tests` · `Run PlayMode Tests`로 실행(결과: `Temp/PogeunVillageTestResults_{EditMode|PlayMode}.txt`). PlayMode는 플레이 모드에 들어갔다 나오므로 씬에 저장 안 한 변경이 있으면 먼저 저장.
+TASKS.md **2-6 캠핑 구역 · 방문 주민**부터 (Phase 2). 주민(2-4 · 2-5): 임시 20명 중 6명이 집터 12곳에 삶, 주민 앞 F = 대화창 → 끝에 선물하기 / 안녕, 친밀도는 이름 옆 숫자. 창이 플레이어를 멈출 땐 `PlayerLock`. 이름 · 대사는 `Data/Villagers/*.asset`에서 바꿈. HUD(2-3): Tab = 인벤토리 창, 안내는 화면 아래 알림(`GameNotice.Post`). 게임은 6시 시작, 상점은 8시에 열림 — 도구는 광장 서쪽 노점에서 삼. Phase 1 그레이박스 1-1 ~ 1-9 완료(곤충 · 낚시는 각 파트 기획 후). 개발용 F8 = 다음 날 아침. 테스트는 메뉴 `Pogeun Village > Run EditMode Tests` · `Run PlayMode Tests`로 실행(결과: `Temp/PogeunVillageTestResults_{EditMode|PlayMode}.txt`). PlayMode는 플레이 모드에 들어갔다 나오므로 씬에 저장 안 한 변경이 있으면 먼저 저장.

@@ -45,3 +45,10 @@ MonoBehaviour:
   wanderTries: 12
   walkCheckStep: 0.5
   afterTalkPause: 1.5
+  talkGain: 1
+  giftGain: 2
+  dailyGainCap: 5
+  friendshipMin: -20
+  friendshipMax: 100
+  holePenalty: 2
+  holeStuckSeconds: 3

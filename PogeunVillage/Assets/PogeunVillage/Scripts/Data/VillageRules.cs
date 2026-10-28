@@ -36,5 +36,21 @@ namespace PogeunVillage
         public float walkCheckStep = 0.5f;
         [Tooltip("대화가 끝난 뒤 멈춰 있는 시간(초)")]
         public float afterTalkPause = 1.5f;
+
+        [Header("친밀도 (BALANCE 3번 · 캠핑 주민도 같은 값, 2-5)")]
+        [Tooltip("그날 첫 대화에서만")]
+        public int talkGain = 1;
+        [Tooltip("선물 1개당, 종류 무관")]
+        public int giftGain = 2;
+        [Tooltip("하루에 올릴 수 있는 양(넘는 만큼 버림, 감소와는 별개)")]
+        public int dailyGainCap = 5;
+        public int friendshipMin = -20;
+        public int friendshipMax = 100;
+
+        [Header("구멍에 빠진 주민 (BALANCE 5번 5-8, 2-5)")]
+        [Tooltip("빠졌다 나오면 줄어드는 친밀도")]
+        public int holePenalty = 2;
+        [Tooltip("빠져서 못 움직이는 시간(초). 나오면 구멍이 사라짐")]
+        public float holeStuckSeconds = 3f;
     }
 }
