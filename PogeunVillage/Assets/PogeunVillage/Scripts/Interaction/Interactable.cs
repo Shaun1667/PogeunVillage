@@ -24,6 +24,7 @@ namespace PogeunVillage
         ShopKeeper,
         Villager,
         Furniture,
+        Workbench,
     }
 
     /// <summary>

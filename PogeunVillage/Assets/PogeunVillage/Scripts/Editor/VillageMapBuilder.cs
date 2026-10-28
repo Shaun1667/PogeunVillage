@@ -172,6 +172,7 @@ namespace PogeunVillage.EditorTools
             BuildDayCycle(props);
             BuildShop(props);
             BuildTempFurnitureBox(props);
+            BuildWorkbench(props);
             BakeWalkable(world, ground);
             var dialogue = BuildHud(player);
             BuildVillage(plots, campSite, ground, dialogue);
@@ -1589,6 +1590,24 @@ namespace PogeunVillage.EditorTools
             box.gameObject.AddComponent<TempFurnitureBox>().items = furniture;
         }
 
+        // 작업대(3-4b): 광장 동쪽(동쪽 길 입구 북쪽), 광장 쪽(서쪽)을 봄
+        static void BuildWorkbench(Transform props)
+        {
+            var bench = new GameObject("Workbench").transform;
+            bench.SetParent(props, false);
+            bench.localPosition = OnGround(PlazaCenter.x + 5f, PlazaCenter.y + 2.3f);
+            bench.localRotation = Quaternion.Euler(0f, 270f, 0f);  // 앞(+z)이 서쪽 = 광장
+            var wood = Mat("Wood", "#B98A5E");
+            foreach (float x in new[] { -0.6f, 0.6f })
+                Prim(PrimitiveType.Cube, "Leg", bench, new Vector3(x, 0.35f, 0f), new Vector3(0.14f, 0.7f, 0.6f), wood);
+            Prim(PrimitiveType.Cube, "Top", bench, new Vector3(0f, 0.76f, 0f), new Vector3(1.6f, 0.12f, 0.8f), Mat("WorkbenchTop", "#D9B48A"), collider: true);
+            Prim(PrimitiveType.Cube, "Saw", bench, new Vector3(-0.35f, 0.86f, 0.05f), new Vector3(0.5f, 0.06f, 0.18f), Mat("ToolMetal", "#C9D2DC", rim: 0.3f));
+            Prim(PrimitiveType.Cylinder, "Log", bench, new Vector3(0.4f, 0.9f, 0f), new Vector3(0.18f, 0.25f, 0.18f), wood)
+                .transform.localRotation = Quaternion.Euler(0f, 0f, 90f);
+            AddInteractable(bench.gameObject, "작업대", InteractableKind.Workbench, radius: 0.8f, markerHeight: 1.5f, wiggle: false);
+            bench.gameObject.AddComponent<Workbench>().recipes = furniture.Where(f => CraftRules.IsRecipe(f.woodCost)).ToArray();
+        }
+
         // 가구 놓기 · 들기(3-4a): 놓인 가구 관리자, 플레이어 놓기 모드(+ 칸 테두리), 인벤토리 창 연결
         static void BuildFurniture(GameObject player, VillageGround ground, DialogueWindow dialogue)
         {
@@ -1608,6 +1627,29 @@ namespace PogeunVillage.EditorTools
             dialogue.GetComponent<InventoryWindow>().furniturePlacer = placer;
 
             Object.FindAnyObjectByType<TempFurnitureBox>().inventory = inventory;
+
+            // 작업대 제작 창(3-4b): 가운데 목록 + 가진 목재
+            var font = EnsureFontAsset();
+            var panel = new GameObject("CraftPanel", typeof(RectTransform), typeof(Image));
+            panel.transform.SetParent(dialogue.transform, false);
+            var prt = (RectTransform)panel.transform;
+            prt.anchorMin = prt.anchorMax = prt.pivot = new Vector2(0.5f, 0.5f);
+            prt.sizeDelta = new Vector2(760f, 520f);
+            panel.GetComponent<Image>().color = new Color(1f, 0.97f, 0.92f, 0.92f);
+            HudLabel(panel.transform, "Title", font, 40, TextAlignmentOptions.Top, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -12f), new Vector2(700f, 56f)).text = "작업대";
+            var window = dialogue.gameObject.AddComponent<CraftWindow>();
+            window.panel = panel;
+            window.listText = HudLabel(panel.transform, "List", font, 38, TextAlignmentOptions.TopLeft, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(50f, -90f), new Vector2(660f, 300f));
+            window.woodText = HudLabel(panel.transform, "Wood", font, 34, TextAlignmentOptions.BottomLeft, new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(50f, 24f), new Vector2(400f, 48f));
+            var hint = HudLabel(panel.transform, "Hint", font, 28, TextAlignmentOptions.BottomRight, new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-30f, 28f), new Vector2(360f, 40f));
+            hint.text = "F 만들기 · Tab 닫기";
+            window.playerLock = player.GetComponent<PlayerLock>();
+
+            var workbench = Object.FindAnyObjectByType<Workbench>();
+            workbench.wood = woodItem;
+            workbench.inventory = inventory;
+            workbench.rater = Object.FindAnyObjectByType<VillageRater>();
+            workbench.window = window;
         }
 
         static T EnsureAsset<T>(string path) where T : ScriptableObject
