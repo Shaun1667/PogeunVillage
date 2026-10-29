@@ -179,6 +179,7 @@ namespace PogeunVillage.EditorTools
             BuildVillage(plots, campSite, ground, dialogue);
             BuildRating(ground, dialogue);
             BuildFurniture(player, ground, dialogue);
+            BuildPlayLogger(player);
             var cam = BuildCamera(player.transform);
             player.GetComponent<PlayerController>().cameraTransform = cam.transform;
 
@@ -1749,6 +1750,19 @@ namespace PogeunVillage.EditorTools
             counter.village = Object.FindAnyObjectByType<Village>();
             counter.morning = Object.FindAnyObjectByType<MorningRunner>();
             shop.furnitureCounter = counter;
+        }
+
+        // 플레이 기록(4-1 재미 검증 측정 도구, 에디터 · 개발 빌드만): Temp/PlayLogs/*.csv
+        static void BuildPlayLogger(GameObject player)
+        {
+            var logger = new GameObject("PlayLogger").AddComponent<PlayLogger>();
+            logger.dayCycle = Object.FindAnyObjectByType<DayCycle>();
+            logger.wallet = player.GetComponent<PlayerWallet>();
+            logger.inventory = player.GetComponent<PlayerInventory>();
+            logger.village = Object.FindAnyObjectByType<Village>();
+            logger.rater = Object.FindAnyObjectByType<VillageRater>();
+            logger.furniture = Object.FindAnyObjectByType<FurnitureKeeper>();
+            logger.wood = woodItem;
         }
 
         static T EnsureAsset<T>(string path) where T : ScriptableObject

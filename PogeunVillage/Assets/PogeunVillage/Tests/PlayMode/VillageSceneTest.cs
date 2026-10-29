@@ -44,6 +44,10 @@ namespace PogeunVillage.PlayModeTests
             settings = playerController.settings;
             camera = Camera.main;
 
+            // 플레이 기록(4-1)은 사람이 플레이할 때만 — 테스트에서는 끔(파일을 만들지 않음)
+            var playLogger = Object.FindAnyObjectByType<PlayLogger>();
+            if (playLogger) playLogger.enabled = false;
+
             // 주민(2-4)이 돌아다니며 대상 · 길을 가로채지 않도록, 주민 테스트가 아니면 마을 주민을 모두 숨김
             if (!WithVillagers)
             {
