@@ -18,6 +18,7 @@ namespace PogeunVillage
         [SerializeField, HideInInspector] int height;
         [SerializeField, HideInInspector] byte[] blocked;  // 1 = 막힘
         [SerializeField, HideInInspector] byte[] walkable; // 1 = 주민이 걸을 수 있음(2-4)
+        [SerializeField, HideInInspector] byte[] water;    // 1 = 낚시할 수 있는 물(3-6a)
 
         public int BlockedCount
         {
@@ -46,6 +47,30 @@ namespace PogeunVillage
             walkable = new byte[walkableCells.Length];
             for (int i = 0; i < walkableCells.Length; i++)
                 walkable[i] = walkableCells[i] ? (byte)1 : (byte)0;
+        }
+
+        /// <summary>낚시할 수 있는 물 칸(3-6a: 물고기 그림자 · 찌). 막힌 칸과 같은 크기. 매번 다시 구움</summary>
+        public void BakeWater(bool[] waterCells)
+        {
+            water = new byte[waterCells.Length];
+            for (int i = 0; i < waterCells.Length; i++)
+                water[i] = waterCells[i] ? (byte)1 : (byte)0;
+        }
+
+        public bool IsWater(Vector2Int cell)
+        {
+            int x = cell.x - origin.x, y = cell.y - origin.y;
+            return water != null && x >= 0 && y >= 0 && x < width && y < height && water[y * width + x] != 0;
+        }
+
+        public System.Collections.Generic.List<Vector2Int> WaterCells()
+        {
+            var list = new System.Collections.Generic.List<Vector2Int>();
+            if (water == null)
+                return list;
+            for (int i = 0; i < water.Length; i++)
+                if (water[i] != 0) list.Add(new Vector2Int(origin.x + i % width, origin.y + i / width));
+            return list;
         }
 
         public int WalkableCount

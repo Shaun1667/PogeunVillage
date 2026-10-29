@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: be6de4b33e18b414b8a4059a20b487b5, type: 3}
+  m_Name: FishingRules
+  m_EditorClassIdentifier: PogeunVillage::PogeunVillage.FishingRules
+  fish:
+  - {fileID: 11400000, guid: f1f94590f8343a64196168442cb3d969, type: 2}
+  - {fileID: 11400000, guid: 45aec8ad7b29d254a9c794c846d2d762, type: 2}
+  - {fileID: 11400000, guid: 52ba682ab69235e45aaa5fd776a96fec, type: 2}
+  - {fileID: 11400000, guid: 443de06bd38f7d34f808c38b5b1c68f5, type: 2}
+  - {fileID: 11400000, guid: 71f72c17f6c82534a822a59b0ff00472, type: 2}
+  - {fileID: 11400000, guid: 6c4f2ac459caf6845a0a8549ff0decfc, type: 2}
+  - {fileID: 11400000, guid: f54b3643033e63a4a8c8d45bc8faad67, type: 2}
+  - {fileID: 11400000, guid: 18b15cb98602d8c4d985a94430c8258f, type: 2}
+  shadowCount: 4
+  respawnGameMinutes: 30
+  rarityWeights: 3c0000001e0000000a000000i
+  shadowSpacingCells: 4
+  shadowWanderRadius: 0.8
+  shadowWanderSpeed: 0.3
+  seed: 1717
+  castDistance: 2.5
+  approachDistance: 3
+  approachSeconds: 1.5
+  nibbleCount: {x: 0, y: 2}
+  nibbleInterval: {x: 1, y: 2}
+  biteWindow: 0.8

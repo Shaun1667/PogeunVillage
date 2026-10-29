@@ -10,6 +10,7 @@ namespace PogeunVillage
     /// 숫자 1~5로 들기(같은 키 = 내려놓기), Space로 휘두르기. 패드는 십자키 좌우로 바꾸고 X로 휘두르기.
     /// 휘둘렀을 때 앞의 상호작용 대상(PlayerInteractor.Target)이 도구의 hitKinds면 '맞음' → 대상에 HitByTool, 내구도 -1, 0이면 부서짐.
     /// 칸을 다루는 도구(usesGroundCell: 삽 · 물뿌리개)는 대신 플레이어의 IToolAction들에 묻고, 무언가를 했으면 '맞음'.
+    /// 휘두르지 않는 도구(낚싯대 3-6a)는 Space를 IToolPress가 맡음.
     /// </summary>
     public class PlayerTools : MonoBehaviour
     {
@@ -35,6 +36,7 @@ namespace PogeunVillage
         string[] toolIds;
         Quaternion pivotRest;
         IToolAction[] actions;
+        IToolPress[] presses;
 
         void Awake()
         {
@@ -46,6 +48,7 @@ namespace PogeunVillage
             }
             toolIds = Array.ConvertAll(tools, t => t.id);
             actions = GetComponents<IToolAction>();
+            presses = GetComponents<IToolPress>();
             if (swingPivot)
                 pivotRest = swingPivot.localRotation;
             ShowHeld();
@@ -82,8 +85,25 @@ namespace PogeunVillage
             }
 
             bool use = (keyboard?.spaceKey.wasPressedThisFrame ?? false) || (gamepad?.buttonWest.wasPressedThisFrame ?? false);
-            if (use && Equipped && !IsSwinging)
-                StartCoroutine(Swing());
+            if (!use || !Equipped || IsSwinging)
+                return;
+            foreach (var press in presses)
+                if (press.TryPress(this, Equipped))
+                    return;
+            StartCoroutine(Swing());
+        }
+
+        /// <summary>든 도구의 내구도 -1(아직 그 도구를 들고 있으면). 0이 되면 부서짐 알림</summary>
+        public void UseDurability(ToolDefinition tool)
+        {
+            UseDurability(tool, EquippedSlot);
+        }
+
+        void UseDurability(ToolDefinition tool, int slot)
+        {
+            bool stillHeld = slot >= 0 && inventory.Inventory.Slots[slot].itemId == tool.id;
+            if (stillHeld && inventory.Inventory.UseDurability(slot))
+                GameNotice.Post($"[도구] {tool.displayName}이(가) 부서졌어요", this);
         }
 
         void SelectKey(int index)
@@ -155,9 +175,8 @@ namespace PogeunVillage
             ToolUsed?.Invoke(tool, hit ? target : null);
             if (hit && target)
                 target.ReceiveToolHit(this, tool);
-            bool stillHeld = inventory.Inventory.Slots[slot].itemId == tool.id;
-            if (hit && stillHeld && inventory.Inventory.UseDurability(slot))
-                GameNotice.Post($"[도구] {tool.displayName}이(가) 부서졌어요", this);
+            if (hit)
+                UseDurability(tool, slot);
 
             yield return RotatePivot(1f, 0f, half);
             IsSwinging = false;

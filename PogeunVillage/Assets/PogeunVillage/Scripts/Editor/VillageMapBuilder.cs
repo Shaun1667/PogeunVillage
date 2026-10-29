@@ -31,6 +31,7 @@ namespace PogeunVillage.EditorTools
         const string ShopDataPath = Root + "/Data/ShopData.asset";
         const string VillageRulesPath = Root + "/Data/VillageRules.asset";
         const string RatingRulesPath = Root + "/Data/RatingRules.asset";
+        const string FishingRulesPath = Root + "/Data/FishingRules.asset";
         const string VillagerDir = Root + "/Data/Villagers";
         const string FontSourcePath = Root + "/Fonts/Cafe24Ssurround-v2.0.ttf";
         const string FontAssetPath = Root + "/Fonts/Cafe24Ssurround SDF.asset";
@@ -87,6 +88,7 @@ namespace PogeunVillage.EditorTools
         static ItemDefinition woodItem, flowerClumpItem, saplingItem;
         static FurnitureDefinition[] furniture;
         static FurnitureDefinition[] themeFurniture;  // 주민 20명 × 4가지(3-4d)
+        static FishDefinition[] fish;                 // 물고기 8종(3-6a)
         static ShopData shopData;
         static GameObject stumpPrefab;
         static readonly List<(Vector2 a, Vector2 b)> Paths = new();
@@ -131,6 +133,7 @@ namespace PogeunVillage.EditorTools
             saplingItem = EnsureItem("Sapling", "묘목", GroundObjectKind.Sapling, buyPrice: 300, sellPrice: 150);
             furniture = EnsureFurniture();
             themeFurniture = EnsureThemeFurniture(EnsureVillagers());
+            fish = EnsureFish();
             shopData = EnsureAsset<ShopData>(ShopDataPath);
             stumpPrefab = BuildStumpPrefab();
             EnsureFolder(ToolDir);
@@ -179,6 +182,7 @@ namespace PogeunVillage.EditorTools
             BuildVillage(plots, campSite, ground, dialogue);
             BuildRating(ground, dialogue);
             BuildFurniture(player, ground, dialogue);
+            BuildFishing(player, ground);
             BuildPlayLogger(player);
             var cam = BuildCamera(player.transform);
             player.GetComponent<PlayerController>().cameraTransform = cam.transform;
@@ -881,6 +885,7 @@ namespace PogeunVillage.EditorTools
         // 막힌 칸 굽기: 물(물 높이 근처 이하) · 길 · 광장 · 충돌체(집 · 나무 줄기 · 바위 · 다리 · 가로등 · 분수 · 게시판 · 도구 상자)
         const float PathBlockDistance = 1.2f;     // 길 중심선에서 이 거리 안의 칸 중심 = 길
         const float WaterBlockMargin = 0.1f;      // 물 높이 + 이 값 아래 = 물
+        const float FishWaterDepth = 0.3f;        // 물 높이 - 이 값 아래 = 낚시하는 물(3-6a)
 
         static VillageGround BuildGroundGrid(Transform world)
         {
@@ -914,6 +919,17 @@ namespace PogeunVillage.EditorTools
             }
 
             data.Bake(origin, count, count, blocked);
+
+            // 낚시할 수 있는 물(3-6a): 강만 — 물 높이보다 충분히 깊은 칸, 남쪽 바닷가는 빼고(바다 낚시는 나중)
+            var water = new bool[count * count];
+            for (int j = 0; j < count; j++)
+            for (int i = 0; i < count; i++)
+            {
+                float x = (origin.x + i + 0.5f) * size;
+                float z = (origin.y + j + 0.5f) * size;
+                water[j * count + i] = Height(x, z) < settings.waterLevel - FishWaterDepth && BeachMask(z) < 0.01f;
+            }
+            data.BakeWater(water);
             EditorUtility.SetDirty(data);
 
             var ground = new GameObject("GroundGrid").AddComponent<VillageGround>();
@@ -1271,6 +1287,7 @@ namespace PogeunVillage.EditorTools
             shopData.catalog = new[] { appleItem, peachItem, flowerItem, woodItem, flowerClumpItem, saplingItem }
                 .Concat(furniture)
                 .Concat(themeFurniture)
+                .Concat(fish)
                 .Concat(tools).ToArray();
             EditorUtility.SetDirty(shopData);
 
@@ -1750,6 +1767,86 @@ namespace PogeunVillage.EditorTools
             counter.village = Object.FindAnyObjectByType<Village>();
             counter.morning = Object.FindAnyObjectByType<MorningRunner>();
             shop.furnitureCounter = counter;
+        }
+
+        // 물고기 8종(3-6a, BALANCE 17번): 없을 때만 만들고, 있으면 값을 건드리지 않음
+        static FishDefinition[] EnsureFish()
+        {
+            string dir = ItemDir + "/Fish";
+            EnsureFolder(dir);
+            var any = new DayPeriod[0];
+            var dayOnly = new[] { DayPeriod.Morning, DayPeriod.Daytime };
+            var nightOnly = new[] { DayPeriod.Evening, DayPeriod.Night };
+            var list = new[]
+            {
+                EnsureFishItem(dir, "Medaka", "송사리", FishSize.Small, FishRarity.Common, any, 100, 5, "#C9D6DF"),
+                EnsureFishItem(dir, "PaleChub", "피라미", FishSize.Small, FishRarity.Common, dayOnly, 120, 5, "#9FC7E8"),
+                EnsureFishItem(dir, "CrucianCarp", "붕어", FishSize.Medium, FishRarity.Common, any, 160, 5, "#B8A27A"),
+                EnsureFishItem(dir, "Loach", "미꾸라지", FishSize.Small, FishRarity.Common, nightOnly, 150, 5, "#8A7A5C"),
+                EnsureFishItem(dir, "Carp", "잉어", FishSize.Large, FishRarity.Uncommon, any, 300, 10, "#D99A5B"),
+                EnsureFishItem(dir, "Catfish", "메기", FishSize.Large, FishRarity.Uncommon, nightOnly, 400, 10, "#5E5A66"),
+                EnsureFishItem(dir, "Mandarinfish", "쏘가리", FishSize.Medium, FishRarity.Rare, new[] { DayPeriod.Daytime }, 900, 20, "#C8B04A"),
+                EnsureFishItem(dir, "GoldenCarp", "황금잉어", FishSize.Large, FishRarity.Rare, new[] { DayPeriod.Evening }, 1500, 20, "#F2C14E"),
+            };
+            var rules = EnsureAsset<FishingRules>(FishingRulesPath);
+            rules.fish = list;
+            EditorUtility.SetDirty(rules);
+            return list;
+        }
+
+        static FishDefinition EnsureFishItem(string dir, string id, string displayName, FishSize size, FishRarity rarity, DayPeriod[] periods, int sell, int aquarium, string color)
+        {
+            string path = $"{dir}/{id}.asset";
+            bool isNew = !AssetDatabase.LoadAssetAtPath<FishDefinition>(path);
+            var item = EnsureAsset<FishDefinition>(path);
+            if (isNew)
+            {
+                item.id = id;
+                item.displayName = displayName;
+                item.maxStack = 10;
+                item.sellPrice = sell;
+                item.size = size;
+                item.rarity = rarity;
+                item.periods = periods;
+                item.aquariumPoint = aquarium;
+                item.color = Hex(color);
+                EditorUtility.SetDirty(item);
+            }
+            return item;
+        }
+
+        // 낚시(3-6a): 강의 물고기 그림자 · 찌 · 플레이어 낚싯대
+        static void BuildFishing(GameObject player, VillageGround ground)
+        {
+            var shadowRoot = new GameObject("FishShadow");
+            var disc = Prim(PrimitiveType.Sphere, "Shadow", shadowRoot.transform, Vector3.zero, new Vector3(1f, 0.02f, 1f), Mat("FishShadow", "#2E3B52", rim: 0f), castShadows: false);
+            disc.layer = 2;  // 레이캐스트에 맞지 않게
+            shadowRoot.AddComponent<FishShadow>();
+            var shadowPrefab = SavePrefab(shadowRoot, "FishShadow").GetComponent<FishShadow>();
+
+            var shadows = new GameObject("FishShadows").AddComponent<FishShadows>();
+            shadows.rules = EnsureAsset<FishingRules>(FishingRulesPath);
+            shadows.settings = settings;
+            shadows.ground = ground;
+            shadows.dayCycle = Object.FindAnyObjectByType<DayCycle>();
+            shadows.shadowPrefab = shadowPrefab;
+
+            var bobber = new GameObject("Bobber").transform;
+            Prim(PrimitiveType.Sphere, "Float", bobber, new Vector3(0f, 0.05f, 0f), Vector3.one * 0.16f, Mat("BobberRed", "#E05A4F", rim: 0.3f), castShadows: false).layer = 2;
+            Prim(PrimitiveType.Sphere, "Top", bobber, new Vector3(0f, 0.13f, 0f), Vector3.one * 0.08f, Mat("BobberWhite", "#FFFFFF", rim: 0.3f), castShadows: false).layer = 2;
+            bobber.gameObject.layer = 2;
+
+            var rod = player.AddComponent<FishingRodUser>();
+            rod.rules = shadows.rules;
+            rod.settings = settings;
+            rod.shadows = shadows;
+            rod.ground = ground;
+            rod.inventory = player.GetComponent<PlayerInventory>();
+            rod.tools = player.GetComponent<PlayerTools>();
+            rod.playerLock = player.GetComponent<PlayerLock>();
+            rod.bobber = bobber;
+            rod.pickupPrefab = pickupPrefab;
+            Debug.Log($"[낚시] 강 물 칸 {ground.data.WaterCells().Count}개");
         }
 
         // 플레이 기록(4-1 재미 검증 측정 도구, 에디터 · 개발 빌드만): Temp/PlayLogs/*.csv
