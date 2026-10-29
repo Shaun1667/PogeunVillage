@@ -15,6 +15,23 @@ namespace PogeunVillage
         public Departures(int leaveThreshold) => this.leaveThreshold = leaveThreshold;
 
         public bool IsPreparing(string id) => preparing.Contains(id);
+        /// <summary>이사 준비 중인 주민(저장 6-1b, id 차례)</summary>
+        public List<string> Preparing
+        {
+            get
+            {
+                var list = new List<string>(preparing);
+                list.Sort(StringComparer.Ordinal);
+                return list;
+            }
+        }
+
+        /// <summary>불러오기(6-1b)</summary>
+        public void Restore(IEnumerable<string> ids)
+        {
+            preparing.Clear();
+            foreach (string id in ids) preparing.Add(id);
+        }
         public int PreparingCount => preparing.Count;
 
         /// <summary>아침 ①: 이사 준비 중이던 주민 모두 떠남(목록을 돌려주고 비움, 같은 순서 = id 순)</summary>

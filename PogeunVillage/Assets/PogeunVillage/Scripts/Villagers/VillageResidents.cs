@@ -22,6 +22,18 @@ namespace PogeunVillage
 
         public IReadOnlyList<string> Plots => plots;
 
+        /// <summary>불러오기(6-1b): 집터마다 주민(빈 문자열 · null = 빈 집터). 바뀐 집터만 알림</summary>
+        public void Restore(IReadOnlyList<string> saved)
+        {
+            for (int i = 0; i < plots.Length; i++)
+            {
+                string id = i < saved.Count && !string.IsNullOrEmpty(saved[i]) ? saved[i] : null;
+                if (plots[i] == id) continue;
+                plots[i] = id;
+                PlotChanged?.Invoke(i);
+            }
+        }
+
         public int Count
         {
             get

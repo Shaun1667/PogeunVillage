@@ -2053,6 +2053,18 @@ namespace PogeunVillage.EditorTools
             save.insectEncyclopedia = Object.FindAnyObjectByType<InsectEncyclopedia>();
             save.rater = Object.FindAnyObjectByType<VillageRater>();
             save.furnitureCounter = Object.FindAnyObjectByType<FurnitureCounter>();
+            save.village = Object.FindAnyObjectByType<Village>();
+            save.fishingRules = EnsureAsset<FishingRules>(FishingRulesPath);
+            save.insectRules = EnsureAsset<InsectRules>(InsectRulesPath);
+
+            // 땅 · 가구 저장(6-1b)
+            var groundSaver = save.gameObject.AddComponent<GroundSaver>();
+            groundSaver.ground = Object.FindAnyObjectByType<VillageGround>();
+            groundSaver.garden = groundSaver.ground.GetComponent<GardenKeeper>();
+            groundSaver.furniture = Object.FindAnyObjectByType<FurnitureKeeper>();
+            groundSaver.stumpPrefab = stumpPrefab;
+            groundSaver.pickupPrefab = pickupPrefab;
+            save.groundSaver = groundSaver;
         }
 
         // 저장 지우기(6-1a, 개발용): 직접 플레이한 저장을 지우고 새로 시작 — 시작 화면(6-1d) 전까지

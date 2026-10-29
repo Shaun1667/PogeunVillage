@@ -52,6 +52,16 @@ namespace PogeunVillage
 
         bool IsPlant(Vector2Int cell) => grid.Get(cell) is GroundObjectKind.Flower or GroundObjectKind.Sapling;
 
+        /// <summary>불러오기(6-1b): 아침 기준이라 물 준 칸은 없음 — 시든 꽃 · 묘목 자란 날만</summary>
+        public void Restore(IEnumerable<Vector2Int> wiltedCells, IEnumerable<KeyValuePair<Vector2Int, int>> saplingGrowth)
+        {
+            watered.Clear();
+            wilted.Clear();
+            growth.Clear();
+            foreach (var c in wiltedCells) wilted.Add(c);
+            foreach (var g in saplingGrowth) growth[g.Key] = g.Value;
+        }
+
         /// <returns>꽃 · 묘목이 있어 물을 줬으면 true</returns>
         public bool Water(Vector2Int cell)
         {

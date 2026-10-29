@@ -107,6 +107,90 @@ namespace PogeunVillage
             }
         }
 
+        /// <summary>저장(6-1b): 집터 · 친밀도 · 이사 준비 · 캠핑 · 오늘의 부탁 · 테마 보상</summary>
+        public VillageSave Capture()
+        {
+            var save = new VillageSave();
+            foreach (string id in Residents.Plots)
+                save.plots.Add(id ?? "");
+            foreach (var v in rules.villagers)
+                if (v && Friendship.Get(v.id) != 0)
+                    save.friendship.Add(new CountData { id = v.id, count = Friendship.Get(v.id) });
+            save.preparing = Departures.Preparing;
+            if (Camper && CampStay != null)
+            {
+                save.camperId = Camper.Definition.id;
+                save.campValue = CampStay.Value;
+                save.campConfirmed = CampStay.Confirmed;
+            }
+            if (Request != null)
+            {
+                save.hasRequest = true;
+                save.requestVillager = Request.VillagerId;
+                save.requestItem = Request.ItemId;
+                save.requestCount = Request.Count;
+                save.requestDone = Request.Done;
+            }
+            foreach (var e in ThemeRewards.Entries)
+                save.themeGiven.Add(new CountData { id = e.Key, count = e.Value });
+            return save;
+        }
+
+        /// <summary>
+        /// 불러오기(6-1b): 주민 · 캠핑 주민을 다시 세우고(데이터에 없는 주민은 건너뛰고 skipped에), 친밀도 · 이사 준비 · 부탁 · 테마 보상을 되살림.
+        /// 아침 기준이라 하루 기록(첫 대화 · 하루 상한)은 새날 그대로
+        /// </summary>
+        public void Restore(VillageSave save, List<string> skipped)
+        {
+            foreach (var v in villagers)
+                if (v) Destroy(v.gameObject);
+            villagers.Clear();
+            if (Camper)
+            {
+                Camper.gameObject.SetActive(false);
+                Destroy(Camper.gameObject);
+                Camper = null;
+            }
+            CampStay = null;
+
+            var plotIds = new List<string>();
+            foreach (string id in save.plots)
+            {
+                bool known = string.IsNullOrEmpty(id) || Find(id);
+                if (!known) skipped.Add(id);
+                plotIds.Add(known ? id : "");
+            }
+            Residents.Restore(plotIds);
+            for (int i = 0; i < plots.Length; i++)
+            {
+                var resident = Find(Residents.Plots[i]);
+                plots[i].Show(resident);
+                if (resident)
+                    SpawnResident(resident, i);
+            }
+
+            foreach (var v in rules.villagers)
+                if (v) Friendship.Begin(v.id, 0);
+            foreach (var f in save.friendship)
+                if (Find(f.id)) Friendship.Begin(f.id, f.count);
+            Departures.Restore(save.preparing.FindAll(id => Residents.IsResident(id)));
+
+            var visitor = string.IsNullOrEmpty(save.camperId) ? null : Find(save.camperId);
+            campSite.Show(visitor);
+            if (visitor)
+            {
+                CampStay = new CampStay(visitor.id, rules.talkGain, rules.giftGain, rules.dailyGainCap, rules.moveInThreshold);
+                CampStay.Restore(save.campValue, save.campConfirmed);
+                Camper = Instantiate(villagerPrefab, campSite.DoorPosition, Quaternion.identity, transform);
+                Camper.Setup(this, visitor, campSite, new SystemRandomSource(rules.wanderSeed + plots.Length), rules.campWanderRadius, isCamper: true);
+            }
+
+            Request = save.hasRequest ? VillagerRequest.Restore(save.requestVillager, save.requestItem, save.requestCount, save.requestDone) : null;
+            foreach (var t in save.themeGiven)
+                ThemeRewards.Restore(t.id, t.count);
+            StartRoutine();
+        }
+
         VillagerBehaviour SpawnResident(VillagerDefinition resident, int plot)
         {
             var villager = Instantiate(villagerPrefab, plots[plot].DoorPosition, Quaternion.identity, transform);

@@ -27,6 +27,10 @@ namespace PogeunVillage
 
         public void Complete() => Done = true;
 
+        /// <summary>불러오기(6-1b): 그날 부탁 그대로</summary>
+        public static VillagerRequest Restore(string villagerId, string itemId, int count, bool done) =>
+            new(villagerId, itemId, count) { Done = done };
+
         /// <summary>
         /// 오늘의 부탁: 후보 주민(이사 준비 중 제외는 부르는 쪽) 중 1명, 물건 목록 중 1가지, 개수 min ~ max. 후보나 물건이 없으면 null.
         /// 같은 난수 = 같은 부탁.

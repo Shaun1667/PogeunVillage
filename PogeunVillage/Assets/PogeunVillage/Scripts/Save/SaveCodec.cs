@@ -83,6 +83,53 @@ namespace PogeunVillage
             return slots;
         }
 
+        /// <summary>
+        /// 같은 상태면 같은 파일이 되게(6-1b): 목록을 정렬하고 위치는 0.001 단위로 반올림.
+        /// 왕복 테스트 · 파일 비교가 쉬워짐
+        /// </summary>
+        public static SaveData Normalize(SaveData d)
+        {
+            int ById(CountData a, CountData b) => string.CompareOrdinal(a.id, b.id);
+            int ByCell(CellData a, CellData b) => a.x != b.x ? a.x.CompareTo(b.x) : a.y.CompareTo(b.y);
+            int ByPoint(PointData a, PointData b) => a.x != b.x ? a.x.CompareTo(b.x) : a.z.CompareTo(b.z);
+            d.fishCaught.Sort(ById);
+            d.insectCaught.Sort(ById);
+            if (d.village != null)
+            {
+                d.village.friendship.Sort(ById);
+                d.village.themeGiven.Sort(ById);
+                d.village.preparing.Sort(string.CompareOrdinal);
+            }
+            if (d.ground != null)
+            {
+                d.ground.flowers.Sort(ByCell);
+                d.ground.saplings.Sort(ByCell);
+                d.ground.holes.Sort(ByCell);
+                d.ground.grownTrees.Sort(ByCell);
+                foreach (var p in d.ground.felledTrees) Round(p);
+                foreach (var p in d.ground.stumps) Round(p);
+                d.ground.felledTrees.Sort(ByPoint);
+                d.ground.stumps.Sort(ByPoint);
+                foreach (var drop in d.ground.drops)
+                {
+                    drop.x = R(drop.x); drop.y = R(drop.y); drop.z = R(drop.z);
+                    drop.r = R(drop.r); drop.g = R(drop.g); drop.b = R(drop.b);
+                }
+                d.ground.drops.Sort((a, b) => a.x != b.x ? a.x.CompareTo(b.x) : a.z != b.z ? a.z.CompareTo(b.z) : string.CompareOrdinal(a.id, b.id));
+            }
+            d.furniture?.Sort((a, b) => a.x != b.x ? a.x.CompareTo(b.x) : a.y.CompareTo(b.y));
+            return d;
+        }
+
+        static float R(float v) => (float)Math.Round(v, 3);
+
+        static void Round(PointData p)
+        {
+            p.x = R(p.x); p.y = R(p.y); p.z = R(p.z); p.scale = R(p.scale);
+            float yaw = (float)Math.Round(p.yaw, 1) % 360f;
+            p.yaw = yaw < 0f ? yaw + 360f : yaw;
+        }
+
         public static List<SlotData> SaveSlots(IReadOnlyList<InventorySlot> slots)
         {
             var list = new List<SlotData>();

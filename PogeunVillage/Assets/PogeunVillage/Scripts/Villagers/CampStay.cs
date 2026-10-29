@@ -21,6 +21,13 @@ namespace PogeunVillage
         public int Value => friendship.Get(VisitorId);
         public bool Confirmed { get; private set; }
 
+        /// <summary>불러오기(6-1b): 머무름 값 · 확정</summary>
+        public void Restore(int value, bool confirmed)
+        {
+            friendship.Begin(VisitorId, value);
+            Confirmed = confirmed;
+        }
+
         /// <summary>말 걸기. 실제로 오른 양(확정 뒤 · 두 번째 대화는 0)</summary>
         public int Talk() => Confirmed ? 0 : Check(friendship.Talk(VisitorId));
 

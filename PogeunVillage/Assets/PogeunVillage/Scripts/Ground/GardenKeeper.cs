@@ -62,11 +62,26 @@ namespace PogeunVillage
             foreach (var cell in morning.grownSaplings)
             {
                 Remove(cell);
-                ground.Grid.Block(cell);
-                Vector2 c = ground.Grid.CellCenter(cell);
-                Instantiate(grownTreePrefab, GroundPoint(c), Quaternion.identity, transform).name = "Tree";
+                PlantGrownTree(cell);
             }
 
+            RefreshLooks();
+            return morning;
+        }
+
+        /// <summary>묘목이 다 자란 나무(칸을 막음). 아침 · 불러오기(6-1b)</summary>
+        public GameObject PlantGrownTree(Vector2Int cell)
+        {
+            ground.Grid.Block(cell);
+            Vector2 c = ground.Grid.CellCenter(cell);
+            var tree = Instantiate(grownTreePrefab, GroundPoint(c), Quaternion.identity, transform);
+            tree.name = "Tree";
+            return tree;
+        }
+
+        /// <summary>꽃 시듦 · 묘목 단계 모습을 지금 상태대로(아침 · 불러오기)</summary>
+        public void RefreshLooks()
+        {
             foreach (var obj in ground.Objects())
             {
                 if (obj.kind == GroundObjectKind.Flower)
@@ -74,7 +89,6 @@ namespace PogeunVillage
                 else if (obj.kind == GroundObjectKind.Sapling)
                     ShowStage(obj, Garden.SaplingStage(obj.Cell));
             }
-            return morning;
         }
 
         void Remove(Vector2Int cell)

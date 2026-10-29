@@ -8,7 +8,7 @@ namespace PogeunVillage
     /// <summary>
     /// 세이브 어댑터(결정 2026-10-29, GDD 4-13 · 6-1a): 자고 일어나 아침 처리가 모두 끝나면 자동 저장("저장했어요").
     /// 게임을 시작할 때 저장이 있으면 그 날짜 아침으로 불러옴(시작 화면은 6-1d — 그때까지는 자동 이어하기).
-    /// 지금 저장하는 것: 날짜 · 모아 · 인벤토리 · 도감 2가지 · 평가 기록(6-1b · 6-1c에서 더함).
+    /// 저장하는 것: 날짜 · 모아 · 인벤토리 · 도감 2가지 · 평가 기록(6-1a), 마을 주민 · 캠핑 · 부탁 · 테마 보상 · 땅 · 가구(6-1b, Village · GroundSaver).
     /// 자동 테스트는 PathOverride(임시 폴더)로 저장 위치를 바꿔 직접 플레이한 저장을 건드리지 않음.
     /// 쓰기 · 읽기 규칙은 SaveCodec, 수치는 SaveRules(BALANCE.md 19번).
     /// </summary>
@@ -29,6 +29,12 @@ namespace PogeunVillage
         public InsectEncyclopedia insectEncyclopedia;
         public VillageRater rater;
         public FurnitureCounter furnitureCounter;
+        [Header("마을 상태 (6-1b)")]
+        public Village village;
+        public GroundSaver groundSaver;
+        [Tooltip("수조 · 채집통 가구를 찾을 때(상점 목록에는 없음)")]
+        public FishingRules fishingRules;
+        public InsectRules insectRules;
 
         public string Folder => string.IsNullOrEmpty(PathOverride) ? Application.persistentDataPath : PathOverride;
         public string FilePath => Path.Combine(Folder, rules.fileName);
@@ -38,7 +44,8 @@ namespace PogeunVillage
         void Start()
         {
             if (!rules || !dayCycle || dayCycle.Clock == null || !morning || !wallet || !inventory || inventory.Inventory == null
-                || !catalogSource || !fishEncyclopedia || !insectEncyclopedia || !rater || !furnitureCounter)
+                || !catalogSource || !fishEncyclopedia || !insectEncyclopedia || !rater || !furnitureCounter
+                || !village || !groundSaver || !fishingRules || !insectRules)
             {
                 Debug.LogError($"{name}: 세이브 연결이 비어 있습니다.", this);
                 enabled = false;
@@ -66,8 +73,11 @@ namespace PogeunVillage
                 insectCaught = Counts(insectEncyclopedia.Log),
                 firstGoalReached = rater.GoalReached,
                 bestStars = furnitureCounter.BestStars,
+                village = village.Capture(),
+                ground = groundSaver.Capture(),
+                furniture = groundSaver.CaptureFurniture(),
             };
-            return data;
+            return SaveCodec.Normalize(data);
         }
 
         /// <summary>아침 처리가 끝난 뒤(자고 일어남) 자동 저장</summary>
@@ -96,15 +106,30 @@ namespace PogeunVillage
             inventory.Inventory.Restore(SaveCodec.RestoreSlots(data.slots, inventory.Inventory.Slots.Count, Known, skipped));
             Restore(fishEncyclopedia.Log, data.fishCaught);
             Restore(insectEncyclopedia.Log, data.insectCaught);
+            village.Restore(data.village ?? new VillageSave(), skipped);
+            groundSaver.Restore(data.ground ?? new GroundSave(), data.furniture ?? new List<PlacedData>(), FindItem, FindFurniture, skipped);
             rater.Restore(data.firstGoalReached);
             furnitureCounter.RestoreBestStars(data.bestStars);
             Loaded = true;
             GameNotice.Post($"[세이브] {data.day}일차 아침부터 이어서 해요", this);
             if (skipped.Count > 0)
-                GameNotice.Post($"[세이브] 없어진 물건 {skipped.Count}가지는 건너뛰었어요", this);
+                GameNotice.Post($"[세이브] 없어진 물건 {skipped.Count}가지는 건너뛰었어요", this);  // 물건 · 주민 · 가구
+            Debug.Log(skipped.Count > 0 ? $"[세이브] 건너뜀: {string.Join(", ", skipped)}" : "[세이브] 모두 불러옴", this);
         }
 
-        bool Known(string id) => Array.Exists(catalogSource.catalog, i => i && i.id == id);
+        bool Known(string id) => FindItem(id);
+
+        ItemDefinition FindItem(string id) => Array.Find(catalogSource.catalog, i => i && i.id == id);
+
+        FurnitureDefinition FindFurniture(string id)
+        {
+            if (FindItem(id) is FurnitureDefinition f) return f;
+            foreach (var fish in fishingRules.fish)
+                if (fish && fish.aquarium && fish.aquarium.id == id) return fish.aquarium;
+            foreach (var insect in insectRules.insects)
+                if (insect && insect.cage && insect.cage.id == id) return insect.cage;
+            return null;
+        }
 
         static List<CountData> Counts(CatchLog log)
         {

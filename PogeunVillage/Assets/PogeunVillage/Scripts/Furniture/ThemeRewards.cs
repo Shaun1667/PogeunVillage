@@ -23,6 +23,16 @@ namespace PogeunVillage
             return next < thresholds.Length && friendship >= thresholds[next] ? next : -1;
         }
 
+        /// <summary>주민마다 받은 개수(저장 6-1b)</summary>
+        public IEnumerable<KeyValuePair<string, int>> Entries => given;
+
+        /// <summary>불러오기(6-1b)</summary>
+        public void Restore(string id, int count)
+        {
+            if (count > 0) given[id] = count;
+            else given.Remove(id);
+        }
+
         /// <summary>보상 하나를 줌(다음 차례로)</summary>
         public void MarkGiven(string id) => given[id] = Given(id) + 1;
     }

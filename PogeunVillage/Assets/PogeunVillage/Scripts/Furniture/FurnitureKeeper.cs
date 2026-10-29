@@ -39,6 +39,19 @@ namespace PogeunVillage
             return furniture;
         }
 
+        /// <summary>놓인 가구를 모두 없앰(불러오기 6-1b, 인벤토리로 돌아가지 않음)</summary>
+        public void RemoveAll()
+        {
+            foreach (var f in placed)
+            {
+                if (!f) continue;
+                f.GetComponent<GridObject>().Unregister();
+                f.gameObject.SetActive(false);
+                Destroy(f.gameObject);
+            }
+            placed.Clear();
+        }
+
         /// <summary>칸 가운데 땅 높이(가구 · 미리보기가 씀)</summary>
         public Vector3 GroundPoint(Vector2Int cell)
         {
