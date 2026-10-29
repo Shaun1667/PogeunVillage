@@ -86,6 +86,9 @@ namespace PogeunVillage
             TodayTheme = resident < 0 ? null : residents[resident].themeFurniture[Math.Min(piece, residents[resident].themeFurniture.Length - 1)];
         }
 
+        /// <summary>불러오기(6-1a): 지금까지 닿은 가장 높은 별(이미 알린 새 가구를 다시 알리지 않게)</summary>
+        public void RestoreBestStars(int stars) => BestStars = Math.Max(stars, rater ? rater.Current.stars : 0);
+
         /// <summary>상점 주인 F(영업 중)</summary>
         public void Open()
         {

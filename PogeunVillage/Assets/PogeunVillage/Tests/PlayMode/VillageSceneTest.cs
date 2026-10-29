@@ -30,9 +30,21 @@ namespace PogeunVillage.PlayModeTests
             gamepad = InputSystem.AddDevice<Gamepad>();
         }
 
+        public override void TearDown()
+        {
+            SaveManager.PathOverride = null;  // 테스트 뒤 직접 플레이할 때는 원래 저장 위치로
+            base.TearDown();
+        }
+
+        /// <summary>테스트용 저장 폴더(6-1a): 직접 플레이한 저장을 건드리지 않도록 테스트마다 빈 임시 폴더</summary>
+        protected static string TestSaveFolder => System.IO.Path.Combine(Application.temporaryCachePath, "PogeunVillageTestSave");
+
         [UnitySetUp]
         public IEnumerator LoadVillage()
         {
+            if (System.IO.Directory.Exists(TestSaveFolder))
+                System.IO.Directory.Delete(TestSaveFolder, true);
+            SaveManager.PathOverride = TestSaveFolder;
             SceneManager.LoadScene("VillagePrototype");
             yield return null;
             yield return null;

@@ -128,6 +128,19 @@ namespace PogeunVillage
             return broken;
         }
 
+        /// <summary>불러오기(6-1a): 모든 칸을 바꿈. 바뀐 칸만 알림</summary>
+        public void Restore(IReadOnlyList<InventorySlot> saved)
+        {
+            for (int i = 0; i < slots.Length; i++)
+            {
+                var s = i < saved.Count ? saved[i] : default;
+                if (s.itemId == slots[i].itemId && s.count == slots[i].count && s.durability == slots[i].durability)
+                    continue;
+                slots[i] = s;
+                SlotChanged?.Invoke(i);
+            }
+        }
+
         /// <summary>두 칸을 맞바꿈(인벤토리 창). 같은 칸이면 아무 일 없음</summary>
         public void Swap(int a, int b)
         {

@@ -27,6 +27,15 @@ namespace PogeunVillage
             return true;
         }
 
+        /// <summary>불러오기(6-1a): 그 금액으로</summary>
+        public void Restore(int moa)
+        {
+            if (moa < 0) throw new ArgumentOutOfRangeException(nameof(moa));
+            if (moa == Moa) return;
+            Moa = moa;
+            Changed?.Invoke(Moa);
+        }
+
         public void Earn(int amount)
         {
             if (amount < 0) throw new ArgumentOutOfRangeException(nameof(amount));

@@ -33,6 +33,7 @@ namespace PogeunVillage.EditorTools
         const string RatingRulesPath = Root + "/Data/RatingRules.asset";
         const string FishingRulesPath = Root + "/Data/FishingRules.asset";
         const string InsectRulesPath = Root + "/Data/InsectRules.asset";
+        const string SaveRulesPath = Root + "/Data/SaveRules.asset";
         const string VillagerDir = Root + "/Data/Villagers";
         const string FontSourcePath = Root + "/Fonts/Cafe24Ssurround-v2.0.ttf";
         const string FontAssetPath = Root + "/Fonts/Cafe24Ssurround SDF.asset";
@@ -188,6 +189,7 @@ namespace PogeunVillage.EditorTools
             BuildFishing(player, ground);
             BuildInsects(player, ground);
             BuildPlayLogger(player);
+            BuildSave(player);
             var cam = BuildCamera(player.transform);
             player.GetComponent<PlayerController>().cameraTransform = cam.transform;
 
@@ -2035,6 +2037,40 @@ namespace PogeunVillage.EditorTools
             encyclopedia.window = Object.FindAnyObjectByType<ListWindow>();
             manager.encyclopedia = encyclopedia;
             Object.FindAnyObjectByType<VillageRater>().insectEncyclopedia = encyclopedia;
+        }
+
+        // 세이브(6-1a): 자면 자동 저장 · 시작할 때 불러오기
+        static void BuildSave(GameObject player)
+        {
+            var save = new GameObject("SaveManager").AddComponent<SaveManager>();
+            save.rules = EnsureAsset<SaveRules>(SaveRulesPath);
+            save.dayCycle = Object.FindAnyObjectByType<DayCycle>();
+            save.morning = Object.FindAnyObjectByType<MorningRunner>();
+            save.wallet = player.GetComponent<PlayerWallet>();
+            save.inventory = player.GetComponent<PlayerInventory>();
+            save.catalogSource = shopData;
+            save.fishEncyclopedia = Object.FindAnyObjectByType<FishEncyclopedia>();
+            save.insectEncyclopedia = Object.FindAnyObjectByType<InsectEncyclopedia>();
+            save.rater = Object.FindAnyObjectByType<VillageRater>();
+            save.furnitureCounter = Object.FindAnyObjectByType<FurnitureCounter>();
+        }
+
+        // 저장 지우기(6-1a, 개발용): 직접 플레이한 저장을 지우고 새로 시작 — 시작 화면(6-1d) 전까지
+        [MenuItem("Pogeun Village/Delete Save")]
+        static void DeleteSave()
+        {
+            var rules = AssetDatabase.LoadAssetAtPath<SaveRules>(SaveRulesPath);
+            if (!rules)
+                return;
+            int deleted = 0;
+            foreach (string name in new[] { rules.fileName, rules.backupFileName, rules.fileName + ".tmp" })
+            {
+                string path = System.IO.Path.Combine(Application.persistentDataPath, name);
+                if (!System.IO.File.Exists(path)) continue;
+                System.IO.File.Delete(path);
+                deleted++;
+            }
+            Debug.Log($"[세이브] 저장 파일 {deleted}개를 지웠어요: {Application.persistentDataPath}");
         }
 
         // 플레이 기록(4-1 재미 검증 측정 도구, 에디터 · 개발 빌드만): Temp/PlayLogs/*.csv

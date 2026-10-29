@@ -62,6 +62,15 @@ namespace PogeunVillage
                 OnMinuteChanged();
         }
 
+        /// <summary>불러오기(6-1a): 그 날짜 아침 시작 시각으로(아침 처리 · 알림 없이 시각만)</summary>
+        public void Restore(int day)
+        {
+            if (day < 1) throw new ArgumentOutOfRangeException(nameof(day));
+            Day = day;
+            minutesSinceDayStart = 0;
+            OnMinuteChanged();
+        }
+
         /// <summary>잠자기: 날짜 +1, 아침 시작 시각으로</summary>
         public void Sleep()
         {

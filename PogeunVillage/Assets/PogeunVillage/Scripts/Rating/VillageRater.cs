@@ -52,6 +52,14 @@ namespace PogeunVillage
             if (noticeBoard) noticeBoard.Interacted -= ShowBoard;
         }
 
+        /// <summary>불러오기(6-1a): 첫 목표 기록을 되살리고 알림 없이 다시 계산</summary>
+        public void Restore(bool goalReached)
+        {
+            GoalReached = goalReached;
+            Current = default;  // 첫 계산처럼 — 별이 바뀌었다는 알림 없음
+            Evaluate();
+        }
+
         /// <summary>지금 마을 상태로 다시 계산(아침 · 시작)</summary>
         public void Evaluate()
         {
