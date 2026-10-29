@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a2d5847e6ad4a6c43b9978b81f947c0d, type: 3}
+  m_Name: InsectRules
+  m_EditorClassIdentifier: PogeunVillage::PogeunVillage.InsectRules
+  insects:
+  - {fileID: 11400000, guid: 8a0d4ed0a3b922347b18da9d775c0fae, type: 2}
+  - {fileID: 11400000, guid: 9a336fb88f9568242932f4c86c8bfe3f, type: 2}
+  - {fileID: 11400000, guid: 3b56035590f59a449abe4434d16d852c, type: 2}
+  - {fileID: 11400000, guid: c8a7676222580754e92852cd0e06e8f8, type: 2}
+  - {fileID: 11400000, guid: 52404087e97620640b537c7cd1d2f5ea, type: 2}
+  - {fileID: 11400000, guid: 5110cada2a2a2a442bac30218e8d9dec, type: 2}
+  - {fileID: 11400000, guid: 3abe3f452b257344b82ee579b201b762, type: 2}
+  - {fileID: 11400000, guid: de7f2a2dadcb4024d9f518b95e1564b3, type: 2}
+  insectCount: 6
+  respawnGameMinutes: 30
+  rarityWeights: 3c0000001e0000000a000000i
+  spacing: 3
+  seed: 1818
+  startleRunDistance: 3
+  startleRunDistanceSensitive: 5
+  tooCloseSensitive: 0.8
+  missStartleDistance: 2

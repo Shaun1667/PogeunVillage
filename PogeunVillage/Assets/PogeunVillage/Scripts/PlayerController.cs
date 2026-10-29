@@ -18,6 +18,9 @@ namespace PogeunVillage
         public float bobHeight = 0.08f;
         public float bobFrequency = 12f;
 
+        /// <summary>달려서 움직이는 중(곤충이 놀람, 3-7a). 조작이 멈추면 false</summary>
+        public bool IsRunning { get; private set; }
+
         CharacterController controller;
         float verticalVelocity;
         float bobTime;
@@ -38,12 +41,15 @@ namespace PogeunVillage
                 visualBasePosition = visual.localPosition;
         }
 
+        void OnDisable() => IsRunning = false;
+
         void Update()
         {
             Vector2 input = ReadMoveInput();
             bool running = (Keyboard.current?.leftShiftKey.isPressed ?? false)
                            || (Gamepad.current?.buttonEast.isPressed ?? false);
 
+            IsRunning = running && input.sqrMagnitude > 0.01f;
             Vector3 move = Vector3.zero;
             if (input.sqrMagnitude > 0.01f)
             {

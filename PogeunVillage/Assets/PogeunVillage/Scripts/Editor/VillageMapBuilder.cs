@@ -32,6 +32,7 @@ namespace PogeunVillage.EditorTools
         const string VillageRulesPath = Root + "/Data/VillageRules.asset";
         const string RatingRulesPath = Root + "/Data/RatingRules.asset";
         const string FishingRulesPath = Root + "/Data/FishingRules.asset";
+        const string InsectRulesPath = Root + "/Data/InsectRules.asset";
         const string VillagerDir = Root + "/Data/Villagers";
         const string FontSourcePath = Root + "/Fonts/Cafe24Ssurround-v2.0.ttf";
         const string FontAssetPath = Root + "/Fonts/Cafe24Ssurround SDF.asset";
@@ -89,6 +90,7 @@ namespace PogeunVillage.EditorTools
         static FurnitureDefinition[] furniture;
         static FurnitureDefinition[] themeFurniture;  // 주민 20명 × 4가지(3-4d)
         static FishDefinition[] fish;                 // 물고기 8종(3-6a)
+        static InsectDefinition[] insects;            // 곤충 8종(3-7a)
         static ShopData shopData;
         static GameObject stumpPrefab;
         static readonly List<(Vector2 a, Vector2 b)> Paths = new();
@@ -134,12 +136,13 @@ namespace PogeunVillage.EditorTools
             furniture = EnsureFurniture();
             themeFurniture = EnsureThemeFurniture(EnsureVillagers());
             fish = EnsureFish();
+            insects = EnsureInsects();
             shopData = EnsureAsset<ShopData>(ShopDataPath);
             stumpPrefab = BuildStumpPrefab();
             EnsureFolder(ToolDir);
             tools = new[]
             {
-                EnsureTool("Net", "잠자리채", ToolKind.Net, false, InteractableKind.Villager),  // 주민 괴롭히기(3-2)
+                EnsureHitKinds(EnsureTool("Net", "잠자리채", ToolKind.Net, false, InteractableKind.Villager), InteractableKind.Insect),  // 주민 괴롭히기(3-2) · 곤충 잡기(3-7a)
                 EnsureTool("FishingRod", "낚싯대", ToolKind.FishingRod, false),
                 EnsureTool("Axe", "도끼", ToolKind.Axe, false, InteractableKind.Tree),
                 EnsureTool("Shovel", "삽", ToolKind.Shovel, true, InteractableKind.Flower),
@@ -183,6 +186,7 @@ namespace PogeunVillage.EditorTools
             BuildRating(ground, dialogue);
             BuildFurniture(player, ground, dialogue);
             BuildFishing(player, ground);
+            BuildInsects(player, ground);
             BuildPlayLogger(player);
             var cam = BuildCamera(player.transform);
             player.GetComponent<PlayerController>().cameraTransform = cam.transform;
@@ -1289,6 +1293,7 @@ namespace PogeunVillage.EditorTools
                 .Concat(furniture)
                 .Concat(themeFurniture)
                 .Concat(fish)
+                .Concat(insects)
                 .Concat(tools).ToArray();
             EditorUtility.SetDirty(shopData);
 
@@ -1780,14 +1785,14 @@ namespace PogeunVillage.EditorTools
             var nightOnly = new[] { DayPeriod.Evening, DayPeriod.Night };
             var list = new[]
             {
-                EnsureFishItem(dir, "Medaka", "송사리", FishSize.Small, FishRarity.Common, any, 100, 5, "#C9D6DF"),
-                EnsureFishItem(dir, "PaleChub", "피라미", FishSize.Small, FishRarity.Common, dayOnly, 120, 5, "#9FC7E8"),
-                EnsureFishItem(dir, "CrucianCarp", "붕어", FishSize.Medium, FishRarity.Common, any, 160, 5, "#B8A27A"),
-                EnsureFishItem(dir, "Loach", "미꾸라지", FishSize.Small, FishRarity.Common, nightOnly, 150, 5, "#8A7A5C"),
-                EnsureFishItem(dir, "Carp", "잉어", FishSize.Large, FishRarity.Uncommon, any, 300, 10, "#D99A5B"),
-                EnsureFishItem(dir, "Catfish", "메기", FishSize.Large, FishRarity.Uncommon, nightOnly, 400, 10, "#5E5A66"),
-                EnsureFishItem(dir, "Mandarinfish", "쏘가리", FishSize.Medium, FishRarity.Rare, new[] { DayPeriod.Daytime }, 900, 20, "#C8B04A"),
-                EnsureFishItem(dir, "GoldenCarp", "황금잉어", FishSize.Large, FishRarity.Rare, new[] { DayPeriod.Evening }, 1500, 20, "#F2C14E"),
+                EnsureFishItem(dir, "Medaka", "송사리", FishSize.Small, Rarity.Common, any, 100, 5, "#C9D6DF"),
+                EnsureFishItem(dir, "PaleChub", "피라미", FishSize.Small, Rarity.Common, dayOnly, 120, 5, "#9FC7E8"),
+                EnsureFishItem(dir, "CrucianCarp", "붕어", FishSize.Medium, Rarity.Common, any, 160, 5, "#B8A27A"),
+                EnsureFishItem(dir, "Loach", "미꾸라지", FishSize.Small, Rarity.Common, nightOnly, 150, 5, "#8A7A5C"),
+                EnsureFishItem(dir, "Carp", "잉어", FishSize.Large, Rarity.Uncommon, any, 300, 10, "#D99A5B"),
+                EnsureFishItem(dir, "Catfish", "메기", FishSize.Large, Rarity.Uncommon, nightOnly, 400, 10, "#5E5A66"),
+                EnsureFishItem(dir, "Mandarinfish", "쏘가리", FishSize.Medium, Rarity.Rare, new[] { DayPeriod.Daytime }, 900, 20, "#C8B04A"),
+                EnsureFishItem(dir, "GoldenCarp", "황금잉어", FishSize.Large, Rarity.Rare, new[] { DayPeriod.Evening }, 1500, 20, "#F2C14E"),
             };
             var rules = EnsureAsset<FishingRules>(FishingRulesPath);
             rules.fish = list;
@@ -1841,7 +1846,7 @@ namespace PogeunVillage.EditorTools
             return SavePrefab(root, "Furniture_Aquarium");
         }
 
-        static FishDefinition EnsureFishItem(string dir, string id, string displayName, FishSize size, FishRarity rarity, DayPeriod[] periods, int sell, int aquarium, string color)
+        static FishDefinition EnsureFishItem(string dir, string id, string displayName, FishSize size, Rarity rarity, DayPeriod[] periods, int sell, int aquarium, string color)
         {
             string path = $"{dir}/{id}.asset";
             bool isNew = !AssetDatabase.LoadAssetAtPath<FishDefinition>(path);
@@ -1903,6 +1908,80 @@ namespace PogeunVillage.EditorTools
             Debug.Log($"[낚시] 강 물 칸 {ground.data.WaterCells().Count}개");
         }
 
+        // 곤충 8종(3-7a, BALANCE 18번): 없을 때만 만들고, 있으면 값을 건드리지 않음
+        static InsectDefinition[] EnsureInsects()
+        {
+            string dir = ItemDir + "/Insects";
+            EnsureFolder(dir);
+            var any = new DayPeriod[0];
+            var list = new[]
+            {
+                EnsureInsectItem(dir, "CabbageWhite", "배추흰나비", InsectSite.Flower, Rarity.Common, new[] { DayPeriod.Morning, DayPeriod.Daytime }, false, 80, 5, "#F4F1EA"),
+                EnsureInsectItem(dir, "HoneyBee", "꿀벌", InsectSite.Flower, Rarity.Common, new[] { DayPeriod.Daytime }, false, 100, 5, "#F2C14E"),
+                EnsureInsectItem(dir, "Grasshopper", "메뚜기", InsectSite.Grass, Rarity.Common, new[] { DayPeriod.Daytime, DayPeriod.Evening }, false, 100, 5, "#8BC34A"),
+                EnsureInsectItem(dir, "Cricket", "귀뚜라미", InsectSite.Grass, Rarity.Common, new[] { DayPeriod.Evening, DayPeriod.Night }, false, 120, 5, "#6B4F3A"),
+                EnsureInsectItem(dir, "RedDragonfly", "고추잠자리", InsectSite.Water, Rarity.Uncommon, new[] { DayPeriod.Morning, DayPeriod.Daytime, DayPeriod.Evening }, false, 200, 10, "#E05A4F"),
+                EnsureInsectItem(dir, "Cicada", "매미", InsectSite.Tree, Rarity.Uncommon, new[] { DayPeriod.Daytime }, false, 250, 10, "#7A8A5C"),
+                EnsureInsectItem(dir, "Firefly", "반딧불이", InsectSite.Water, Rarity.Rare, new[] { DayPeriod.Night }, true, 800, 20, "#E8F57A"),
+                EnsureInsectItem(dir, "StagBeetle", "사슴벌레", InsectSite.Tree, Rarity.Rare, new[] { DayPeriod.Night }, true, 1200, 20, "#3A2A22"),
+            };
+            var rules = EnsureAsset<InsectRules>(InsectRulesPath);
+            rules.insects = list;
+            EditorUtility.SetDirty(rules);
+            return list;
+        }
+
+        static InsectDefinition EnsureInsectItem(string dir, string id, string displayName, InsectSite site, Rarity rarity, DayPeriod[] periods, bool sensitive, int sell, int cage, string color)
+        {
+            string path = $"{dir}/{id}.asset";
+            bool isNew = !AssetDatabase.LoadAssetAtPath<InsectDefinition>(path);
+            var item = EnsureAsset<InsectDefinition>(path);
+            if (isNew)
+            {
+                item.id = id;
+                item.displayName = displayName;
+                item.maxStack = 10;
+                item.sellPrice = sell;
+                item.site = site;
+                item.rarity = rarity;
+                item.periods = periods;
+                item.sensitive = sensitive;
+                item.cagePoint = cage;
+                item.color = Hex(color);
+                EditorUtility.SetDirty(item);
+            }
+            return item;
+        }
+
+        // 곤충(3-7a): 곤충 모양(몸 + 날개, 곤충 색은 놓일 때 입힘) · 마을 곤충 관리
+        static void BuildInsects(GameObject player, VillageGround ground)
+        {
+            var root = new GameObject("Insect");
+            var t = root.transform;
+            var white = Mat("ThemeFurniture", "#FFFFFF");
+            var body = Prim(PrimitiveType.Capsule, "Body", t, Vector3.zero, new Vector3(0.12f, 0.1f, 0.12f), white, castShadows: false);
+            body.transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
+            var wings = Mat("InsectWing", "#F7FBFF", rim: 0.4f);
+            Prim(PrimitiveType.Cube, "WingL", t, new Vector3(-0.09f, 0.04f, 0f), new Vector3(0.14f, 0.01f, 0.1f), wings, castShadows: false);
+            Prim(PrimitiveType.Cube, "WingR", t, new Vector3(0.09f, 0.04f, 0f), new Vector3(0.14f, 0.01f, 0.1f), wings, castShadows: false);
+            AddInteractable(root, "곤충", InteractableKind.Insect, radius: 0.3f, markerHeight: 0.5f, wiggle: false);
+            root.AddComponent<InsectBehaviour>().bodyRenderers = new[] { body.GetComponent<Renderer>() };
+            root.transform.localScale = Vector3.one * 1.7f;  // 기본 카메라 거리에서도 보이게(그레이박스, 상호작용 반경도 함께 커짐)
+            var prefab = SavePrefab(root, "Insect").GetComponent<InsectBehaviour>();
+
+            var manager = new GameObject("Insects").AddComponent<Insects>();
+            manager.rules = EnsureAsset<InsectRules>(InsectRulesPath);
+            manager.settings = settings;
+            manager.ground = ground;
+            manager.dayCycle = Object.FindAnyObjectByType<DayCycle>();
+            manager.player = player.transform;
+            manager.controller = player.GetComponent<PlayerController>();
+            manager.tools = player.GetComponent<PlayerTools>();
+            manager.inventory = player.GetComponent<PlayerInventory>();
+            manager.pickupPrefab = pickupPrefab;
+            manager.insectPrefab = prefab;
+        }
+
         // 플레이 기록(4-1 재미 검증 측정 도구, 에디터 · 개발 빌드만): Temp/PlayLogs/*.csv
         static void BuildPlayLogger(GameObject player)
         {
@@ -1957,6 +2036,20 @@ namespace PogeunVillage.EditorTools
                 tool.hitKinds = hitKinds;
                 tool.usesGroundCell = usesGroundCell;
                 tool.buyPrice = 500;
+                EditorUtility.SetDirty(tool);
+            }
+            return tool;
+        }
+
+        // 이미 있는 도구 데이터에도 맞는 대상을 더함(여러 번 실행해도 같음)
+        static ToolDefinition EnsureHitKinds(ToolDefinition tool, params InteractableKind[] kinds)
+        {
+            var list = tool.hitKinds.ToList();
+            foreach (var k in kinds)
+                if (!list.Contains(k)) list.Add(k);
+            if (list.Count != tool.hitKinds.Length)
+            {
+                tool.hitKinds = list.ToArray();
                 EditorUtility.SetDirty(tool);
             }
             return tool;

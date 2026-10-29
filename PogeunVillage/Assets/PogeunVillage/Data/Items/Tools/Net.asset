@@ -20,5 +20,5 @@ MonoBehaviour:
   sellPrice: 0
   kind: 0
   durability: 50
-  hitKinds: 0e000000i
+  hitKinds: 0e00000011000000i
   usesGroundCell: 0

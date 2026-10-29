@@ -10,7 +10,8 @@ namespace PogeunVillage
         Large,
     }
 
-    public enum FishRarity
+    /// <summary>희귀도(물고기 · 곤충 함께 씀, 3-6a · 3-7a). 가중치는 각 규칙 데이터</summary>
+    public enum Rarity
     {
         Common,
         Uncommon,
@@ -27,7 +28,7 @@ namespace PogeunVillage
         [Header("물고기 (BALANCE.md 17번)")]
         [Tooltip("강에 보이는 그림자 크기(어떤 물고기일지 힌트)")]
         public FishSize size;
-        public FishRarity rarity;
+        public Rarity rarity;
         [Tooltip("나오는 시간대. 비우면 언제나")]
         public DayPeriod[] periods = { };
         [Tooltip("그레이박스 색(떨어진 물고기 · 수조)")]

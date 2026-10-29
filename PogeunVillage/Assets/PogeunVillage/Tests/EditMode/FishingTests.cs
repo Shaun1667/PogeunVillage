@@ -20,10 +20,10 @@ namespace PogeunVillage.Tests
             public int Next(int maxExclusive) => (ints.Count > 0 ? ints.Dequeue() : 0) % maxExclusive;
         }
 
-        static readonly FishRarity[] Rarities =
+        static readonly Rarity[] Rarities =
         {
-            FishRarity.Common, FishRarity.Common, FishRarity.Common, FishRarity.Common,
-            FishRarity.Uncommon, FishRarity.Uncommon, FishRarity.Rare, FishRarity.Rare,
+            Rarity.Common, Rarity.Common, Rarity.Common, Rarity.Common,
+            Rarity.Uncommon, Rarity.Uncommon, Rarity.Rare, Rarity.Rare,
         };
         static readonly int[] Weights = { 60, 30, 10 };
 

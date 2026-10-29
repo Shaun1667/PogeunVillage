@@ -55,12 +55,22 @@ namespace PogeunVillage.PlayModeTests
                 if (village) village.gameObject.SetActive(false);
             }
 
+            // 곤충(3-7a)도 돌아다니는 대상 · 알림을 만들지 않도록, 곤충 테스트가 아니면 숨김
+            if (!WithInsects)
+            {
+                var insects = Object.FindAnyObjectByType<Insects>();
+                if (insects) insects.gameObject.SetActive(false);
+            }
+
             // 처음 몇 프레임은 착지 · 카메라 자리잡기
             yield return WaitSeconds(0.3f);
         }
 
         /// <summary>주민을 그대로 둘지(주민 테스트만 true)</summary>
         protected virtual bool WithVillagers => false;
+
+        /// <summary>곤충을 그대로 둘지(곤충 테스트만 true)</summary>
+        protected virtual bool WithInsects => false;
 
         protected static IEnumerator WaitSeconds(float seconds)
         {

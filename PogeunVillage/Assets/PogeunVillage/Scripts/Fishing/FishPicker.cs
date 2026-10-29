@@ -11,9 +11,9 @@ namespace PogeunVillage
     public static class FishPicker
     {
         /// <param name="available">지금 시간대에 나오는지(물고기마다)</param>
-        /// <param name="weights">희귀도별 가중치(FishRarity 순서)</param>
+        /// <param name="weights">희귀도별 가중치(Rarity 순서)</param>
         /// <returns>물고기 번호, 나올 물고기가 없으면 -1</returns>
-        public static int PickFish(IReadOnlyList<FishRarity> rarities, IReadOnlyList<bool> available, IReadOnlyList<int> weights, IRandomSource random)
+        public static int PickFish(IReadOnlyList<Rarity> rarities, IReadOnlyList<bool> available, IReadOnlyList<int> weights, IRandomSource random)
         {
             int total = 0;
             for (int i = 0; i < rarities.Count; i++)
@@ -30,7 +30,7 @@ namespace PogeunVillage
             return -1;
         }
 
-        static int Weight(FishRarity rarity, IReadOnlyList<int> weights)
+        static int Weight(Rarity rarity, IReadOnlyList<int> weights)
         {
             int r = (int)rarity;
             return r < weights.Count ? Math.Max(0, weights[r]) : 0;

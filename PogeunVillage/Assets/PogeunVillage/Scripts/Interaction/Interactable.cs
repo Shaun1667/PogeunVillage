@@ -25,6 +25,7 @@ namespace PogeunVillage
         Villager,
         Furniture,
         Workbench,
+        Insect,
     }
 
     /// <summary>
