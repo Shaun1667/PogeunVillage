@@ -1846,6 +1846,13 @@ namespace PogeunVillage.EditorTools
             rod.playerLock = player.GetComponent<PlayerLock>();
             rod.bobber = bobber;
             rod.pickupPrefab = pickupPrefab;
+
+            // 물고기 도감(3-6b): 게시판에서 여는 목록 창, 잡은 종류는 마을 평가에
+            var encyclopedia = new GameObject("FishEncyclopedia").AddComponent<FishEncyclopedia>();
+            encyclopedia.rules = shadows.rules;
+            encyclopedia.window = Object.FindAnyObjectByType<ListWindow>();
+            rod.encyclopedia = encyclopedia;
+            Object.FindAnyObjectByType<VillageRater>().encyclopedia = encyclopedia;
             Debug.Log($"[낚시] 강 물 칸 {ground.data.WaterCells().Count}개");
         }
 

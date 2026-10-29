@@ -24,6 +24,8 @@ namespace PogeunVillage
         public Transform bobber;
         [Tooltip("인벤토리가 가득 찼을 때 발밑에 떨어뜨릴 물건")]
         public Pickup pickupPrefab;
+        [Tooltip("낚으면 기록(3-6b)")]
+        public FishEncyclopedia encyclopedia;
         [Tooltip("찌가 속임수 · 입질 때 가라앉는 깊이(m)")]
         public float nibbleDip = 0.05f, biteDip = 0.2f;
 
@@ -121,6 +123,7 @@ namespace PogeunVillage
             else
                 DropAtFeet(fish);
             GameNotice.Post($"[낚시] {fish.displayName}을(를) 낚았어요! ({HudText.Moa(fish.sellPrice)})", this);
+            if (encyclopedia) encyclopedia.Record(fish);
             tools.UseDurability(rod);
             End();
         }

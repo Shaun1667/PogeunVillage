@@ -180,7 +180,7 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!1 &5375066247800264979
+--- !u!1 &5094582426448391260
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -188,9 +188,9 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 2831092212425870723}
-  - component: {fileID: 1910907122018381477}
-  - component: {fileID: 6479735183308362426}
+  - component: {fileID: 6135930326917782884}
+  - component: {fileID: 3760296014732250648}
+  - component: {fileID: 2055202490347103503}
   m_Layer: 0
   m_Name: Leg
   m_TagString: Untagged
@@ -198,13 +198,13 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &2831092212425870723
+--- !u!4 &6135930326917782884
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5375066247800264979}
+  m_GameObject: {fileID: 5094582426448391260}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0.38, y: 0.18, z: 0}
@@ -213,21 +213,21 @@ Transform:
   m_Children: []
   m_Father: {fileID: 6292180585693863253}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!33 &1910907122018381477
+--- !u!33 &3760296014732250648
 MeshFilter:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5375066247800264979}
+  m_GameObject: {fileID: 5094582426448391260}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
---- !u!23 &6479735183308362426
+--- !u!23 &2055202490347103503
 MeshRenderer:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5375066247800264979}
+  m_GameObject: {fileID: 5094582426448391260}
   m_Enabled: 1
   m_CastShadows: 1
   m_ReceiveShadows: 1
@@ -396,7 +396,7 @@ Transform:
   - {fileID: 6804498487063492895}
   - {fileID: 5026277306965689857}
   - {fileID: 2251548467999448285}
-  - {fileID: 2831092212425870723}
+  - {fileID: 6135930326917782884}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!65 &4165241482107983519
@@ -468,4 +468,4 @@ MonoBehaviour:
   - {fileID: 3231713779390954779}
   accentRenderers:
   - {fileID: 6529836720851485724}
-  - {fileID: 6479735183308362426}
+  - {fileID: 2055202490347103503}

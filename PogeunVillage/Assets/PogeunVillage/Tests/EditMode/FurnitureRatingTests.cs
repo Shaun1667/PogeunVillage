@@ -44,7 +44,7 @@ namespace PogeunVillage.Tests
             Assert.AreEqual(25, r.furniturePoints);
             Assert.AreEqual(303, r.total);
             Assert.AreEqual(2, r.stars);
-            StringAssert.EndsWith("· 가구 25", VillageRating.BoardLines(r, 3)[1]);
+            StringAssert.Contains("· 가구 25", VillageRating.BoardLines(r, 3)[1]);
             Assert.AreEqual(0, Points(new (string, int, string)[0]));
         }
     }

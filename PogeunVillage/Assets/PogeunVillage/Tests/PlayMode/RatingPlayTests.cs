@@ -54,6 +54,9 @@ namespace PogeunVillage.PlayModeTests
             yield return Tap(keyboard.fKey);
             Assert.IsTrue(dialogue.IsOpen);
             Assert.AreEqual("게시판", dialogue.speakerText.text);
+            Assert.IsTrue(dialogue.Current.IsChoosing, "마을 평가 / 물고기 도감 고르기(3-6b)");
+            yield return Tap(keyboard.fKey);                     // 마을 평가
+            Assert.IsTrue(dialogue.IsOpen);
             StringAssert.Contains("마을 평가", dialogue.lineText.text);
             StringAssert.Contains($"{rater.Current.total}점", dialogue.lineText.text);
             yield return Tap(keyboard.fKey);

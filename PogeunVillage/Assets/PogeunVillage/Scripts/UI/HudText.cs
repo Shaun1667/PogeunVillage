@@ -71,6 +71,34 @@ namespace PogeunVillage
         public static string Unlockable(string displayName, string detail, int unlockStars, int stars) =>
             FurnitureRules.IsUnlocked(unlockStars, stars) ? $"{displayName} · {detail}" : $"{displayName} · ★{unlockStars}에 열려요";
 
+        /// <summary>도감 한 줄(3-6b): "붕어 · 중 · 언제나 · 3마리"</summary>
+        public static string FishEntry(string displayName, FishSize size, System.Collections.Generic.IReadOnlyList<DayPeriod> periods, int caught) =>
+            $"{displayName} · {FishSizeName(size)} · {PeriodNames(periods)} · {caught}마리";
+
+        public static string FishSizeName(FishSize size) => size switch
+        {
+            FishSize.Small => "소",
+            FishSize.Medium => "중",
+            _ => "대",
+        };
+
+        /// <summary>"아침/낮"(줄의 · 구분과 섞이지 않게), 비었으면 "언제나"</summary>
+        public static string PeriodNames(System.Collections.Generic.IReadOnlyList<DayPeriod> periods)
+        {
+            if (periods == null || periods.Count == 0)
+                return "언제나";
+            var names = new string[periods.Count];
+            for (int i = 0; i < names.Length; i++)
+                names[i] = periods[i] switch
+                {
+                    DayPeriod.Morning => "아침",
+                    DayPeriod.Daytime => "낮",
+                    DayPeriod.Evening => "저녁",
+                    _ => "밤",
+                };
+            return string.Join("/", names);
+        }
+
         /// <summary>목록 창: 고른 줄은 강조, 지금 못 고르는 줄은 흐리게</summary>
         public static string ListLines(System.Collections.Generic.IReadOnlyList<string> lines, System.Collections.Generic.IReadOnlyList<bool> usable,
             int cursor, string highlightHex, string mutedHex)
