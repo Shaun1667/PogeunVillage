@@ -71,7 +71,7 @@ namespace PogeunVillage.Tests
             Assert.AreEqual(3, lines.Count);
             StringAssert.Contains("★☆☆☆☆", lines[0]);
             StringAssert.Contains("278점", lines[0]);
-            Assert.AreEqual("꽃 218 · 주민 60 · 친밀도 0 · 키운 나무 0", lines[1]);
+            Assert.AreEqual("꽃 218 · 주민 60 · 친밀도 0 · 키운 나무 0 · 가구 0", lines[1]);
             Assert.AreEqual("다음 별까지 22점 · 첫 목표 ★3", lines[2]);
             Assert.AreEqual("최고 평가예요! · 첫 목표 ★3 달성!", VillageRating.BoardLines(Rate(300, 12, 300, 3), 3)[2]);
         }

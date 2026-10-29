@@ -1,11 +1,12 @@
 using System;
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 
 namespace PogeunVillage
 {
     /// <summary>
-    /// 마을 평가 어댑터(결정 2026-10-28, 3-5): 게임을 시작할 때와 매일 아침 처리(자연까지) 뒤에 계산해
+    /// 마을 평가 어댑터(결정 2026-10-28, 3-5): 게임을 시작할 때와 매일 아침 처리(자연까지) 뒤에 계산해(놓인 가구도, 3-4e)
     /// HUD에 "마을 ★★☆☆☆"를 보이고, 별이 바뀌면 알림(첫 목표에 처음 닿으면 축하 알림). 광장 게시판 F = 항목별 점수(대화창).
     /// 계산은 VillageRating(순수), 수치는 RatingRules.
     /// </summary>
@@ -17,6 +18,8 @@ namespace PogeunVillage
         public VillageGround ground;
         public GardenKeeper garden;
         public MorningRunner morning;
+        [Tooltip("놓인 가구(3-4e)")]
+        public FurnitureKeeper furniture;
         public Interactable noticeBoard;
         public DialogueWindow dialogue;
         public TMP_Text ratingText;
@@ -27,7 +30,7 @@ namespace PogeunVillage
 
         void Start()
         {
-            if (!rules || !village || !ground || !garden || !morning || !noticeBoard || !dialogue || !ratingText || village.Residents == null)
+            if (!rules || !village || !ground || !garden || !morning || !furniture || !noticeBoard || !dialogue || !ratingText || village.Residents == null)
             {
                 Debug.LogError($"{name}: 마을 평가 연결이 비어 있습니다.", this);
                 enabled = false;
@@ -58,8 +61,17 @@ namespace PogeunVillage
 
             var before = Current;
             bool first = before.stars == 0;
+            var placed = new List<(string, int, string)>();
+            foreach (var p in furniture.Placed)
+                if (p && p.Definition)
+                {
+                    var owner = p.Definition.themeOwner;
+                    placed.Add((p.Definition.id, p.Definition.ratingPoint, owner ? owner.id : null));
+                }
+            int furniturePoints = VillageRating.FurniturePoints(placed, rules.furnitureKindCap, rules.themeSetBonus, FurnitureRules.ThemePieces);
+
             Current = VillageRating.Evaluate(flowers, village.Residents.Count, friendshipSum, grownTrees,
-                rules.flowerPoint, rules.residentPoint, rules.friendshipPoint, rules.grownTreePoint, rules.starThresholds);
+                rules.flowerPoint, rules.residentPoint, rules.friendshipPoint, rules.grownTreePoint, rules.starThresholds, furniturePoints);
             ratingText.text = $"마을 {VillageRating.StarText(Current.stars)}";
 
             if (!first && Current.stars != before.stars)

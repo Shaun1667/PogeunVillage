@@ -1729,6 +1729,7 @@ namespace PogeunVillage.EditorTools
             window.playerLock = player.GetComponent<PlayerLock>();
             window.inventory = inventory;
             var rater = Object.FindAnyObjectByType<VillageRater>();
+            rater.furniture = keeper;  // 놓인 가구 점수(3-4e)
 
             var workbench = Object.FindAnyObjectByType<Workbench>();
             workbench.wood = woodItem;
