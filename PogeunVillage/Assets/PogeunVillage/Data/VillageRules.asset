@@ -65,6 +65,8 @@ MonoBehaviour:
   - {fileID: 11400000, guid: a28503d56d1600c4dab212274b23b6d4, type: 2}
   - {fileID: 11400000, guid: f1f94590f8343a64196168442cb3d969, type: 2}
   - {fileID: 11400000, guid: 52ba682ab69235e45aaa5fd776a96fec, type: 2}
+  - {fileID: 11400000, guid: 8a0d4ed0a3b922347b18da9d775c0fae, type: 2}
+  - {fileID: 11400000, guid: 3b56035590f59a449abe4434d16d852c, type: 2}
   requestCount: {x: 1, y: 3}
   requestFriendshipGain: 3
   requestMoaMultiplier: 2

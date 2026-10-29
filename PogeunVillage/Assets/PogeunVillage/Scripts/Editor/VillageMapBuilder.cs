@@ -1228,7 +1228,8 @@ namespace PogeunVillage.EditorTools
             var rules = EnsureAsset<VillageRules>(VillageRulesPath);
             rules.villagers = EnsureVillagers();
             rules.requestItems = new ItemDefinition[] { appleItem, peachItem, flowerItem, woodItem }
-                .Concat(fish.Where(f => f.id == "Medaka" || f.id == "CrucianCarp")).ToArray();  // 부탁할 수 있는 물건(3-3), 흔한 물고기 2종(3-6c)
+                .Concat(fish.Where(f => f.id == "Medaka" || f.id == "CrucianCarp"))
+                .Concat(insects.Where(i => i.id == "CabbageWhite" || i.id == "Grasshopper")).ToArray();  // 부탁할 수 있는 물건(3-3), 흔한 물고기 2종(3-6c) · 곤충 2종(3-7c)
             EditorUtility.SetDirty(rules);
 
             var village = new GameObject("Village").AddComponent<Village>();
@@ -1928,6 +1929,7 @@ namespace PogeunVillage.EditorTools
             var rules = EnsureAsset<InsectRules>(InsectRulesPath);
             rules.insects = list;
             EditorUtility.SetDirty(rules);
+            EnsureCages(list);
             return list;
         }
 
@@ -1951,6 +1953,52 @@ namespace PogeunVillage.EditorTools
                 EditorUtility.SetDirty(item);
             }
             return item;
+        }
+
+        // 채집통(3-7c): 곤충마다 채집통 가구(데이터는 없을 때만), 모양은 하나를 함께 쓰고 곤충 색을 입힘. 상점에는 없음(곤충을 놓으면 채집통)
+        static void EnsureCages(InsectDefinition[] insectList)
+        {
+            string dir = FurnitureDir + "/Cage";
+            EnsureFolder(dir);
+            var prefab = BuildCagePrefab();
+            foreach (var insect in insectList)
+            {
+                string path = $"{dir}/Cage_{insect.id}.asset";
+                bool isNew = !AssetDatabase.LoadAssetAtPath<FurnitureDefinition>(path);
+                var cage = EnsureAsset<FurnitureDefinition>(path);
+                if (isNew)
+                {
+                    cage.id = "Cage_" + insect.id;
+                    cage.displayName = $"{insect.displayName} 채집통";
+                    cage.maxStack = 1;
+                }
+                cage.prefab = prefab;
+                cage.cageInsect = insect;
+                EditorUtility.SetDirty(cage);
+                insect.cage = cage;
+                EditorUtility.SetDirty(insect);
+            }
+        }
+
+        static GameObject BuildCagePrefab()
+        {
+            var root = new GameObject("Cage");
+            var t = root.transform;
+            var wood = Mat("Wood", "#B98A5E");
+            Prim(PrimitiveType.Cylinder, "Base", t, new Vector3(0f, 0.04f, 0f), new Vector3(0.5f, 0.04f, 0.5f), wood);
+            Prim(PrimitiveType.Cylinder, "Mesh", t, new Vector3(0f, 0.32f, 0f), new Vector3(0.46f, 0.24f, 0.46f), Mat("CageMesh", "#E9F3E3", rim: 0.4f));
+            Prim(PrimitiveType.Cylinder, "Lid", t, new Vector3(0f, 0.58f, 0f), new Vector3(0.5f, 0.03f, 0.5f), Mat("CageLid", "#7FB069"));
+            Prim(PrimitiveType.Cube, "Leaf", t, new Vector3(-0.08f, 0.2f, 0.18f), new Vector3(0.18f, 0.02f, 0.08f), Mat("Leaves", "#6FC27A"));
+            var white = Mat("ThemeFurniture", "#FFFFFF");
+            var body = Prim(PrimitiveType.Capsule, "Insect", t, new Vector3(0.04f, 0.3f, 0.24f), new Vector3(0.1f, 0.08f, 0.1f), white).GetComponent<Renderer>();
+            body.transform.localRotation = Quaternion.Euler(0f, 0f, 90f);
+            var collider = root.AddComponent<BoxCollider>();
+            collider.center = new Vector3(0f, 0.3f, 0f);
+            collider.size = new Vector3(0.5f, 0.62f, 0.5f);
+            AddInteractable(root, "채집통", InteractableKind.Furniture, radius: 0.35f, markerHeight: 1f, wiggle: false);
+            root.AddComponent<GridObject>().kind = GroundObjectKind.Furniture;
+            root.AddComponent<PlacedFurniture>().bodyRenderers = new[] { body };
+            return SavePrefab(root, "Furniture_Cage");
         }
 
         // 곤충(3-7a): 곤충 모양(몸 + 날개, 곤충 색은 놓일 때 입힘) · 마을 곤충 관리

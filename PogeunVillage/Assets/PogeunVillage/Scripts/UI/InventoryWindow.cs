@@ -7,7 +7,7 @@ using UnityEngine.UI;
 namespace PogeunVillage
 {
     /// <summary>
-    /// 인벤토리 창(결정 2026-10-27, 2-3, 가구 · 물고기 칸은 처음 F로 놓기 모드 3-4a · 3-6c): Tab(패드 Y)으로 열고 닫음. 방향키(패드 십자키)로 칸을 고르고,
+    /// 인벤토리 창(결정 2026-10-27, 2-3, 가구 · 물고기 · 곤충 칸은 처음 F로 놓기 모드 3-4a · 3-6c · 3-7c): Tab(패드 Y)으로 열고 닫음. 방향키(패드 십자키)로 칸을 고르고,
     /// F(패드 A)로 집은 뒤 다른 칸에서 F를 누르면 두 칸을 맞바꿈(같은 칸에서 다시 F = 내려놓기).
     /// 고르기 모드(2-5 선물): OpenForPick으로 열면 F = 그 칸을 고름(고를 수 없으면 알림), Tab = 취소.
     /// 창이 열린 동안 플레이어 조작을 멈춤(PlayerLock). 다른 창이 열려 있으면 Tab으로 열리지 않음. 칸 글자는 바뀐 칸만 고침.
@@ -178,6 +178,7 @@ namespace PogeunVillage
                 {
                     FurnitureDefinition f => f,
                     FishDefinition fish => fish.aquarium,  // 물고기는 수조로 놓음(3-6c)
+                    InsectDefinition insect => insect.cage,  // 곤충은 채집통으로 놓음(3-7c)
                     _ => null,
                 };
                 if (furniturePlacer && placeable)

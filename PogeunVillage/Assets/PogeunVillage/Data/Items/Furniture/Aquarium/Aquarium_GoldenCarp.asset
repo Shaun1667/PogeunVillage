@@ -24,3 +24,4 @@ MonoBehaviour:
   unlockStars: 1
   themeOwner: {fileID: 0}
   aquariumFish: {fileID: 11400000, guid: 18b15cb98602d8c4d985a94430c8258f, type: 2}
+  cageInsect: {fileID: 0}

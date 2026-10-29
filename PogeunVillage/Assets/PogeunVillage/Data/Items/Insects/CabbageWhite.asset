@@ -24,3 +24,4 @@ MonoBehaviour:
   sensitive: 0
   color: {r: 0.95686275, g: 0.94509804, b: 0.91764706, a: 1}
   cagePoint: 5
+  cage: {fileID: 11400000, guid: 3a45d59be946bc44db07f16eed07c070, type: 2}

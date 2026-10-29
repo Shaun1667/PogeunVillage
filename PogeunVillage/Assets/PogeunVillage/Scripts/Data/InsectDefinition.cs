@@ -30,6 +30,8 @@ namespace PogeunVillage
         public Color color = Color.gray;
         [Tooltip("채집통으로 놓았을 때 마을 평가 점수(3-7c)")]
         [Min(0)] public int cagePoint;
+        [Tooltip("인벤토리에서 고르면 놓는 채집통(3-7c, 맵 생성 메뉴가 채움)")]
+        public FurnitureDefinition cage;
 
         public bool AppearsIn(DayPeriod period) => periods.Length == 0 || Array.IndexOf(periods, period) >= 0;
     }

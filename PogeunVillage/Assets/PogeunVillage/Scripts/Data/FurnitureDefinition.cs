@@ -22,11 +22,16 @@ namespace PogeunVillage
         public VillagerDefinition themeOwner;
         [Tooltip("수조면 그 물고기(3-6c): 인벤토리에서는 물고기, 놓으면 이 수조, 들면 다시 물고기. 색 · 점수도 물고기 것")]
         public FishDefinition aquariumFish;
+        [Tooltip("채집통이면 그 곤충(3-7c): 수조와 같은 방식")]
+        public InsectDefinition cageInsect;
 
-        /// <summary>인벤토리에 있는 물건(수조는 물고기, 그 밖에는 가구 자신)</summary>
-        public ItemDefinition InventoryItem => aquariumFish ? aquariumFish : this;
+        /// <summary>인벤토리에 있는 물건(수조는 물고기, 채집통은 곤충, 그 밖에는 가구 자신)</summary>
+        public ItemDefinition InventoryItem => aquariumFish ? aquariumFish : cageInsect ? cageInsect : this;
 
-        /// <summary>놓였을 때 마을 평가 점수(수조는 물고기의 수조 점수)</summary>
-        public int RatingPoint => aquariumFish ? aquariumFish.aquariumPoint : ratingPoint;
+        /// <summary>놓였을 때 마을 평가 점수(수조 · 채집통은 든 물고기 · 곤충의 점수)</summary>
+        public int RatingPoint => aquariumFish ? aquariumFish.aquariumPoint : cageInsect ? cageInsect.cagePoint : ratingPoint;
+
+        /// <summary>안에 든 것의 색(수조 · 채집통), 없으면 null</summary>
+        public Color? ContentColor => aquariumFish ? aquariumFish.color : cageInsect ? cageInsect.color : null;
     }
 }

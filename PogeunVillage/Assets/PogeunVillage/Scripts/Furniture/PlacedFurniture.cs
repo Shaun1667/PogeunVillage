@@ -36,13 +36,14 @@ namespace PogeunVillage
             }
         }
 
-        /// <summary>테마 가구면 그 주민 색, 수조면 물고기 색(미리보기도 씀)</summary>
+        /// <summary>테마 가구면 그 주민 색, 수조 · 채집통이면 든 물고기 · 곤충 색(미리보기도 씀)</summary>
         public void Tint(FurnitureDefinition definition)
         {
-            if (definition && definition.aquariumFish)
+            var content = definition ? definition.ContentColor : null;
+            if (content.HasValue)
             {
                 var fishBlock = new MaterialPropertyBlock();
-                fishBlock.SetColor(BaseColorId, definition.aquariumFish.color);
+                fishBlock.SetColor(BaseColorId, content.Value);
                 foreach (var r in bodyRenderers) if (r) r.SetPropertyBlock(fishBlock);
                 return;
             }
