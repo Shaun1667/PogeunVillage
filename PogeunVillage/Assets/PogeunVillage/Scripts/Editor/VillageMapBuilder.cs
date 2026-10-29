@@ -2068,9 +2068,32 @@ namespace PogeunVillage.EditorTools
             save.fishShadows = Object.FindAnyObjectByType<FishShadows>();
             save.insects = Object.FindAnyObjectByType<Insects>();
             save.fishingRod = player.GetComponent<FishingRodUser>();
+
+            // 시작 화면(6-1d): HUD 맨 위 화면 전체 — 저장이 있을 때만 보임
+            var font = EnsureFontAsset();
+            var hud = Object.FindAnyObjectByType<HudView>().transform;
+            var panel = new GameObject("StartPanel", typeof(RectTransform), typeof(Image));
+            panel.transform.SetParent(hud, false);
+            panel.transform.SetAsLastSibling();
+            var prt = (RectTransform)panel.transform;
+            prt.anchorMin = Vector2.zero;
+            prt.anchorMax = Vector2.one;
+            prt.offsetMin = prt.offsetMax = Vector2.zero;
+            panel.GetComponent<Image>().color = Hex("#F7EFE6");
+            var screen = save.gameObject.AddComponent<StartScreen>();
+            screen.save = save;
+            screen.dayCycle = save.dayCycle;
+            screen.playerLock = player.GetComponent<PlayerLock>();
+            screen.panel = panel;
+            var center = new Vector2(0.5f, 0.5f);
+            HudLabel(panel.transform, "Title", font, 96, TextAlignmentOptions.Center, center, center, new Vector2(0f, 220f), new Vector2(900f, 130f)).text = "포근 마을";
+            screen.promptText = HudLabel(panel.transform, "Prompt", font, 40, TextAlignmentOptions.Center, center, center, new Vector2(0f, 80f), new Vector2(1100f, 60f));
+            screen.listText = HudLabel(panel.transform, "List", font, 40, TextAlignmentOptions.TopLeft, center, new Vector2(0.5f, 1f), new Vector2(60f, 20f), new Vector2(900f, 160f));
+            HudLabel(panel.transform, "Hint", font, 28, TextAlignmentOptions.Center, center, center, new Vector2(0f, -220f), new Vector2(900f, 40f)).text = "위아래 고르기 · F 확인 · Esc 돌아가기";
+            panel.SetActive(false);  // 저장이 있으면 StartScreen이 켬
         }
 
-        // 저장 지우기(6-1a, 개발용): 직접 플레이한 저장을 지우고 새로 시작 — 시작 화면(6-1d) 전까지
+        // 저장 지우기(6-1a, 개발용): 직접 플레이한 저장을 지움 — 게임 안에서는 시작 화면(6-1d)의 '새로 시작'
         [MenuItem("Pogeun Village/Delete Save")]
         static void DeleteSave()
         {

@@ -55,6 +55,7 @@ namespace PogeunVillage.PlayModeTests
             yield return null;
             save = Object.FindAnyObjectByType<SaveManager>();
             yield return null;
+            yield return Tap(keyboard.fKey);                       // 시작 화면(6-1d): 이어하기
             Assert.IsTrue(save.Loaded);
             Assert.AreEqual(day2, SaveCodec.ToJson(save.Capture()), "다시 켠 2일차 아침 = 저장한 2일차 아침(그림자 · 곤충 · 오늘의 테마 · 난수까지)");
 

@@ -7,7 +7,7 @@ namespace PogeunVillage
 {
     /// <summary>
     /// 세이브 어댑터(결정 2026-10-29, GDD 4-13 · 6-1a): 자고 일어나 아침 처리가 모두 끝나면 자동 저장("저장했어요").
-    /// 게임을 시작할 때 저장이 있으면 그 날짜 아침으로 불러옴(시작 화면은 6-1d — 그때까지는 자동 이어하기).
+    /// 게임을 시작할 때 시작 화면(StartScreen, 6-1d)에서 '이어하기'를 고르면 그 날짜 아침으로 불러옴.
     /// 저장하는 것: 날짜 · 모아 · 인벤토리 · 도감 2가지 · 평가 기록(6-1a), 마을 주민 · 캠핑 · 부탁 · 테마 보상 · 땅 · 가구(6-1b, Village · GroundSaver),
     /// 그날 정해진 것(오늘의 테마 · 물고기 그림자 · 곤충)과 난수 상태(6-1c) — 불러와 진행해도 저장 없이 진행한 것과 같은 결과.
     /// 자동 테스트는 PathOverride(임시 폴더)로 저장 위치를 바꿔 직접 플레이한 저장을 건드리지 않음.
@@ -57,9 +57,27 @@ namespace PogeunVillage
                 return;
             }
             morning.MorningPassed += SaveNow;
-            var data = SaveCodec.Read(FilePath, BackupPath);
-            if (data != null)
-                Load(data);
+        }
+
+        /// <summary>저장이 있으면 그 내용(시작 화면이 요약을 보임, 6-1d), 없으면 null</summary>
+        public SaveData Peek() => enabled ? SaveCodec.Read(FilePath, BackupPath) : null;
+
+        /// <summary>이어하기(시작 화면 6-1d)</summary>
+        public bool Continue()
+        {
+            var data = Peek();
+            if (data == null)
+                return false;
+            Load(data);
+            return true;
+        }
+
+        /// <summary>새로 시작(시작 화면에서 확인한 뒤, 6-1d): 저장 · 백업을 지움. 지금 마을이 처음 마을</summary>
+        public void DeleteSave()
+        {
+            foreach (string path in new[] { FilePath, BackupPath, FilePath + ".tmp" })
+                if (File.Exists(path)) File.Delete(path);
+            GameNotice.Post("[세이브] 새 마을에서 시작해요", this);
         }
 
         void OnDestroy()
@@ -78,6 +96,7 @@ namespace PogeunVillage
                 insectCaught = Counts(insectEncyclopedia.Log),
                 firstGoalReached = rater.GoalReached,
                 bestStars = furnitureCounter.BestStars,
+                stars = rater.Current.stars,
                 village = village.Capture(),
                 ground = groundSaver.Capture(),
                 furniture = groundSaver.CaptureFurniture(),

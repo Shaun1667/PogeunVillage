@@ -39,6 +39,7 @@ namespace PogeunVillage.PlayModeTests
             player = Object.FindAnyObjectByType<PlayerController>().transform;
             playerInventory = player.GetComponent<PlayerInventory>();
             yield return null;
+            yield return Tap(keyboard.fKey);  // 시작 화면(6-1d): 이어하기
         }
 
         [Test]

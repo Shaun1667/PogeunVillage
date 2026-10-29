@@ -20,6 +20,7 @@ namespace PogeunVillage
         public List<CountData> insectCaught = new();
         public bool firstGoalReached;
         public int bestStars;
+        public int stars;                        // 6-1d: 시작 화면에 보이는 그날 아침 별
         public VillageSave village = new();      // 6-1b
         public GroundSave ground = new();        // 6-1b
         public List<PlacedData> furniture = new();  // 6-1b: 가구 · 수조 · 채집통

@@ -29,6 +29,7 @@ namespace PogeunVillage.PlayModeTests
             yield return null;
             save = Object.FindAnyObjectByType<SaveManager>();
             yield return null;
+            yield return Tap(keyboard.fKey);  // 시작 화면(6-1d): 이어하기
         }
 
         [UnityTest]
