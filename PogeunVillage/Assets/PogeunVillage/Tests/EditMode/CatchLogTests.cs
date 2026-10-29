@@ -3,12 +3,12 @@ using NUnit.Framework;
 namespace PogeunVillage.Tests
 {
     // 3-6b 물고기 도감 · 평가 (BALANCE 17번)
-    public class FishLogTests
+    public class CatchLogTests
     {
         [Test]
         public void FirstCatch_IsNew_ThenCounts()
         {
-            var log = new FishLog();
+            var log = new CatchLog();
             Assert.IsFalse(log.Has("CrucianCarp"));
             Assert.IsTrue(log.Record("CrucianCarp"), "처음 낚은 붕어 = 새 종류");
             Assert.IsFalse(log.Record("CrucianCarp"), "두 번째는 새 종류 아님");
@@ -33,7 +33,7 @@ namespace PogeunVillage.Tests
             var thresholds = new[] { 300, 400, 550, 750 };
             var before = VillageRating.Evaluate(218, 6, 0, 0, 1, 10, 1, 10, thresholds);
             var after = VillageRating.Evaluate(218, 6, 0, 0, 1, 10, 1, 10, thresholds, 0, 1 * 10);
-            Assert.AreEqual(10, after.fishPoints);
+            Assert.AreEqual(10, after.encyclopediaPoints);
             Assert.AreEqual(before.total + 10, after.total);
             Assert.AreEqual(2, VillageRating.Evaluate(218, 6, 0, 0, 1, 10, 1, 10, thresholds, 0, 3 * 10).stars, "278 + 30 = 308 → ★2");
             StringAssert.EndsWith("· 도감 10", VillageRating.BoardLines(after, 3)[1]);

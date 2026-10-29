@@ -6,18 +6,18 @@ namespace PogeunVillage
     /// <summary>마을 평가 결과: 항목별 점수 · 합계 · 별(1 ~ 5) · 다음 별 기준(5성이면 -1)</summary>
     public readonly struct RatingResult
     {
-        public readonly int flowerPoints, residentPoints, friendshipPoints, treePoints, furniturePoints, fishPoints;
+        public readonly int flowerPoints, residentPoints, friendshipPoints, treePoints, furniturePoints, encyclopediaPoints;
         public readonly int total, stars, nextThreshold;
 
-        public RatingResult(int flowerPoints, int residentPoints, int friendshipPoints, int treePoints, int stars, int nextThreshold, int furniturePoints = 0, int fishPoints = 0)
+        public RatingResult(int flowerPoints, int residentPoints, int friendshipPoints, int treePoints, int stars, int nextThreshold, int furniturePoints = 0, int encyclopediaPoints = 0)
         {
-            this.fishPoints = fishPoints;
+            this.encyclopediaPoints = encyclopediaPoints;
             this.flowerPoints = flowerPoints;
             this.residentPoints = residentPoints;
             this.friendshipPoints = friendshipPoints;
             this.treePoints = treePoints;
             this.furniturePoints = furniturePoints;
-            total = flowerPoints + residentPoints + friendshipPoints + treePoints + furniturePoints + fishPoints;
+            total = flowerPoints + residentPoints + friendshipPoints + treePoints + furniturePoints + encyclopediaPoints;
             this.stars = stars;
             this.nextThreshold = nextThreshold;
         }
@@ -29,7 +29,7 @@ namespace PogeunVillage
     /// 마을 평가 계산(엔진 상태 없음). 결정 (2026-10-28, 3-5): 시들지 않은 꽃 · 마을 주민 수 · 마을 주민 친밀도 합 · 묘목에서 자란 나무에
     /// 항목별 점수를 곱해 더하고, 합계가 별 기준(★2 ~ ★5)을 넘은 만큼 별. 최소 ★1. BALANCE 15번.
     /// 가구(3-4e, BALANCE 16번): 놓인 가구마다 점수(같은 가구는 종류당 N개까지) + 한 주민의 테마 가구를 모두 놓으면 세트 보너스.
-    /// 도감(3-6b, BALANCE 17번): 잡은 물고기 종류마다 점수.
+    /// 도감(3-6b · 3-7b, BALANCE 17 · 18번): 잡은 물고기 · 곤충 종류마다 점수.
     /// </summary>
     public static class VillageRating
     {
@@ -37,16 +37,16 @@ namespace PogeunVillage
 
         /// <param name="starThresholds">★2 · ★3 · ★4 · ★5가 되는 합계(오름차순)</param>
         /// <param name="furniturePoints">FurniturePoints로 계산한 가구 점수(3-4e)</param>
-        /// <param name="fishPoints">잡은 물고기 종류 × 종류당 점수(3-6b)</param>
+        /// <param name="encyclopediaPoints">도감에 잡은 종류(물고기 3-6b · 곤충 3-7b) × 종류당 점수</param>
         public static RatingResult Evaluate(int flowers, int residents, int friendshipSum, int grownTrees,
-            int flowerPoint, int residentPoint, int friendshipPoint, int treePoint, IReadOnlyList<int> starThresholds, int furniturePoints = 0, int fishPoints = 0)
+            int flowerPoint, int residentPoint, int friendshipPoint, int treePoint, IReadOnlyList<int> starThresholds, int furniturePoints = 0, int encyclopediaPoints = 0)
         {
             int f = Math.Max(0, flowers) * flowerPoint;
             int r = Math.Max(0, residents) * residentPoint;
             int fr = friendshipSum * friendshipPoint;   // 음수면 깎임
             int t = Math.Max(0, grownTrees) * treePoint;
             int fu = Math.Max(0, furniturePoints);
-            int fi = Math.Max(0, fishPoints);
+            int fi = Math.Max(0, encyclopediaPoints);
             int total = f + r + fr + t + fu + fi;
 
             int stars = 1;
@@ -99,7 +99,7 @@ namespace PogeunVillage
             return new List<string>
             {
                 $"마을 평가 {StarText(r.stars)}  ({r.total}점, 오늘 아침 기준)",
-                $"꽃 {r.flowerPoints} · 주민 {r.residentPoints} · 친밀도 {r.friendshipPoints} · 키운 나무 {r.treePoints} · 가구 {r.furniturePoints} · 도감 {r.fishPoints}",
+                $"꽃 {r.flowerPoints} · 주민 {r.residentPoints} · 친밀도 {r.friendshipPoints} · 키운 나무 {r.treePoints} · 가구 {r.furniturePoints} · 도감 {r.encyclopediaPoints}",
                 $"{next} · {goal}",
             };
         }

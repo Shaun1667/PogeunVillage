@@ -75,6 +75,18 @@ namespace PogeunVillage
         public static string FishEntry(string displayName, FishSize size, System.Collections.Generic.IReadOnlyList<DayPeriod> periods, int caught) =>
             $"{displayName} · {FishSizeName(size)} · {PeriodNames(periods)} · {caught}마리";
 
+        /// <summary>곤충 도감 한 줄(3-7b): "메뚜기 · 풀밭 · 낮/저녁 · 2마리"</summary>
+        public static string InsectEntry(string displayName, InsectSite site, System.Collections.Generic.IReadOnlyList<DayPeriod> periods, int caught) =>
+            $"{displayName} · {InsectSiteName(site)} · {PeriodNames(periods)} · {caught}마리";
+
+        public static string InsectSiteName(InsectSite site) => site switch
+        {
+            InsectSite.Flower => "꽃 위",
+            InsectSite.Tree => "나무",
+            InsectSite.Grass => "풀밭",
+            _ => "물가",
+        };
+
         public static string FishSizeName(FishSize size) => size switch
         {
             FishSize.Small => "소",

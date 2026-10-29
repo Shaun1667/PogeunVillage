@@ -27,7 +27,7 @@ namespace PogeunVillage.PlayModeTests
             window = Object.FindAnyObjectByType<ListWindow>();
             hud = Object.FindAnyObjectByType<HudView>();
             Assert.IsNotNull(encyclopedia);
-            Assert.AreSame(encyclopedia, rater.encyclopedia);
+            Assert.AreSame(encyclopedia, rater.fishEncyclopedia);
             Assert.AreSame(encyclopedia, player.GetComponent<FishingRodUser>().encyclopedia);
             yield break;
         }
@@ -70,7 +70,7 @@ namespace PogeunVillage.PlayModeTests
         [UnityTest]
         public IEnumerator FirstCatch_Notice_ShownInEncyclopedia_RatingNextMorning()
         {
-            int fishPointsBefore = rater.Current.fishPoints;
+            int encyclopediaPointsBefore = rater.Current.encyclopediaPoints;
             encyclopedia.Record(Fish("CrucianCarp"));
             StringAssert.Contains("새 물고기: 붕어! (1 / 8)", hud.noticeText.text);
             yield return WaitSeconds(0.1f);
@@ -83,10 +83,10 @@ namespace PogeunVillage.PlayModeTests
             Assert.AreEqual("잡은 종류 1 / 8", window.footerText.text);
             yield return Tap(keyboard.tabKey);
 
-            Assert.AreEqual(fishPointsBefore, rater.Current.fishPoints, "평가는 아침 기준");
+            Assert.AreEqual(encyclopediaPointsBefore, rater.Current.encyclopediaPoints, "평가는 아침 기준");
             yield return Tap(keyboard.f8Key);
             yield return null;
-            Assert.AreEqual(rater.rules.fishSpeciesPoint, rater.Current.fishPoints, "다음 아침 +10");
+            Assert.AreEqual(rater.rules.speciesPoint, rater.Current.encyclopediaPoints, "다음 아침 +10");
         }
     }
 }

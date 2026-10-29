@@ -26,6 +26,8 @@ namespace PogeunVillage
         public PlayerInventory inventory;
         public Pickup pickupPrefab;
         public InsectBehaviour insectPrefab;
+        [Tooltip("잡으면 기록(3-7b)")]
+        public InsectEncyclopedia encyclopedia;
         [Header("자리 높이(m, 그레이박스 모습)")]
         public float flowerHover = 0.6f;
         public float waterHover = 0.8f;
@@ -153,6 +155,7 @@ namespace PogeunVillage
             else
                 DropAtFeet(definition);
             GameNotice.Post($"[곤충] {definition.displayName}을(를) 잡았어요! ({HudText.Moa(definition.sellPrice)})", this);
+            if (encyclopedia) encyclopedia.Record(definition);
         }
 
         // 헛스윙: 가까운 곤충이 놀라 도망

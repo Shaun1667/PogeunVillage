@@ -1904,7 +1904,7 @@ namespace PogeunVillage.EditorTools
             encyclopedia.rules = shadows.rules;
             encyclopedia.window = Object.FindAnyObjectByType<ListWindow>();
             rod.encyclopedia = encyclopedia;
-            Object.FindAnyObjectByType<VillageRater>().encyclopedia = encyclopedia;
+            Object.FindAnyObjectByType<VillageRater>().fishEncyclopedia = encyclopedia;
             Debug.Log($"[낚시] 강 물 칸 {ground.data.WaterCells().Count}개");
         }
 
@@ -1980,6 +1980,13 @@ namespace PogeunVillage.EditorTools
             manager.inventory = player.GetComponent<PlayerInventory>();
             manager.pickupPrefab = pickupPrefab;
             manager.insectPrefab = prefab;
+
+            // 곤충 도감(3-7b): 게시판에서 여는 목록 창, 잡은 종류는 마을 평가에
+            var encyclopedia = new GameObject("InsectEncyclopedia").AddComponent<InsectEncyclopedia>();
+            encyclopedia.rules = manager.rules;
+            encyclopedia.window = Object.FindAnyObjectByType<ListWindow>();
+            manager.encyclopedia = encyclopedia;
+            Object.FindAnyObjectByType<VillageRater>().insectEncyclopedia = encyclopedia;
         }
 
         // 플레이 기록(4-1 재미 검증 측정 도구, 에디터 · 개발 빌드만): Temp/PlayLogs/*.csv

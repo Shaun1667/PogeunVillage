@@ -35,6 +35,14 @@ namespace PogeunVillage.Tests
         }
 
         [Test]
+        public void EncyclopediaLine()  // 3-7b
+        {
+            Assert.AreEqual("메뚜기 · 풀밭 · 낮/저녁 · 2마리", HudText.InsectEntry("메뚜기", InsectSite.Grass, new[] { DayPeriod.Daytime, DayPeriod.Evening }, 2));
+            Assert.AreEqual("꽃 위", HudText.InsectSiteName(InsectSite.Flower));
+            Assert.AreEqual("물가", HudText.InsectSiteName(InsectSite.Water));
+        }
+
+        [Test]
         public void Noon_NightInsectsDontAppear()  // 18-5
         {
             DayPeriod[][] periods =

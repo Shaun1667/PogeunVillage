@@ -7,7 +7,7 @@ namespace PogeunVillage
 {
     /// <summary>
     /// 마을 평가 어댑터(결정 2026-10-28, 3-5): 게임을 시작할 때와 매일 아침 처리(자연까지) 뒤에 계산해(놓인 가구도, 3-4e)
-    /// HUD에 "마을 ★★☆☆☆"를 보이고, 별이 바뀌면 알림(첫 목표에 처음 닿으면 축하 알림). 광장 게시판 F = '마을 평가 / 물고기 도감' 고르기 → 항목별 점수(대화창) · 도감(목록 창).
+    /// HUD에 "마을 ★★☆☆☆"를 보이고, 별이 바뀌면 알림(첫 목표에 처음 닿으면 축하 알림). 광장 게시판 F = '마을 평가 / 물고기 도감 / 곤충 도감' 고르기 → 항목별 점수(대화창) · 도감(목록 창).
     /// 계산은 VillageRating(순수), 수치는 RatingRules.
     /// </summary>
     [DefaultExecutionOrder(100)]  // Village.Start(주민 입주) 뒤에 첫 계산
@@ -21,7 +21,10 @@ namespace PogeunVillage
         [Tooltip("놓인 가구(3-4e)")]
         public FurnitureKeeper furniture;
         [Tooltip("물고기 도감(3-6b): 잡은 종류 점수 · 게시판에서 열기")]
-        public FishEncyclopedia encyclopedia;
+        [UnityEngine.Serialization.FormerlySerializedAs("encyclopedia")]
+        public FishEncyclopedia fishEncyclopedia;
+        [Tooltip("곤충 도감(3-7b)")]
+        public InsectEncyclopedia insectEncyclopedia;
         public Interactable noticeBoard;
         public DialogueWindow dialogue;
         public TMP_Text ratingText;
@@ -32,7 +35,7 @@ namespace PogeunVillage
 
         void Start()
         {
-            if (!rules || !village || !ground || !garden || !morning || !furniture || !encyclopedia || !noticeBoard || !dialogue || !ratingText || village.Residents == null)
+            if (!rules || !village || !ground || !garden || !morning || !furniture || !fishEncyclopedia || !insectEncyclopedia || !noticeBoard || !dialogue || !ratingText || village.Residents == null)
             {
                 Debug.LogError($"{name}: 마을 평가 연결이 비어 있습니다.", this);
                 enabled = false;
@@ -74,7 +77,7 @@ namespace PogeunVillage
 
             Current = VillageRating.Evaluate(flowers, village.Residents.Count, friendshipSum, grownTrees,
                 rules.flowerPoint, rules.residentPoint, rules.friendshipPoint, rules.grownTreePoint, rules.starThresholds, furniturePoints,
-                encyclopedia.Log.Species * rules.fishSpeciesPoint);
+                (fishEncyclopedia.Log.Species + insectEncyclopedia.Log.Species) * rules.speciesPoint);
             ratingText.text = $"마을 {VillageRating.StarText(Current.stars)}";
 
             if (!first && Current.stars != before.stars)
@@ -89,9 +92,9 @@ namespace PogeunVillage
             Changed?.Invoke(Current);
         }
 
-        static readonly string[] BoardChoices = { "마을 평가", "물고기 도감" };
+        static readonly string[] BoardChoices = { "마을 평가", "물고기 도감", "곤충 도감" };
 
-        // 게시판 F(3-6b): 무엇을 볼지 고르기 → 마을 평가(대화창 3줄) / 물고기 도감(목록 창)
+        // 게시판 F(3-6b · 3-7b): 무엇을 볼지 고르기 → 마을 평가(대화창 3줄) / 물고기 도감 · 곤충 도감(목록 창)
         void ShowBoard(Interactable _, PlayerInteractor by)
         {
             if (dialogue.IsOpen)
@@ -101,7 +104,9 @@ namespace PogeunVillage
                 if (d.Chosen == 0)
                     dialogue.Open(new Dialogue("게시판", VillageRating.BoardLines(Current, rules.firstGoalStars)), null);
                 else if (d.Chosen == 1)
-                    encyclopedia.Open();
+                    fishEncyclopedia.Open();
+                else if (d.Chosen == 2)
+                    insectEncyclopedia.Open();
             });
         }
     }

@@ -22,9 +22,10 @@ namespace PogeunVillage
         [Tooltip("한 주민의 테마 가구를 모두 놓으면(주민마다 한 번)")]
         public int themeSetBonus = 40;
 
-        [Header("물고기 도감 (BALANCE.md 17번, 3-6b)")]
-        [Tooltip("잡은 물고기 종류 하나")]
-        public int fishSpeciesPoint = 10;
+        [Header("도감 (BALANCE.md 17 · 18번, 3-6b · 3-7b)")]
+        [Tooltip("도감에 잡은 종류 하나(물고기 · 곤충)")]
+        [UnityEngine.Serialization.FormerlySerializedAs("fishSpeciesPoint")]
+        public int speciesPoint = 10;
 
         [Tooltip("★2 · ★3 · ★4 · ★5가 되는 합계(오름차순)")]
         public int[] starThresholds = { 300, 400, 550, 750 };
