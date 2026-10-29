@@ -20,5 +20,13 @@ namespace PogeunVillage
         [Range(1, 5)] public int unlockStars = 1;
         [Tooltip("테마 가구면 그 주민(색 · 세트, 3-4d). 기본 가구는 비움")]
         public VillagerDefinition themeOwner;
+        [Tooltip("수조면 그 물고기(3-6c): 인벤토리에서는 물고기, 놓으면 이 수조, 들면 다시 물고기. 색 · 점수도 물고기 것")]
+        public FishDefinition aquariumFish;
+
+        /// <summary>인벤토리에 있는 물건(수조는 물고기, 그 밖에는 가구 자신)</summary>
+        public ItemDefinition InventoryItem => aquariumFish ? aquariumFish : this;
+
+        /// <summary>놓였을 때 마을 평가 점수(수조는 물고기의 수조 점수)</summary>
+        public int RatingPoint => aquariumFish ? aquariumFish.aquariumPoint : ratingPoint;
     }
 }

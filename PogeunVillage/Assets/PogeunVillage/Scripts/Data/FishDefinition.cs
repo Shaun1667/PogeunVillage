@@ -34,6 +34,8 @@ namespace PogeunVillage
         public Color color = Color.gray;
         [Tooltip("수조로 놓았을 때 마을 평가 점수(3-6c)")]
         [Min(0)] public int aquariumPoint;
+        [Tooltip("인벤토리에서 고르면 놓는 수조(3-6c, 맵 생성 메뉴가 채움)")]
+        public FurnitureDefinition aquarium;
 
         public bool AppearsIn(DayPeriod period) => periods.Length == 0 || Array.IndexOf(periods, period) >= 0;
     }

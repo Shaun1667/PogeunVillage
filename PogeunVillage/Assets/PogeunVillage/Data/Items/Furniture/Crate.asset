@@ -23,3 +23,4 @@ MonoBehaviour:
   ratingPoint: 5
   unlockStars: 1
   themeOwner: {fileID: 0}
+  aquariumFish: {fileID: 0}

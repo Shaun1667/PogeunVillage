@@ -1223,7 +1223,8 @@ namespace PogeunVillage.EditorTools
         {
             var rules = EnsureAsset<VillageRules>(VillageRulesPath);
             rules.villagers = EnsureVillagers();
-            rules.requestItems = new[] { appleItem, peachItem, flowerItem, woodItem };  // 부탁할 수 있는 물건(3-3)
+            rules.requestItems = new ItemDefinition[] { appleItem, peachItem, flowerItem, woodItem }
+                .Concat(fish.Where(f => f.id == "Medaka" || f.id == "CrucianCarp")).ToArray();  // 부탁할 수 있는 물건(3-3), 흔한 물고기 2종(3-6c)
             EditorUtility.SetDirty(rules);
 
             var village = new GameObject("Village").AddComponent<Village>();
@@ -1791,7 +1792,53 @@ namespace PogeunVillage.EditorTools
             var rules = EnsureAsset<FishingRules>(FishingRulesPath);
             rules.fish = list;
             EditorUtility.SetDirty(rules);
+            EnsureAquariums(list);
             return list;
+        }
+
+        // 수조(3-6c): 물고기마다 수조 가구(데이터는 없을 때만), 모양은 하나를 함께 쓰고 물고기 색을 입힘. 상점에는 없음(물고기를 놓으면 수조)
+        static void EnsureAquariums(FishDefinition[] fishList)
+        {
+            string dir = FurnitureDir + "/Aquarium";
+            EnsureFolder(dir);
+            var prefab = BuildAquariumPrefab();
+            foreach (var f in fishList)
+            {
+                string path = $"{dir}/Aquarium_{f.id}.asset";
+                bool isNew = !AssetDatabase.LoadAssetAtPath<FurnitureDefinition>(path);
+                var tank = EnsureAsset<FurnitureDefinition>(path);
+                if (isNew)
+                {
+                    tank.id = "Aquarium_" + f.id;
+                    tank.displayName = $"{f.displayName} 수조";
+                    tank.maxStack = 1;
+                }
+                tank.prefab = prefab;
+                tank.aquariumFish = f;
+                EditorUtility.SetDirty(tank);
+                f.aquarium = tank;
+                EditorUtility.SetDirty(f);
+            }
+        }
+
+        static GameObject BuildAquariumPrefab()
+        {
+            var root = new GameObject("Aquarium");
+            var t = root.transform;
+            Prim(PrimitiveType.Cube, "Stand", t, new Vector3(0f, 0.15f, 0f), new Vector3(0.75f, 0.3f, 0.5f), Mat("Wood", "#B98A5E"));
+            Prim(PrimitiveType.Cube, "Glass", t, new Vector3(0f, 0.55f, 0f), new Vector3(0.7f, 0.5f, 0.45f), Mat("AquariumWater", "#BFE9F2", rim: 0.4f));
+            Prim(PrimitiveType.Cube, "Sand", t, new Vector3(0f, 0.32f, 0f), new Vector3(0.68f, 0.05f, 0.43f), Mat("AquariumSand", "#EAD9AE"));
+            var white = Mat("ThemeFurniture", "#FFFFFF");
+            var body = Prim(PrimitiveType.Sphere, "Fish", t, new Vector3(0f, 0.56f, 0.24f), new Vector3(0.3f, 0.16f, 0.06f), white).GetComponent<Renderer>();
+            var tail = Prim(PrimitiveType.Cube, "Tail", t, new Vector3(-0.18f, 0.56f, 0.24f), new Vector3(0.08f, 0.12f, 0.04f), white).GetComponent<Renderer>();
+            Prim(PrimitiveType.Sphere, "Eye", t, new Vector3(0.09f, 0.58f, 0.27f), Vector3.one * 0.03f, Mat("Eye", "#3A3340"));
+            var collider = root.AddComponent<BoxCollider>();
+            collider.center = new Vector3(0f, 0.4f, 0f);
+            collider.size = new Vector3(0.75f, 0.8f, 0.5f);
+            AddInteractable(root, "수조", InteractableKind.Furniture, radius: 0.4f, markerHeight: 1.2f, wiggle: false);
+            root.AddComponent<GridObject>().kind = GroundObjectKind.Furniture;
+            root.AddComponent<PlacedFurniture>().bodyRenderers = new[] { body, tail };
+            return SavePrefab(root, "Furniture_Aquarium");
         }
 
         static FishDefinition EnsureFishItem(string dir, string id, string displayName, FishSize size, FishRarity rarity, DayPeriod[] periods, int sell, int aquarium, string color)

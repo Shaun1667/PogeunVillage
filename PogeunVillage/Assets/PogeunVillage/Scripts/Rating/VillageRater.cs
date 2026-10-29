@@ -68,7 +68,7 @@ namespace PogeunVillage
                 if (p && p.Definition)
                 {
                     var owner = p.Definition.themeOwner;
-                    placed.Add((p.Definition.id, p.Definition.ratingPoint, owner ? owner.id : null));
+                    placed.Add((p.Definition.id, p.Definition.RatingPoint, owner ? owner.id : null));
                 }
             int furniturePoints = VillageRating.FurniturePoints(placed, rules.furnitureKindCap, rules.themeSetBonus, FurnitureRules.ThemePieces);
 

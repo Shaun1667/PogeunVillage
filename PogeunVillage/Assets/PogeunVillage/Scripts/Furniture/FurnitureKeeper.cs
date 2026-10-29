@@ -67,7 +67,7 @@ namespace PogeunVillage
         {
             if (!furniture)
                 return false;
-            if (!inventory.TryAdd(furniture.Definition))
+            if (!inventory.TryAdd(furniture.Definition.InventoryItem))  // 수조는 물고기로(3-6c)
                 return false;  // '가득 찼어요' 알림은 PlayerInventory가 띄움
             placed.Remove(furniture);
             furniture.GetComponent<GridObject>().Unregister();

@@ -7,6 +7,7 @@ namespace PogeunVillage
     /// 가구 놓기 모드(결정 2026-10-28, 3-4a): 인벤토리 창에서 가구 칸을 F로 고르면 시작.
     /// 걸어 다닐 수 있고(상호작용 · 도구 · 인벤토리 창은 멈춤), 바라보는 앞 칸에 미리보기 + 테두리(못 놓는 칸이면 빨강).
     /// R(패드 RB) = 90도 돌리기, F(패드 A) = 놓기(그 칸에서 1개 빠짐, 모드 끝), Tab(패드 Y) = 그만두기.
+    /// 물고기 칸이면 그 물고기의 수조를 놓음(3-6c).
     /// </summary>
     public class FurniturePlacer : MonoBehaviour
     {
@@ -91,7 +92,7 @@ namespace PogeunVillage
         void TryPlace()
         {
             var slot = inventory.Inventory.Slots[Slot];
-            if (slot.IsEmpty || slot.itemId != Definition.id)
+            if (slot.IsEmpty || slot.itemId != Definition.InventoryItem.id)
             {
                 End();  // 그 칸의 가구가 없어졌으면 그만둠
                 return;

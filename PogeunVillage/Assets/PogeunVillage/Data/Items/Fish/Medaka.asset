@@ -23,3 +23,4 @@ MonoBehaviour:
   periods: 
   color: {r: 0.7882353, g: 0.8392157, b: 0.8745098, a: 1}
   aquariumPoint: 5
+  aquarium: {fileID: 11400000, guid: e2c4947e8e76b544ca0f6cd9f9fc9875, type: 2}
