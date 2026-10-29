@@ -8,7 +8,8 @@ namespace PogeunVillage
     /// <summary>
     /// 세이브 어댑터(결정 2026-10-29, GDD 4-13 · 6-1a): 자고 일어나 아침 처리가 모두 끝나면 자동 저장("저장했어요").
     /// 게임을 시작할 때 저장이 있으면 그 날짜 아침으로 불러옴(시작 화면은 6-1d — 그때까지는 자동 이어하기).
-    /// 저장하는 것: 날짜 · 모아 · 인벤토리 · 도감 2가지 · 평가 기록(6-1a), 마을 주민 · 캠핑 · 부탁 · 테마 보상 · 땅 · 가구(6-1b, Village · GroundSaver).
+    /// 저장하는 것: 날짜 · 모아 · 인벤토리 · 도감 2가지 · 평가 기록(6-1a), 마을 주민 · 캠핑 · 부탁 · 테마 보상 · 땅 · 가구(6-1b, Village · GroundSaver),
+    /// 그날 정해진 것(오늘의 테마 · 물고기 그림자 · 곤충)과 난수 상태(6-1c) — 불러와 진행해도 저장 없이 진행한 것과 같은 결과.
     /// 자동 테스트는 PathOverride(임시 폴더)로 저장 위치를 바꿔 직접 플레이한 저장을 건드리지 않음.
     /// 쓰기 · 읽기 규칙은 SaveCodec, 수치는 SaveRules(BALANCE.md 19번).
     /// </summary>
@@ -35,6 +36,10 @@ namespace PogeunVillage
         [Tooltip("수조 · 채집통 가구를 찾을 때(상점 목록에는 없음)")]
         public FishingRules fishingRules;
         public InsectRules insectRules;
+        [Header("그날 정해진 것 · 난수 (6-1c)")]
+        public FishShadows fishShadows;
+        public Insects insects;
+        public FishingRodUser fishingRod;
 
         public string Folder => string.IsNullOrEmpty(PathOverride) ? Application.persistentDataPath : PathOverride;
         public string FilePath => Path.Combine(Folder, rules.fileName);
@@ -45,7 +50,7 @@ namespace PogeunVillage
         {
             if (!rules || !dayCycle || dayCycle.Clock == null || !morning || !wallet || !inventory || inventory.Inventory == null
                 || !catalogSource || !fishEncyclopedia || !insectEncyclopedia || !rater || !furnitureCounter
-                || !village || !groundSaver || !fishingRules || !insectRules)
+                || !village || !groundSaver || !fishingRules || !insectRules || !fishShadows || !insects || !fishingRod)
             {
                 Debug.LogError($"{name}: 세이브 연결이 비어 있습니다.", this);
                 enabled = false;
@@ -76,7 +81,19 @@ namespace PogeunVillage
                 village = village.Capture(),
                 ground = groundSaver.Capture(),
                 furniture = groundSaver.CaptureFurniture(),
+                today = new TodaySave
+                {
+                    theme = furnitureCounter.TodayTheme ? furnitureCounter.TodayTheme.id : "",
+                    shadows = fishShadows.CaptureToday(),
+                    insects = insects.CaptureToday(),
+                },
             };
+            village.CaptureRandoms(data.randoms);
+            RandomData.Add(data.randoms, "nature", groundSaver.garden.NatureRandom);
+            data.randoms.Add(new RandomData { key = "fish", state = fishShadows.RandomState });
+            data.randoms.Add(new RandomData { key = "insects", state = insects.RandomState });
+            data.randoms.Add(new RandomData { key = "theme", state = furnitureCounter.ThemeRandomState });
+            data.randoms.Add(new RandomData { key = "rod", state = fishingRod.RandomState });
             return SaveCodec.Normalize(data);
         }
 
@@ -108,6 +125,11 @@ namespace PogeunVillage
             Restore(insectEncyclopedia.Log, data.insectCaught);
             village.Restore(data.village ?? new VillageSave(), skipped);
             groundSaver.Restore(data.ground ?? new GroundSave(), data.furniture ?? new List<PlacedData>(), FindItem, FindFurniture, skipped);
+            var today = data.today ?? new TodaySave();
+            furnitureCounter.RestoreTodayTheme(today.theme);
+            fishShadows.RestoreToday(today.shadows);
+            insects.RestoreToday(today.insects);
+            RestoreRandoms(data.randoms ?? new List<RandomData>());  // 그날 것을 다시 놓은 뒤에(놓으며 쓴 난수를 덮어씀)
             rater.Restore(data.firstGoalReached);
             furnitureCounter.RestoreBestStars(data.bestStars);
             Loaded = true;
@@ -115,6 +137,23 @@ namespace PogeunVillage
             if (skipped.Count > 0)
                 GameNotice.Post($"[세이브] 없어진 물건 {skipped.Count}가지는 건너뛰었어요", this);  // 물건 · 주민 · 가구
             Debug.Log(skipped.Count > 0 ? $"[세이브] 건너뜀: {string.Join(", ", skipped)}" : "[세이브] 모두 불러옴", this);
+        }
+
+        void RestoreRandoms(List<RandomData> list)
+        {
+            village.RestoreRandoms(list);
+            RandomData.Restore(list, "nature", groundSaver.garden.NatureRandom);
+            foreach (var r in list)
+            {
+                if (string.IsNullOrEmpty(r.state)) continue;
+                switch (r.key)
+                {
+                    case "fish": fishShadows.RandomState = r.state; break;
+                    case "insects": insects.RandomState = r.state; break;
+                    case "theme": furnitureCounter.ThemeRandomState = r.state; break;
+                    case "rod": fishingRod.RandomState = r.state; break;
+                }
+            }
         }
 
         bool Known(string id) => FindItem(id);

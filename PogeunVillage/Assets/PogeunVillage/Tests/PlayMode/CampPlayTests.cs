@@ -102,7 +102,7 @@ namespace PogeunVillage.PlayModeTests
         [UnityTest]
         public IEnumerator FullVillage_NoCamperNextMorning()
         {
-            var random = new SystemRandomSource(5);
+            var random = new SeededRandom(5);
             foreach (var v in village.rules.villagers)
                 if (village.Residents.Count < village.rules.maxResidents && village.Camper.Definition != v)
                     village.Residents.MoveIn(v.id, random);

@@ -118,6 +118,16 @@ namespace PogeunVillage
                 d.ground.drops.Sort((a, b) => a.x != b.x ? a.x.CompareTo(b.x) : a.z != b.z ? a.z.CompareTo(b.z) : string.CompareOrdinal(a.id, b.id));
             }
             d.furniture?.Sort((a, b) => a.x != b.x ? a.x.CompareTo(b.x) : a.y.CompareTo(b.y));
+            if (d.today != null)
+            {
+                d.today.shadows.Sort(ByCell);
+                foreach (var i in d.today.insects)
+                {
+                    i.x = R(i.x); i.y = R(i.y); i.z = R(i.z);
+                }
+                d.today.insects.Sort((a, b) => a.x != b.x ? a.x.CompareTo(b.x) : a.z != b.z ? a.z.CompareTo(b.z) : string.CompareOrdinal(a.id, b.id));
+            }
+            d.randoms?.Sort((a, b) => string.CompareOrdinal(a.key, b.key));
             return d;
         }
 

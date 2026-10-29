@@ -47,7 +47,7 @@ namespace PogeunVillage.PlayModeTests
         public void SameSeed_SameVillage()
         {
             var ids = village.rules.villagers.Select(v => v.id).ToList();
-            var expected = VillageResidents.CreateStarting(12, ids, village.rules.startingResidents, new SystemRandomSource(village.rules.residentSeed));
+            var expected = VillageResidents.CreateStarting(12, ids, village.rules.startingResidents, new SeededRandom(village.rules.residentSeed));
             CollectionAssert.AreEqual(expected.Plots, village.Residents.Plots);
         }
 

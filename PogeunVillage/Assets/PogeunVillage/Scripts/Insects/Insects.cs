@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace PogeunVillage
@@ -38,7 +39,7 @@ namespace PogeunVillage
 
         readonly List<InsectBehaviour> insects = new();
         readonly List<int> respawns = new();  // 다시 생기는 게임 분(오늘 시작부터)
-        IRandomSource random;
+        SeededRandom random;
         List<Vector3> waterSites;
 
         public IReadOnlyList<InsectBehaviour> All => insects;
@@ -52,7 +53,7 @@ namespace PogeunVillage
                 enabled = false;
                 return;
             }
-            random = new SystemRandomSource(rules.seed);
+            random = new SeededRandom(rules.seed);
             waterSites = WaterSites();
             dayCycle.Clock.MinuteChanged += OnMinute;
             dayCycle.Clock.DayStarted += OnDay;
@@ -168,6 +169,31 @@ namespace PogeunVillage
                     Flee(insects[i]);
         }
 
+        /// <summary>저장(6-1c): 오늘 곤충(종류 · 자리)</summary>
+        public List<DropData> CaptureToday()
+        {
+            var list = new List<DropData>();
+            foreach (var i in insects)
+                if (i) list.Add(new DropData { id = i.Definition.id, x = i.Home.x, y = i.Home.y, z = i.Home.z });
+            return list;
+        }
+
+        public string RandomState { get => random.State; set => random.State = value; }
+
+        /// <summary>불러오기(6-1c): 그날 곤충 그대로(데이터에 없는 곤충은 건너뜀). 아침 기준이라 다시 생길 것은 없음</summary>
+        public void RestoreToday(IReadOnlyList<DropData> saved)
+        {
+            foreach (var i in insects)
+                if (i) Destroy(i.gameObject);
+            insects.Clear();
+            respawns.Clear();
+            foreach (var d in saved)
+            {
+                var definition = Array.Find(rules.insects, x => x && x.id == d.id);
+                if (definition) SpawnAt(definition, new Vector3(d.x, d.y, d.z));
+            }
+        }
+
         public void Flee(InsectBehaviour insect)
         {
             GameNotice.Post($"[곤충] {insect.Definition.displayName}이(가) 도망갔어요", this);
@@ -201,10 +227,11 @@ namespace PogeunVillage
                 case InsectSite.Flower:
                     foreach (var obj in ground.Objects())
                         if (obj && obj.kind == GroundObjectKind.Flower)
-                            candidates.Add(obj.transform.position + Vector3.up * flowerHover);
+                            candidates.Add(GroundPoint(obj.Cell) + Vector3.up * flowerHover);  // 칸 땅 높이 기준 — 다시 심은 꽃과 처음 꽃의 높이 차이와 상관없이(6-1c)
                     break;
                 case InsectSite.Tree:
-                    foreach (var tree in FindObjectsByType<ChoppableTreeBehaviour>())
+                    var trees = FindObjectsByType<ChoppableTreeBehaviour>().OrderBy(t => t.transform.position.x).ThenBy(t => t.transform.position.z);  // 찾은 차례와 상관없이(6-1c)
+                    foreach (var tree in trees)
                     {
                         float angle = (float)random.NextDouble() * Mathf.PI * 2f;
                         candidates.Add(tree.transform.position + new Vector3(Mathf.Cos(angle), 0f, Mathf.Sin(angle)) * trunkOffset + Vector3.up * trunkHeight);
@@ -224,6 +251,7 @@ namespace PogeunVillage
                     break;
             }
             candidates.RemoveAll(c => !FarFromOthers(c));
+            candidates.Sort((a, b) => a.x != b.x ? a.x.CompareTo(b.x) : a.z.CompareTo(b.z));  // 찾은 차례와 상관없이 같은 결과(세이브 6-1c)
             return candidates.Count == 0 ? null : candidates[random.Next(candidates.Count)];
         }
 

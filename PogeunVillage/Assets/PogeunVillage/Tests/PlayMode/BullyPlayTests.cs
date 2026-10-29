@@ -142,7 +142,7 @@ namespace PogeunVillage.PlayModeTests
         public IEnumerator Case2_12_FullVillage_OneLeaves_CamperComesThatMorning()
         {
             var leaver = village.Villagers.First(x => village.Request == null || village.Request.VillagerId != x.Definition.id).Definition;
-            var random = new SystemRandomSource(3);
+            var random = new SeededRandom(3);
             foreach (var def in village.rules.villagers)
                 if (village.Residents.Count < village.rules.maxResidents && village.Camper.Definition != def)
                     village.Residents.MoveIn(def.id, random);

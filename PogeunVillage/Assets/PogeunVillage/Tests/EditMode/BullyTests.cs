@@ -183,10 +183,10 @@ namespace PogeunVillage.Tests
         {
             var ids = Enumerable.Range(1, 20).Select(i => $"V{i:00}").ToList();
             var r = new VillageResidents(12);
-            for (int i = 0; i < 12; i++) r.MoveIn(ids[i], new SystemRandomSource(i));
-            Assert.IsNull(CampVisits.PickVisitor(ids, r.IsResident, null, r.Count, 12, new SystemRandomSource(1)), "12명이면 없음");
+            for (int i = 0; i < 12; i++) r.MoveIn(ids[i], new SeededRandom(i));
+            Assert.IsNull(CampVisits.PickVisitor(ids, r.IsResident, null, r.Count, 12, new SeededRandom(1)), "12명이면 없음");
             r.MoveOut("V03");                                         // ① 떠남 뒤 ④ 캠핑 교체
-            Assert.IsNotNull(CampVisits.PickVisitor(ids, r.IsResident, null, r.Count, 12, new SystemRandomSource(1)));
+            Assert.IsNotNull(CampVisits.PickVisitor(ids, r.IsResident, null, r.Count, 12, new SeededRandom(1)));
         }
     }
 }

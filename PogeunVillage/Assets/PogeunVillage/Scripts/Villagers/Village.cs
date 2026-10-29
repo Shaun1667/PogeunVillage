@@ -52,10 +52,27 @@ namespace PogeunVillage
         public ThemeRewards ThemeRewards { get; private set; }
 
         readonly List<VillagerBehaviour> villagers = new();
-        IRandomSource dialogueRandom;
-        IRandomSource campRandom;
-        IRandomSource residentRandom;
-        IRandomSource requestRandom;
+        SeededRandom dialogueRandom;
+        SeededRandom campRandom;
+        SeededRandom residentRandom;
+        SeededRandom requestRandom;
+
+        /// <summary>난수 상태 저장 · 되돌리기(6-1c)</summary>
+        public void CaptureRandoms(List<RandomData> list)
+        {
+            RandomData.Add(list, "village.dialogue", dialogueRandom);
+            RandomData.Add(list, "village.camp", campRandom);
+            RandomData.Add(list, "village.resident", residentRandom);
+            RandomData.Add(list, "village.request", requestRandom);
+        }
+
+        public void RestoreRandoms(IReadOnlyList<RandomData> list)
+        {
+            RandomData.Restore(list, "village.dialogue", dialogueRandom);
+            RandomData.Restore(list, "village.camp", campRandom);
+            RandomData.Restore(list, "village.resident", residentRandom);
+            RandomData.Restore(list, "village.request", requestRandom);
+        }
 
         void Start()
         {
@@ -67,9 +84,9 @@ namespace PogeunVillage
                 return;
             }
             WalkMap = ground.data.CreateWalkMap();
-            dialogueRandom = new SystemRandomSource(rules.dialogueSeed);
-            campRandom = new SystemRandomSource(rules.campSeed);
-            requestRandom = new SystemRandomSource(rules.requestSeed);
+            dialogueRandom = new SeededRandom(rules.dialogueSeed);
+            campRandom = new SeededRandom(rules.campSeed);
+            requestRandom = new SeededRandom(rules.requestSeed);
             Friendship = new Friendship(rules.talkGain, rules.giftGain, rules.dailyGainCap, rules.friendshipMin, rules.friendshipMax);
             Bully = new BullyStreak(rules.bullyHitsPerPenalty, rules.bullyStreakTimeoutSeconds);
             Departures = new Departures(rules.leaveThreshold);
@@ -79,7 +96,7 @@ namespace PogeunVillage
             var ids = new List<string>();
             foreach (var v in rules.villagers)
                 if (v) ids.Add(v.id);
-            residentRandom = new SystemRandomSource(rules.residentSeed);  // 시작 주민 · 입주 집터를 이어서 고름
+            residentRandom = new SeededRandom(rules.residentSeed);  // 시작 주민 · 입주 집터를 이어서 고름
             Residents = VillageResidents.CreateStarting(plots.Length, ids, rules.startingResidents, residentRandom);
 
             for (int i = 0; i < plots.Length; i++)
@@ -182,7 +199,7 @@ namespace PogeunVillage
                 CampStay = new CampStay(visitor.id, rules.talkGain, rules.giftGain, rules.dailyGainCap, rules.moveInThreshold);
                 CampStay.Restore(save.campValue, save.campConfirmed);
                 Camper = Instantiate(villagerPrefab, campSite.DoorPosition, Quaternion.identity, transform);
-                Camper.Setup(this, visitor, campSite, new SystemRandomSource(rules.wanderSeed + plots.Length), rules.campWanderRadius, isCamper: true);
+                Camper.Setup(this, visitor, campSite, new SeededRandom(rules.wanderSeed + plots.Length), rules.campWanderRadius, isCamper: true);
             }
 
             Request = save.hasRequest ? VillagerRequest.Restore(save.requestVillager, save.requestItem, save.requestCount, save.requestDone) : null;
@@ -194,7 +211,7 @@ namespace PogeunVillage
         VillagerBehaviour SpawnResident(VillagerDefinition resident, int plot)
         {
             var villager = Instantiate(villagerPrefab, plots[plot].DoorPosition, Quaternion.identity, transform);
-            villager.Setup(this, resident, plots[plot], new SystemRandomSource(rules.wanderSeed + plot), rules.wanderRadius);
+            villager.Setup(this, resident, plots[plot], new SeededRandom(rules.wanderSeed + plot), rules.wanderRadius);
             villagers.Add(villager);
             return villager;
         }
@@ -239,7 +256,7 @@ namespace PogeunVillage
                 return;
             CampStay = new CampStay(visitor.id, rules.talkGain, rules.giftGain, rules.dailyGainCap, rules.moveInThreshold);
             Camper = Instantiate(villagerPrefab, campSite.DoorPosition, Quaternion.identity, transform);
-            Camper.Setup(this, visitor, campSite, new SystemRandomSource(rules.wanderSeed + plots.Length), rules.campWanderRadius, isCamper: true);
+            Camper.Setup(this, visitor, campSite, new SeededRandom(rules.wanderSeed + plots.Length), rules.campWanderRadius, isCamper: true);
             if (announce)
                 GameNotice.Post($"[캠핑] 오늘은 {visitor.displayName}이(가) 캠핑 왔어요", this);
         }

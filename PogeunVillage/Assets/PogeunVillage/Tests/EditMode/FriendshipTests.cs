@@ -186,8 +186,8 @@ namespace PogeunVillage.Tests
         [Test]
         public void PickLine_EmptyPool_UsesFallback()
         {
-            Assert.AreEqual("고마워!", VillagerTalk.PickLine(new string[0], new SystemRandomSource(1), "고마워!"));
-            Assert.AreEqual("잘 쓸게", VillagerTalk.PickLine(new[] { "잘 쓸게" }, new SystemRandomSource(1), "고마워!"));
+            Assert.AreEqual("고마워!", VillagerTalk.PickLine(new string[0], new SeededRandom(1), "고마워!"));
+            Assert.AreEqual("잘 쓸게", VillagerTalk.PickLine(new[] { "잘 쓸게" }, new SeededRandom(1), "고마워!"));
         }
 
         // ---------------------------------------------------------------- 구멍 칸은 걸을 수 있음(빠지러)

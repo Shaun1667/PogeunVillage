@@ -13,8 +13,8 @@ namespace PogeunVillage.Tests
         [Test]
         public void Pick_SameSeedSameRequest_FromCandidatesAndItems()
         {
-            var a = VillagerRequest.Pick(Residents, Items, 1, 3, new SystemRandomSource(31));
-            var b = VillagerRequest.Pick(Residents, Items, 1, 3, new SystemRandomSource(31));
+            var a = VillagerRequest.Pick(Residents, Items, 1, 3, new SeededRandom(31));
+            var b = VillagerRequest.Pick(Residents, Items, 1, 3, new SeededRandom(31));
             Assert.AreEqual((a.VillagerId, a.ItemId, a.Count), (b.VillagerId, b.ItemId, b.Count));
             CollectionAssert.Contains(Residents, a.VillagerId);
             CollectionAssert.Contains(Items, a.ItemId);
@@ -26,15 +26,15 @@ namespace PogeunVillage.Tests
         {
             var counts = new HashSet<int>();
             for (int seed = 0; seed < 100; seed++)
-                counts.Add(VillagerRequest.Pick(Residents, Items, 1, 3, new SystemRandomSource(seed)).Count);
+                counts.Add(VillagerRequest.Pick(Residents, Items, 1, 3, new SeededRandom(seed)).Count);
             CollectionAssert.AreEquivalent(new[] { 1, 2, 3 }, counts);
         }
 
         [Test]
         public void Pick_NoCandidatesOrItems_Null()
         {
-            Assert.IsNull(VillagerRequest.Pick(new string[0], Items, 1, 3, new SystemRandomSource(1)));
-            Assert.IsNull(VillagerRequest.Pick(Residents, new string[0], 1, 3, new SystemRandomSource(1)));
+            Assert.IsNull(VillagerRequest.Pick(new string[0], Items, 1, 3, new SeededRandom(1)));
+            Assert.IsNull(VillagerRequest.Pick(Residents, new string[0], 1, 3, new SeededRandom(1)));
         }
 
         [TestCase(100, 2, 2, 400)]   // 14-2 사과 2개

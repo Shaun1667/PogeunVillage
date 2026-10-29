@@ -10,13 +10,13 @@ namespace PogeunVillage.Tests
         static readonly List<string> Twenty = Enumerable.Range(1, 20).Select(i => $"V{i:00}").ToList();
 
         static string Pick(VillageResidents residents, string yesterday, int seed = 1, int max = 12) =>
-            CampVisits.PickVisitor(Twenty, residents.IsResident, yesterday, residents.Count, max, new SystemRandomSource(seed));
+            CampVisits.PickVisitor(Twenty, residents.IsResident, yesterday, residents.Count, max, new SeededRandom(seed));
 
         static VillageResidents Village(int count)
         {
             var r = new VillageResidents(12);
             for (int i = 0; i < count; i++)
-                r.MoveIn(Twenty[i], new SystemRandomSource(i));
+                r.MoveIn(Twenty[i], new SeededRandom(i));
             return r;
         }
 
@@ -70,8 +70,8 @@ namespace PogeunVillage.Tests
         {
             var r = new VillageResidents(20);
             for (int i = 1; i < 20; i++)
-                r.MoveIn(Twenty[i], new SystemRandomSource(i));
-            Assert.IsNull(CampVisits.PickVisitor(Twenty, r.IsResident, "V01", r.Count, 20, new SystemRandomSource(1)));
+                r.MoveIn(Twenty[i], new SeededRandom(i));
+            Assert.IsNull(CampVisits.PickVisitor(Twenty, r.IsResident, "V01", r.Count, 20, new SeededRandom(1)));
         }
 
         [Test]

@@ -19,6 +19,8 @@ namespace PogeunVillage
         public GameObject grownTreePrefab;
 
         public Garden Garden { get; private set; }
+        /// <summary>자연(꽃 시듦 · 번식) 난수 — 상태 저장(6-1c)</summary>
+        public SeededRandom NatureRandom { get; private set; }
 
         VillageGround ground;
         MaterialPropertyBlock block;
@@ -33,7 +35,8 @@ namespace PogeunVillage
                 return;
             }
             block = new MaterialPropertyBlock();
-            Garden = new Garden(ground.Grid, new SystemRandomSource(rules.natureSeed),
+            NatureRandom = new SeededRandom(rules.natureSeed);
+            Garden = new Garden(ground.Grid, NatureRandom,
                 rules.saplingGrowDays, rules.saplingWaterBonus, rules.flowerWiltChance);
         }
 

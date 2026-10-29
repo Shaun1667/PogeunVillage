@@ -47,7 +47,7 @@ namespace PogeunVillage.Tests
             var grid = new GroundGrid(1f, Vector2Int.zero, 4, 4, new bool[16]);
             grid.TryPlace(new Vector2Int(0, 0), GroundObjectKind.Flower);
             grid.TryPlace(new Vector2Int(1, 0), GroundObjectKind.Sapling);
-            var garden = new Garden(grid, new SystemRandomSource(1), 6, 1, 0.1);
+            var garden = new Garden(grid, new SeededRandom(1), 6, 1, 0.1);
             garden.Restore(new[] { new Vector2Int(0, 0) }, new[] { new KeyValuePair<Vector2Int, int>(new Vector2Int(1, 0), 4) });
             Assert.IsTrue(garden.IsWilted(new Vector2Int(0, 0)));
             Assert.AreEqual(4, garden.Growth(new Vector2Int(1, 0)));

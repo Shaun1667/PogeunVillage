@@ -2065,6 +2065,9 @@ namespace PogeunVillage.EditorTools
             groundSaver.stumpPrefab = stumpPrefab;
             groundSaver.pickupPrefab = pickupPrefab;
             save.groundSaver = groundSaver;
+            save.fishShadows = Object.FindAnyObjectByType<FishShadows>();
+            save.insects = Object.FindAnyObjectByType<Insects>();
+            save.fishingRod = player.GetComponent<FishingRodUser>();
         }
 
         // 저장 지우기(6-1a, 개발용): 직접 플레이한 저장을 지우고 새로 시작 — 시작 화면(6-1d) 전까지

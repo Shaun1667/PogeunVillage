@@ -61,7 +61,7 @@ namespace PogeunVillage.Tests
                 Object.DestroyImmediate(d);
             }
             CollectionAssert.AreEqual(new[] { true, true, true, false, true, true, false, false }, available, "귀뚜라미 · 반딧불이 · 사슴벌레 없음");
-            var random = new SystemRandomSource(5);
+            var random = new SeededRandom(5);
             for (int i = 0; i < 300; i++)
                 Assert.IsTrue(available[InsectLogic.PickInsect(rarities, available, new[] { 60, 30, 10 }, random)]);
         }

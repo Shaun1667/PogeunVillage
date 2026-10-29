@@ -24,8 +24,8 @@ namespace PogeunVillage
         readonly List<FishShadow> shadows = new();
         readonly List<int> respawns = new();  // 다시 생기는 게임 분(오늘 시작부터) — 시계는 여러 분을 한 번에 건너뛸 수 있음
         List<Vector2Int> water;
-        IRandomSource random;
-        IRandomSource wanderRandom;
+        SeededRandom random;
+        IRandomSource wanderRandom;  // 떠다니는 모습만(저장 안 함)
 
         public IReadOnlyList<FishShadow> Shadows => shadows;
         public int WaterCellCount => water?.Count ?? 0;
@@ -39,8 +39,8 @@ namespace PogeunVillage
                 return;
             }
             water = ground.data.WaterCells();
-            random = new SystemRandomSource(rules.seed);
-            wanderRandom = new SystemRandomSource(rules.seed + 1);
+            random = new SeededRandom(rules.seed);
+            wanderRandom = new SeededRandom(rules.seed + 1);
             dayCycle.Clock.MinuteChanged += OnMinute;
             dayCycle.Clock.DayStarted += OnDay;
             Fill();
@@ -108,6 +108,32 @@ namespace PogeunVillage
             shadow.Setup(fish, cell, rules.shadowWanderRadius, rules.shadowWanderSpeed, wanderRandom);
             shadows.Add(shadow);
             return shadow;
+        }
+
+        /// <summary>저장(6-1c): 오늘 그림자(물고기 · 칸)와 난수 상태</summary>
+        public List<CellData> CaptureToday()
+        {
+            var list = new List<CellData>();
+            foreach (var s in shadows)
+                if (s) list.Add(new CellData { x = s.Cell.x, y = s.Cell.y, look = s.Fish.id });
+            list.Sort((a, b) => a.x != b.x ? a.x.CompareTo(b.x) : a.y.CompareTo(b.y));
+            return list;
+        }
+
+        public string RandomState { get => random.State; set => random.State = value; }
+
+        /// <summary>불러오기(6-1c): 그날 그림자 그대로(데이터에 없는 물고기는 건너뜀). 아침 기준이라 다시 생길 것은 없음</summary>
+        public void RestoreToday(IReadOnlyList<CellData> saved)
+        {
+            foreach (var s in shadows)
+                if (s) Destroy(s.gameObject);
+            shadows.Clear();
+            respawns.Clear();
+            foreach (var c in saved)
+            {
+                var fish = System.Array.Find(rules.fish, f => f && f.id == c.look);
+                if (fish) SpawnAt(new Vector2Int(c.x, c.y), fish);
+            }
         }
 
         /// <summary>찌에서 distance 안의 가장 가까운 그림자(다가오는 중인 것 제외)</summary>

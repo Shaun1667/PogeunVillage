@@ -49,7 +49,21 @@ namespace PogeunVillage
 
         public void Choose(int index) => Buy(ItemAt(index));
 
-        IRandomSource themeRandom;
+        SeededRandom themeRandom;
+
+        public string ThemeRandomState { get => themeRandom.State; set => themeRandom.State = value; }
+
+        /// <summary>불러오기(6-1c): 그날 오늘의 테마 가구 그대로(없으면 없음)</summary>
+        public void RestoreTodayTheme(string id)
+        {
+            TodayTheme = null;
+            if (string.IsNullOrEmpty(id) || village.rules == null)
+                return;
+            foreach (var v in village.rules.villagers)
+                if (v)
+                    foreach (var f in v.themeFurniture)
+                        if (f && f.id == id) TodayTheme = f;
+        }
 
         void Start()
         {
@@ -61,7 +75,7 @@ namespace PogeunVillage
             }
             BestStars = rater.Current.stars;  // 평가 전이면 0 — 첫 평가는 알리지 않음
             rater.Changed += OnRated;
-            themeRandom = new SystemRandomSource(shop.data.themeSeed);
+            themeRandom = new SeededRandom(shop.data.themeSeed);
             morning.MorningPassed += PickTodayTheme;
             PickTodayTheme();
         }

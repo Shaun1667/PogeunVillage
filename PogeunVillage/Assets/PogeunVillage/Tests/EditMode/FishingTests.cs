@@ -56,7 +56,7 @@ namespace PogeunVillage.Tests
         public void NibbleCount_FromZeroToMax()
         {
             var counts = new HashSet<int>();
-            var random = new SystemRandomSource(7);
+            var random = new SeededRandom(7);
             for (int i = 0; i < 50; i++)
                 counts.Add(BiteTimeline.Create(0f, 1.5f, 0, 2, 1f, 2f, 0.8f, random).NibbleTimes.Count);
             CollectionAssert.AreEquivalent(new[] { 0, 1, 2 }, counts);
@@ -80,7 +80,7 @@ namespace PogeunVillage.Tests
             var available = fish.ConvertAll(f => f.AppearsIn(DayPeriod.Daytime));
             CollectionAssert.AreEqual(new[] { true, true, true, false, true, false, true, false }, available);
 
-            var random = new SystemRandomSource(3);
+            var random = new SeededRandom(3);
             var seen = new HashSet<int>();
             for (int i = 0; i < 500; i++)
                 seen.Add(FishPicker.PickFish(Rarities, available, Weights, random));
@@ -109,14 +109,14 @@ namespace PogeunVillage.Tests
             var occupied = new List<Vector2Int> { new(0, 0) };
             for (int i = 0; i < 20; i++)
             {
-                var c = FishPicker.PickWaterCell(water, occupied, 4, new SystemRandomSource(i));
+                var c = FishPicker.PickWaterCell(water, occupied, 4, new SeededRandom(i));
                 Assert.IsTrue(c.HasValue);
                 Assert.GreaterOrEqual(c.Value.x, 4);
             }
             occupied.Add(new Vector2Int(5, 0));
             occupied.Add(new Vector2Int(9, 0));
-            Assert.IsNull(FishPicker.PickWaterCell(water, occupied, 4, new SystemRandomSource(1)), "빈자리 없음");
-            Assert.IsNull(FishPicker.PickWaterCell(new List<Vector2Int>(), occupied, 4, new SystemRandomSource(1)));
+            Assert.IsNull(FishPicker.PickWaterCell(water, occupied, 4, new SeededRandom(1)), "빈자리 없음");
+            Assert.IsNull(FishPicker.PickWaterCell(new List<Vector2Int>(), occupied, 4, new SeededRandom(1)));
         }
     }
 }

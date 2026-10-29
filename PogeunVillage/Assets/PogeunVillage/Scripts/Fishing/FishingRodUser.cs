@@ -35,7 +35,9 @@ namespace PogeunVillage
         public BitePhase Phase => Timeline?.PhaseAt(Time.time) ?? BitePhase.Waiting;
 
         static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
-        IRandomSource random;
+        SeededRandom random;
+
+        public string RandomState { get => random.State; set => random.State = value; }
         Vector3 bobberRest;
         int castFrame = -1;
         ToolDefinition rod;
@@ -48,7 +50,7 @@ namespace PogeunVillage
                 enabled = false;
                 return;
             }
-            random = new SystemRandomSource(rules.seed + 2);
+            random = new SeededRandom(rules.seed + 2);
             bobber.gameObject.SetActive(false);
         }
 

@@ -28,8 +28,8 @@ namespace PogeunVillage.Tests
         [Test]
         public void PickStarting_SixDistinct_SameSeedSameResult()
         {
-            var a = VillageResidents.PickStarting(Twenty, 6, new SystemRandomSource(2026));
-            var b = VillageResidents.PickStarting(Twenty, 6, new SystemRandomSource(2026));
+            var a = VillageResidents.PickStarting(Twenty, 6, new SeededRandom(2026));
+            var b = VillageResidents.PickStarting(Twenty, 6, new SeededRandom(2026));
             Assert.AreEqual(6, a.Count);
             Assert.AreEqual(6, a.Distinct().Count(), "겹치지 않음");
             CollectionAssert.IsSubsetOf(a, Twenty);
@@ -41,7 +41,7 @@ namespace PogeunVillage.Tests
         {
             var seen = new HashSet<string>();
             for (int seed = 0; seed < 10; seed++)
-                seen.Add(string.Join(",", VillageResidents.PickStarting(Twenty, 6, new SystemRandomSource(seed)).OrderBy(x => x)));
+                seen.Add(string.Join(",", VillageResidents.PickStarting(Twenty, 6, new SeededRandom(seed)).OrderBy(x => x)));
             Assert.Greater(seen.Count, 1);
         }
 
@@ -55,8 +55,8 @@ namespace PogeunVillage.Tests
         [Test]
         public void CreateStarting_SixInDistinctPlots_Deterministic()
         {
-            var a = VillageResidents.CreateStarting(12, Twenty, 6, new SystemRandomSource(7));
-            var b = VillageResidents.CreateStarting(12, Twenty, 6, new SystemRandomSource(7));
+            var a = VillageResidents.CreateStarting(12, Twenty, 6, new SeededRandom(7));
+            var b = VillageResidents.CreateStarting(12, Twenty, 6, new SeededRandom(7));
             Assert.AreEqual(6, a.Count);
             Assert.AreEqual(6, a.Plots.Where(p => p != null).Distinct().Count());
             CollectionAssert.AreEqual(a.Plots, b.Plots, "같은 시드 = 같은 집터");
@@ -150,7 +150,7 @@ namespace PogeunVillage.Tests
         {
             var (walk, grid) = Field();
             var from = new Vector2(2.5f, 5.5f);
-            var random = new SystemRandomSource(3);
+            var random = new SeededRandom(3);
             for (int i = 0; i < 30; i++)
             {
                 var target = walk.PickWanderTarget(from, from, 4f, random, grid, 12, 0.25f);
@@ -166,7 +166,7 @@ namespace PogeunVillage.Tests
         {
             var (walk, grid) = Field();
             // 벽 칸 한가운데에 갇혀 있으면(출발점부터 못 걸음) 목표 없음
-            Assert.IsNull(walk.PickWanderTarget(new Vector2(5.5f, 5.5f), new Vector2(5.5f, 5.5f), 3f, new SystemRandomSource(1), grid, 12, 0.25f));
+            Assert.IsNull(walk.PickWanderTarget(new Vector2(5.5f, 5.5f), new Vector2(5.5f, 5.5f), 3f, new SeededRandom(1), grid, 12, 0.25f));
         }
 
         // ---------------------------------------------------------------- 일과 · 대사

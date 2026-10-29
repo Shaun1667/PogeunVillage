@@ -23,6 +23,34 @@ namespace PogeunVillage
         public VillageSave village = new();      // 6-1b
         public GroundSave ground = new();        // 6-1b
         public List<PlacedData> furniture = new();  // 6-1b: 가구 · 수조 · 채집통
+        public TodaySave today = new();          // 6-1c: 그날 아침 정해진 것
+        public List<RandomData> randoms = new(); // 6-1c: 난수 상태
+    }
+
+    /// <summary>그날 아침 난수로 정해진 것(6-1c): 오늘의 테마 가구 · 물고기 그림자 · 곤충</summary>
+    [Serializable]
+    public class TodaySave
+    {
+        public string theme = "";
+        public List<CellData> shadows = new();   // look = 물고기 id
+        public List<DropData> insects = new();   // id · 자리
+    }
+
+    /// <summary>난수 하나의 상태(6-1c)</summary>
+    [Serializable]
+    public class RandomData
+    {
+        public string key;
+        public string state;
+
+        public static void Add(List<RandomData> list, string key, SeededRandom random) => list.Add(new RandomData { key = key, state = random.State });
+
+        /// <summary>저장된 상태가 있으면 되돌림(없으면 그대로)</summary>
+        public static void Restore(IReadOnlyList<RandomData> list, string key, SeededRandom random)
+        {
+            foreach (var r in list)
+                if (r.key == key && !string.IsNullOrEmpty(r.state)) { random.State = r.state; return; }
+        }
     }
 
     /// <summary>마을 주민 · 캠핑 · 부탁 · 테마 보상(6-1b)</summary>

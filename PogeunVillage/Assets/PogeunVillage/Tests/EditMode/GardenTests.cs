@@ -201,7 +201,7 @@ namespace PogeunVillage.Tests
                 EmptyField();
                 for (int x = -4; x <= 4; x += 2)
                     grid.TryPlace(new Vector2Int(x, 0), GroundObjectKind.Flower);
-                var garden = NewGarden(new SystemRandomSource(1234));
+                var garden = NewGarden(new SeededRandom(1234));
                 var log = new List<Vector2Int>();
                 for (int day = 0; day < 5; day++)
                 {
