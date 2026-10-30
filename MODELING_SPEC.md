@@ -4,7 +4,7 @@
 
 ## 1. 원본
 - Varco3D 플로우 `9457cf6c…`(HANDOFF 3번)의 3D 결과를 **FBX**(바닥 피벗 `pivotToBottom`)로 받는다. Unity에 glTF 가져오기 패키지가 없어 FBX(텍스처 포함)를 씀.
-- 원본은 `Assets/PogeunVillage/Art/Raw/{Props,Houses,Villagers}/이름.fbx`에 그대로 둔다(고치지 않음). Git LFS(`.gitattributes`: `*.fbx` · `*.glb`).
+- 원본은 `Assets/PogeunVillage/Art/Raw/{Props,Houses,Villagers,Furniture}/이름.fbx`에 그대로 둔다(고치지 않음). Git LFS(`.gitattributes`: `*.fbx` · `*.glb`).
 - 원본 규격(받은 그대로): 단위 m, 가장 긴 변이 약 1, 바닥 가운데 피벗, **정면 +Z**(Unity 기준 앞), 메시 1개 · 재질 1개, 색 텍스처 1024~2048 + 노멀 텍스처.
 
 ## 1-1. 움직이는 캐릭터 (결정 2026-10-30)
