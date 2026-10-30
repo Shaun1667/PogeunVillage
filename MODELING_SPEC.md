@@ -7,6 +7,10 @@
 - 원본은 `Assets/PogeunVillage/Art/Raw/{Props,Houses,Villagers}/이름.fbx`에 그대로 둔다(고치지 않음). Git LFS(`.gitattributes`: `*.fbx` · `*.glb`).
 - 원본 규격(받은 그대로): 단위 m, 가장 긴 변이 약 1, 바닥 가운데 피벗, **정면 +Z**(Unity 기준 앞), 메시 1개 · 재질 1개, 색 텍스처 1024~2048 + 노멀 텍스처.
 
+## 1-1. 움직이는 캐릭터 (결정 2026-10-30)
+- 플레이어처럼 걷는 캐릭터는 Varco3D에서 T-pose로 생성 → **Mixamo**에서 자동 리깅 · 동작. 받는 형식: FBX for Unity, 캐릭터는 T-pose + 몸 포함(`이름.fbx`), 동작은 몸 없음 30fps(`이름@동작.fbx`, 걷기 · 달리기는 In Place). 원본 Varco FBX는 `이름_Varco.fbx`로 함께 보관. 위치는 `Art/Raw/Characters/`
+- 주민(정적)은 지금처럼 Varco FBX 그대로
+
 ## 2. 가져오기 (메뉴 `Pogeun Village/Import Varco Models`, 여러 번 실행해도 같음)
 1. FBX 안의 색 텍스처를 `Textures/Models/이름/base_color.png`로 꺼냄(처음 한 번). 노멀 텍스처는 쓰지 않아 지움(CurvedToon은 노멀 맵 없음).
 2. FBX의 재질 가져오기 · 애니메이션 가져오기를 끔(URP Lit 재질이 생기지 않게).
