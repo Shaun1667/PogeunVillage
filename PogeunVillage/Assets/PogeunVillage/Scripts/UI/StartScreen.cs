@@ -6,7 +6,7 @@ namespace PogeunVillage
 {
     /// <summary>
     /// 시작 화면(결정 2026-10-29, GDD 4-13 · 6-1d): 저장이 있으면 '이어하기(n일차 · 모아 · ★) / 새로 시작'(새로 시작은 한 번 더 확인),
-    /// 없으면 보이지 않고 바로 새로 시작. 보이는 동안 시계가 멈추고 플레이어는 움직이지 않음.
+    /// 없으면 보이지 않고 바로 새로 시작. 새로 시작이면 인트로(P-5)를 부름. 보이는 동안 시계가 멈추고 플레이어는 움직이지 않음.
     /// 위아래(W/S · 방향키 · 십자키)로 고르고 F · Space · Enter(패드 A), 확인에서 Esc(패드 B) = 돌아가기. 고르기 규칙은 StartMenu.
     /// </summary>
     [DefaultExecutionOrder(210)]  // SaveManager 뒤
@@ -20,6 +20,8 @@ namespace PogeunVillage
         public GameObject panel;
         public TMP_Text promptText;
         public TMP_Text listText;
+        [Tooltip("새로 시작할 때 보여 주는 인트로(P-5)")]
+        public IntroSequence intro;
 
         public bool IsOpen => panel && panel.activeSelf;
         public StartMenu Menu { get; private set; }
@@ -38,6 +40,7 @@ namespace PogeunVillage
             if (data == null)
             {
                 panel.SetActive(false);  // 저장 없음 = 새로 시작
+                if (intro) intro.Play();
                 return;
             }
             Menu = new StartMenu(StartMenu.ContinueLine(data.day, data.moa, data.stars));
@@ -82,6 +85,7 @@ namespace PogeunVillage
                 case StartChoice.NewGame:
                     Close();
                     save.DeleteSave();
+                    if (intro) intro.Play();
                     break;
                 default:
                     Show();

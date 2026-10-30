@@ -33,6 +33,7 @@ namespace PogeunVillage.PlayModeTests
         public override void TearDown()
         {
             SaveManager.PathOverride = null;  // 테스트 뒤 직접 플레이할 때는 원래 저장 위치로
+            IntroSequence.AutoPlay = true;
             base.TearDown();
         }
 
@@ -45,6 +46,7 @@ namespace PogeunVillage.PlayModeTests
             if (System.IO.Directory.Exists(TestSaveFolder))
                 System.IO.Directory.Delete(TestSaveFolder, true);
             SaveManager.PathOverride = TestSaveFolder;
+            IntroSequence.AutoPlay = WithIntro;  // 인트로(P-5)는 인트로 테스트에서만
             SceneManager.LoadScene("VillagePrototype");
             yield return null;
             yield return null;
@@ -83,6 +85,8 @@ namespace PogeunVillage.PlayModeTests
 
         /// <summary>곤충을 그대로 둘지(곤충 테스트만 true)</summary>
         protected virtual bool WithInsects => false;
+        /// <summary>새로 시작 인트로(P-5)를 재생할지 — 인트로 테스트만 true</summary>
+        protected virtual bool WithIntro => false;
 
         protected static IEnumerator WaitSeconds(float seconds)
         {

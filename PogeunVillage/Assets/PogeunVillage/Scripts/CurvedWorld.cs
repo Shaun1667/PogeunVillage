@@ -50,7 +50,9 @@ namespace PogeunVillage
             }
 
             bool isSceneView = cam.cameraType == CameraType.SceneView;
+            bool flat = cam.TryGetComponent<FlatWorldCamera>(out _);  // 맵 바깥 장면(인트로 방)
             bool on = curveEnabled
+                      && !flat
                       && cam.cameraType != CameraType.Preview
                       && (!isSceneView || curveInSceneView);
 
@@ -72,7 +74,7 @@ namespace PogeunVillage
             }
 
             // 가림 반투명은 게임 카메라에서 플레이어가 있을 때만
-            bool occlusion = focus && cam.cameraType == CameraType.Game;
+            bool occlusion = focus && cam.cameraType == CameraType.Game && !flat;
             Vector3 target = focus ? focus.position + Vector3.up * settings.occlusionTargetHeight : Vector3.zero;
             Shader.SetGlobalVector(OccluderTargetId, new Vector4(target.x, target.y, target.z, occlusion ? 1f : 0f));
             Shader.SetGlobalVector(OccluderParamsId, new Vector4(

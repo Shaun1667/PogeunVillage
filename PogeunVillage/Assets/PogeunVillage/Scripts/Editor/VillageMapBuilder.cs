@@ -34,6 +34,7 @@ namespace PogeunVillage.EditorTools
         const string FishingRulesPath = Root + "/Data/FishingRules.asset";
         const string InsectRulesPath = Root + "/Data/InsectRules.asset";
         const string SaveRulesPath = Root + "/Data/SaveRules.asset";
+        const string IntroSettingsPath = Root + "/Data/IntroSettings.asset";
         const string VillagerDir = Root + "/Data/Villagers";
         const string FontSourcePath = Root + "/Fonts/Cafe24Ssurround-v2.0.ttf";
         const string FontAssetPath = Root + "/Fonts/Cafe24Ssurround SDF.asset";
@@ -199,6 +200,7 @@ namespace PogeunVillage.EditorTools
             BuildSave(player);
             var cam = BuildCamera(player.transform);
             player.GetComponent<PlayerController>().cameraTransform = cam.transform;
+            BuildIntro(player, cam);
 
             var curved = new GameObject("CurvedWorld").AddComponent<CurvedWorld>();
             curved.settings = settings;
@@ -2279,6 +2281,88 @@ namespace PogeunVillage.EditorTools
                 CameraOrbit.Position(target.position + Vector3.up * settings.cameraHeightOffset, settings.cameraPitch, 0f, settings.cameraDistance),
                 CameraOrbit.Rotation(settings.cameraPitch, 0f));
             return cam;
+        }
+
+        // 인트로(P-5): 맵 바깥 아이 방(그레이박스, 저녁) · 모니터 화면 · 방 카메라(휨 없음) · 시작 화면 연결
+        static void BuildIntro(GameObject player, Camera mainCamera)
+        {
+            var intro = EnsureAsset<IntroSettings>(IntroSettingsPath);
+            var room = new GameObject("IntroRoom").transform;
+            room.position = intro.roomOrigin;
+
+            var floor = Mat("RoomFloor", "#B88A6A");
+            var wall = Mat("RoomWall", "#9C8BB8");
+            var desk = Mat("RoomDesk", "#D7B28A");
+            var dark = Mat("RoomDark", "#4A4458");
+            Prim(PrimitiveType.Cube, "Floor", room, new Vector3(0f, -0.05f, 0f), new Vector3(5f, 0.1f, 5f), floor);
+            Prim(PrimitiveType.Cube, "WallBack", room, new Vector3(0f, 1.4f, 2.2f), new Vector3(5f, 2.8f, 0.1f), wall);
+            Prim(PrimitiveType.Cube, "WallLeft", room, new Vector3(-2.2f, 1.4f, 0f), new Vector3(0.1f, 2.8f, 5f), wall);
+            Prim(PrimitiveType.Cube, "WallRight", room, new Vector3(2.2f, 1.4f, 0f), new Vector3(0.1f, 2.8f, 5f), wall);
+            var window = Mat("RoomWindow", "#F2A07B", rim: 0f);
+            window.SetColor("_EmissionColor", Hex("#E8946E") * 0.8f);
+            Prim(PrimitiveType.Cube, "Window", room, new Vector3(-1.1f, 1.7f, 2.14f), new Vector3(1.1f, 0.8f, 0.02f), window, castShadows: false);
+
+            // 책상 · 모니터(화면 앞 = -Z 쪽 카메라를 봄) · 키보드 · 마우스 · 스탠드 · 머그
+            Prim(PrimitiveType.Cube, "DeskTop", room, new Vector3(0f, 0.74f, 1.3f), new Vector3(1.6f, 0.05f, 0.75f), desk);
+            for (int sx = -1; sx <= 1; sx += 2)
+                Prim(PrimitiveType.Cube, "DeskLeg", room, new Vector3(sx * 0.74f, 0.36f, 1.3f), new Vector3(0.06f, 0.72f, 0.65f), desk);
+            Prim(PrimitiveType.Cube, "MonitorStand", room, new Vector3(0f, 0.86f, 1.5f), new Vector3(0.08f, 0.2f, 0.06f), dark);
+            Prim(PrimitiveType.Cube, "MonitorBase", room, new Vector3(0f, 0.775f, 1.5f), new Vector3(0.26f, 0.02f, 0.18f), dark);
+            Prim(PrimitiveType.Cube, "MonitorBezel", room, new Vector3(0f, 1.1f, 1.48f), new Vector3(0.72f, 0.42f, 0.03f), dark);
+            var screen = Prim(PrimitiveType.Quad, "MonitorScreen", room, new Vector3(0f, 1.1f, 1.462f), Vector3.one, ScreenMaterial(), castShadows: false);
+            Prim(PrimitiveType.Cube, "Keyboard", room, new Vector3(-0.05f, 0.775f, 1.05f), new Vector3(0.44f, 0.02f, 0.14f), Mat("RoomKeyboard", "#EDE6F2"));
+            Prim(PrimitiveType.Sphere, "Mouse", room, new Vector3(0.32f, 0.78f, 1.05f), new Vector3(0.06f, 0.035f, 0.1f), Mat("RoomKeyboard", "#EDE6F2"));
+            Prim(PrimitiveType.Cylinder, "LampBase", room, new Vector3(-0.6f, 0.78f, 1.45f), new Vector3(0.14f, 0.015f, 0.14f), dark);
+            Prim(PrimitiveType.Cylinder, "LampArm", room, new Vector3(-0.6f, 0.98f, 1.45f), new Vector3(0.025f, 0.2f, 0.025f), dark);
+            var lamp = Mat("RoomLamp", "#FFE3A8", rim: 0f);
+            lamp.SetColor("_EmissionColor", Hex("#FFD48A") * 0.9f);
+            Prim(PrimitiveType.Sphere, "LampHead", room, new Vector3(-0.6f, 1.2f, 1.42f), new Vector3(0.18f, 0.12f, 0.18f), lamp, castShadows: false);
+            Prim(PrimitiveType.Cylinder, "Mug", room, new Vector3(0.55f, 0.81f, 1.25f), new Vector3(0.08f, 0.05f, 0.08f), Mat("RoomMug", "#F4B9C8"));
+
+            // 방 카메라(처음엔 꺼 둠, 휨 없음) — 마을 카메라보다 나중에 그림
+            var camGo = new GameObject("IntroRoomCamera");
+            camGo.transform.SetParent(room, false);
+            var roomCamera = camGo.AddComponent<Camera>();
+            roomCamera.depth = mainCamera.depth + 1f;
+            roomCamera.nearClipPlane = 0.05f;
+            roomCamera.farClipPlane = 30f;
+            roomCamera.clearFlags = CameraClearFlags.SolidColor;
+            roomCamera.backgroundColor = Hex("#2E2A3A");
+            roomCamera.enabled = false;
+            var data = camGo.AddComponent<UniversalAdditionalCameraData>();
+            data.renderPostProcessing = false;  // 화면 속 마을은 이미 후처리됨 — 두 번 하면 컷에서 어두워짐
+            data.antialiasing = AntialiasingMode.SubpixelMorphologicalAntiAliasing;
+            camGo.AddComponent<FlatWorldCamera>();
+
+            var sequence = room.gameObject.AddComponent<IntroSequence>();
+            sequence.settings = intro;
+            sequence.mainCamera = mainCamera;
+            sequence.follow = mainCamera.GetComponent<CameraFollow>();
+            sequence.roomCamera = roomCamera;
+            sequence.screen = screen.GetComponent<Renderer>();
+            sequence.player = player.transform;
+            sequence.playerVisual = player.transform.Find("Visual").gameObject;
+            sequence.playerLock = player.GetComponent<PlayerLock>();
+            sequence.dayCycle = Object.FindAnyObjectByType<DayCycle>();
+            sequence.hud = Object.FindAnyObjectByType<HudView>().GetComponent<Canvas>();
+            Object.FindAnyObjectByType<StartScreen>().intro = sequence;
+        }
+
+        // 모니터 화면 재질(빛을 받지 않음, 텍스처는 인트로가 프로퍼티 블록으로)
+        static Material ScreenMaterial()
+        {
+            string path = $"{MaterialDir}/IntroScreen.mat";
+            var mat = AssetDatabase.LoadAssetAtPath<Material>(path);
+            var shader = Shader.Find("PogeunVillage/CurvedScreen");
+            if (!mat)
+            {
+                mat = new Material(shader);
+                AssetDatabase.CreateAsset(mat, path);
+            }
+            mat.shader = shader;
+            mat.SetColor("_BaseColor", Color.white);
+            EditorUtility.SetDirty(mat);
+            return mat;
         }
 
         // ---------------------------------------------------------------- lighting & post

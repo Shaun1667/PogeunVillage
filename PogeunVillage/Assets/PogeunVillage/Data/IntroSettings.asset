@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ec093edcc5b95b642b185c3b1b447303, type: 3}
+  m_Name: IntroSettings
+  m_EditorClassIdentifier: PogeunVillage::PogeunVillage.IntroSettings
+  villageTime: 1.5
+  pullOutTime: 1
+  roomTime: 1.5
+  roomOrigin: {x: 3000, y: 0, z: 0}
+  screenHeight: 0.36
+  roomCameraBack: 1.8
+  roomCameraUp: 0.25
+  roomLookDown: 0.15
+  roomDrift: 0.02
+  villagePitch: 20
+  villageDistance: 11
