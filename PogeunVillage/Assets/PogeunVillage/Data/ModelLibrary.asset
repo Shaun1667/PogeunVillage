@@ -38,6 +38,16 @@ MonoBehaviour:
     material: {fileID: 2100000, guid: 4577cee4403d1e445b8c369062c70f62, type: 2}
     height: 3.6
     yaw: 0
+  - id: FruitApple
+    model: {fileID: 919132149155446097, guid: 266409044aefacf48839e89ac3b3fa97, type: 3}
+    material: {fileID: 2100000, guid: 3216991fe919dba4abe5fabbe2bf29d9, type: 2}
+    height: 1
+    yaw: 0
+  - id: FruitPeach
+    model: {fileID: 919132149155446097, guid: 458dce4209d232d47be82d3cdfcfdc31, type: 3}
+    material: {fileID: 2100000, guid: 8cbcce3997d6f2641891eefb50a610ea, type: 2}
+    height: 1
+    yaw: 0
   - id: House01
     model: {fileID: 919132149155446097, guid: 9229d06368eccb34594cd98b9861221a, type: 3}
     material: {fileID: 2100000, guid: 0620d232e08181c48ae7c40f122a53c5, type: 2}
