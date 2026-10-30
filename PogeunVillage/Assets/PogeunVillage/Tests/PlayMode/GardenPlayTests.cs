@@ -110,7 +110,7 @@ namespace PogeunVillage.PlayModeTests
             Vector2Int cell = default;
             yield return PlantAhead("FlowerClump", c => cell = c);
             Assert.AreEqual(GroundObjectKind.Flower, Grid.Get(cell));
-            var source = ground.ObjectAt(cell).transform.Find("Petals").GetComponent<Renderer>().sharedMaterial;
+            var source = FlowerLook.Petals(ground.ObjectAt(cell)).sharedMaterial;
             yield return Hold(WateringCan);
             yield return Swing();
             yield return NextMorning();
@@ -118,7 +118,7 @@ namespace PogeunVillage.PlayModeTests
             var cross = new[] { Vector2Int.up, Vector2Int.right, Vector2Int.down, Vector2Int.left }.Select(d => cell + d).ToArray();
             var spread = cross.Where(c => Grid.Get(c) == GroundObjectKind.Flower).ToArray();
             Assert.AreEqual(1, spread.Length, "상하좌우 중 한 칸에 번짐");
-            Assert.AreSame(source, ground.ObjectAt(spread[0]).transform.Find("Petals").GetComponent<Renderer>().sharedMaterial, "같은 꽃 색");
+            Assert.AreSame(source, FlowerLook.Petals(ground.ObjectAt(spread[0])).sharedMaterial, "같은 꽃 모습");
         }
 
         static int FlowerCount() => Object.FindObjectsByType<GridObject>().Count(g => g.kind == GroundObjectKind.Flower);

@@ -22,7 +22,7 @@ namespace PogeunVillage
 
         readonly Dictionary<Vector2Int, ChoppableTreeBehaviour> originalTrees = new();  // 자리(0.1m) → 처음 맵 나무
         readonly Dictionary<Vector2Int, Vector3> originalTreePositions = new();
-        readonly Dictionary<string, Material> petalLooks = new();
+        readonly Dictionary<string, FlowerLook> petalLooks = new();
         MaterialPropertyBlock block;
 
         void Start()
@@ -44,19 +44,13 @@ namespace PogeunVillage
             }
             foreach (var obj in ground.Objects())
             {
-                var petals = Petals(obj);
-                if (obj.kind == GroundObjectKind.Flower && petals && petals.sharedMaterial)
-                    petalLooks[petals.sharedMaterial.name] = petals.sharedMaterial;
+                var look = FlowerLook.Of(obj);
+                if (obj.kind == GroundObjectKind.Flower && look.IsValid)
+                    petalLooks[look.Name] = look;
             }
         }
 
         static Vector2Int Key(Vector3 p) => new(Mathf.RoundToInt(p.x * 10f), Mathf.RoundToInt(p.z * 10f));
-
-        static Renderer Petals(GridObject obj)
-        {
-            var t = obj ? obj.transform.Find("Petals") : null;
-            return t ? t.GetComponent<Renderer>() : null;
-        }
 
         public GroundSave Capture()
         {
@@ -68,8 +62,7 @@ namespace PogeunVillage
                 switch (obj.kind)
                 {
                     case GroundObjectKind.Flower:
-                        var petals = Petals(obj);
-                        save.flowers.Add(new CellData { x = c.x, y = c.y, value = garden.Garden.IsWilted(c) ? 1 : 0, look = petals && petals.sharedMaterial ? petals.sharedMaterial.name : "" });
+                        save.flowers.Add(new CellData { x = c.x, y = c.y, value = garden.Garden.IsWilted(c) ? 1 : 0, look = FlowerLook.Of(obj).Name });
                         break;
                     case GroundObjectKind.Sapling:
                         save.saplings.Add(new CellData { x = c.x, y = c.y, value = garden.Garden.Growth(c) });
@@ -167,9 +160,8 @@ namespace PogeunVillage
             foreach (var f in save.flowers)
             {
                 var spawned = ground.Placer.Spawn(GroundObjectKind.Flower, new Vector2Int(f.x, f.y));
-                var petals = spawned ? Petals(spawned.GetComponent<GridObject>()) : null;
-                if (petals && petalLooks.TryGetValue(f.look, out var look))
-                    petals.sharedMaterial = look;
+                if (spawned && petalLooks.TryGetValue(f.look, out var look))
+                    look.ApplyTo(spawned.GetComponent<GridObject>());
             }
             foreach (var s in save.saplings)
                 ground.Placer.Spawn(GroundObjectKind.Sapling, new Vector2Int(s.x, s.y));

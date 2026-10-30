@@ -122,6 +122,10 @@ namespace PogeunVillage.EditorTools
                 return;
             }
 
+            // Varco3D 모델(P-3): 가져오기 메뉴를 먼저 돌려 목록을 최신으로
+            VarcoModelImport.ImportAll();
+            models = AssetDatabase.LoadAssetAtPath<ModelLibrary>(VarcoModelImport.LibraryPath);
+
             // 채집 데이터 · 프리팹 (없을 때만 만들고, 있으면 값을 건드리지 않음)
             EnsureFolder(ItemDir);
             EnsureFolder(PrefabDir);
@@ -476,10 +480,8 @@ namespace PogeunVillage.EditorTools
             var fountainBase = Prim(PrimitiveType.Cylinder, "FountainBase", plaza, new Vector3(0f, 0.15f, 0f), new Vector3(4.6f, 0.3f, 4.6f), stone);
             var box = fountainBase.AddComponent<BoxCollider>();
             box.size = new Vector3(1f, 6f, 1f);
-            Prim(PrimitiveType.Cylinder, "FountainWater", plaza, new Vector3(0f, 0.32f, 0f), new Vector3(3.9f, 0.05f, 3.9f), Mat("FountainWater", "#8EDCF0", rim: 0.4f));
-            Prim(PrimitiveType.Cylinder, "FountainPillar", plaza, new Vector3(0f, 0.9f, 0f), new Vector3(0.6f, 0.7f, 0.6f), stone);
-            Prim(PrimitiveType.Cylinder, "FountainBowl", plaza, new Vector3(0f, 1.6f, 0f), new Vector3(1.8f, 0.12f, 1.8f), stone);
-            Prim(PrimitiveType.Sphere, "FountainTop", plaza, new Vector3(0f, 1.95f, 0f), new Vector3(0.5f, 0.6f, 0.5f), Mat("FountainWater", "#8EDCF0", rim: 0.4f));
+            ColliderOnly(fountainBase);
+            ModelVisual("Fountain", plaza, Vector3.zero);
 
             // 광장 게시판
             var wood = Mat("Wood", "#B98A5E");
@@ -487,10 +489,9 @@ namespace PogeunVillage.EditorTools
             board.SetParent(parent, false);
             board.localPosition = OnGround(PlazaCenter.x + 4f, PlazaCenter.y + 4.5f);
             board.localRotation = Quaternion.Euler(0f, 215f, 0f);
-            Prim(PrimitiveType.Cube, "Post_L", board, new Vector3(-0.8f, 0.7f, 0f), new Vector3(0.15f, 1.4f, 0.15f), wood);
-            Prim(PrimitiveType.Cube, "Post_R", board, new Vector3(0.8f, 0.7f, 0f), new Vector3(0.15f, 1.4f, 0.15f), wood);
-            Prim(PrimitiveType.Cube, "Board", board, new Vector3(0f, 1.15f, 0f), new Vector3(1.9f, 0.9f, 0.12f), Mat("BoardPaper", "#FFF4D8"), collider: true);
-            AddInteractable(board.gameObject, "게시판", InteractableKind.NoticeBoard, radius: 1f, markerHeight: 2f);
+            ColliderOnly(Prim(PrimitiveType.Cube, "Board", board, new Vector3(0f, 1.15f, 0f), new Vector3(1.7f, 2.3f, 0.4f), null, collider: true));
+            ModelVisual("NoticeBoard", board, Vector3.zero);
+            AddInteractable(board.gameObject, "게시판", InteractableKind.NoticeBoard, radius: 1f, markerHeight: 2.7f);
         }
 
         static HousePlot BuildHouse(Transform parent, HouseInfo info)
@@ -560,29 +561,24 @@ namespace PogeunVillage.EditorTools
             bridge.localRotation = Quaternion.Euler(0f, Mathf.Atan(slope) * Mathf.Rad2Deg, 0f);
             Occupied.Add(new Vector3(x, z, 5.5f));
 
-            var wood = Mat("Wood", "#B98A5E");
-            var plank = Mat("Plank", "#D6AE7B");
-            Prim(PrimitiveType.Cube, "Deck", bridge, new Vector3(0f, 0.05f, 0f), new Vector3(10f, 0.3f, 2.6f), plank, collider: true);
+            // 걷는 판 · 난간 기둥은 보이지 않는 충돌만(평평한 판 기준), 모습은 모델 — 길이 · 폭을 판에 맞춤
+            ColliderOnly(Prim(PrimitiveType.Cube, "Deck", bridge, new Vector3(0f, 0.05f, 0f), new Vector3(10f, 0.3f, 2.6f), null, collider: true));
             for (int side = -1; side <= 1; side += 2)
-            {
-                Prim(PrimitiveType.Cube, "Rail", bridge, new Vector3(0f, 0.75f, side * 1.2f), new Vector3(9f, 0.12f, 0.12f), wood);
                 for (int i = 0; i < 4; i++)
                 {
                     float px = -4.5f + i * 3f;
-                    var post = Prim(PrimitiveType.Cube, "Post", bridge, new Vector3(px, 0.45f, side * 1.2f), new Vector3(0.2f, 0.8f, 0.2f), wood, collider: true);
+                    var post = Prim(PrimitiveType.Cube, "Post", bridge, new Vector3(px, 0.45f, side * 1.2f), new Vector3(0.2f, 0.8f, 0.2f), null, collider: true);
                     post.GetComponent<BoxCollider>().size = new Vector3(1f, 2f, 1f);
+                    ColliderOnly(post);
                 }
-            }
+            var model = ModelVisual("Bridge", bridge, new Vector3(0f, -0.1f, 0f));
+            FitFootprint(model, 10.8f, 3.0f);
         }
 
         static void BuildLamps(Transform parent)
         {
             var lamps = new GameObject("Lamps").transform;
             lamps.SetParent(parent, false);
-            var pole = Mat("LampPole", "#5E5A66");
-            var glow = Mat("LampGlow", "#FFF1B8", rim: 0.3f);
-            glow.SetColor("_EmissionColor", Hex("#FFD27A") * 0.6f);
-
             for (int i = 0; i < 6; i++)
             {
                 float angle = i * 60f; // 정남쪽(카메라 쪽)은 비워 두기
@@ -592,8 +588,8 @@ namespace PogeunVillage.EditorTools
                 var lamp = new GameObject("Lamp").transform;
                 lamp.SetParent(lamps, false);
                 lamp.localPosition = OnGround(p.x, p.y);
-                Prim(PrimitiveType.Cylinder, "Pole", lamp, new Vector3(0f, 1f, 0f), new Vector3(0.14f, 1f, 0.14f), pole, collider: true);
-                Prim(PrimitiveType.Sphere, "Light", lamp, new Vector3(0f, 2.2f, 0f), Vector3.one * 0.5f, glow);
+                ColliderOnly(Prim(PrimitiveType.Cylinder, "Pole", lamp, new Vector3(0f, 1f, 0f), new Vector3(0.14f, 1f, 0.14f), null, collider: true));
+                ModelVisual("StreetLamp", lamp, Vector3.zero);
             }
         }
 
@@ -646,42 +642,31 @@ namespace PogeunVillage.EditorTools
             tree.localRotation = Quaternion.Euler(0f, Range(random, 0f, 360f), 0f);
             tree.localScale = Vector3.one * Range(random, 0.85f, 1.25f);
 
-            var trunk = Mat("Trunk", "#A57A52");
             int kind = random.Next(10);
             if (kind < 3)
             {
                 // 침엽수
-                var pine = Mat("Pine", "#5FAE7A");
-                Prim(PrimitiveType.Cylinder, "Trunk", tree, new Vector3(0f, 0.6f, 0f), new Vector3(0.35f, 0.6f, 0.35f), trunk, collider: true);
-                var cone = ConeMesh();
-                for (int i = 0; i < 3; i++)
-                {
-                    var layer = MeshObject("Leaves", tree, cone, pine);
-                    layer.transform.localPosition = new Vector3(0f, 1.1f + i * 0.85f, 0f);
-                    layer.transform.localScale = new Vector3(2.4f - i * 0.6f, 1.6f - i * 0.2f, 2.4f - i * 0.6f);
-                }
-                AddInteractable(tree.gameObject, "나무", inVillage ? InteractableKind.Tree : InteractableKind.ForestTree, radius: 0.4f, markerHeight: 4f);
+                ColliderOnly(Prim(PrimitiveType.Cylinder, "Trunk", tree, new Vector3(0f, 0.6f, 0f), new Vector3(0.35f, 0.6f, 0.35f), null, collider: true));
+                ModelVisual("TreePine", tree, Vector3.zero);
+                AddInteractable(tree.gameObject, "나무", inVillage ? InteractableKind.Tree : InteractableKind.ForestTree, radius: 0.4f, markerHeight: 4.6f);
             }
             else
             {
-                // 둥근 활엽수 (일부는 과일나무)
-                var leaves = Mat("Leaves", "#6FC27A");
-                Prim(PrimitiveType.Cylinder, "Trunk", tree, new Vector3(0f, 0.8f, 0f), new Vector3(0.4f, 0.8f, 0.4f), trunk, collider: true);
-                Prim(PrimitiveType.Sphere, "Crown", tree, new Vector3(0f, 2.4f, 0f), new Vector3(2.4f, 2.1f, 2.4f), leaves);
-                Prim(PrimitiveType.Sphere, "Crown2", tree, new Vector3(0.6f, 2.0f, 0.3f), new Vector3(1.5f, 1.3f, 1.5f), leaves);
-                Prim(PrimitiveType.Sphere, "Crown3", tree, new Vector3(-0.5f, 2.1f, -0.4f), new Vector3(1.4f, 1.2f, 1.4f), leaves);
+                // 둥근 활엽수 (일부는 과일나무 — 사과 · 복숭아 나무 모델, 딸 수 있는 열매는 따로 보임)
+                bool apple = kind == 8, peach = kind == 9;
+                ColliderOnly(Prim(PrimitiveType.Cylinder, "Trunk", tree, new Vector3(0f, 0.8f, 0f), new Vector3(0.4f, 0.8f, 0.4f), null, collider: true));
+                ModelVisual(apple ? "TreeApple" : peach ? "TreePeach" : "TreeRound", tree, Vector3.zero);
 
-                AddInteractable(tree.gameObject, "나무", inVillage ? InteractableKind.Tree : InteractableKind.ForestTree, radius: 0.4f, markerHeight: 3.7f);
+                AddInteractable(tree.gameObject, "나무", inVillage ? InteractableKind.Tree : InteractableKind.ForestTree, radius: 0.4f, markerHeight: 4.2f);
 
-                if (kind >= 8)
+                if (apple || peach)
                 {
-                    bool apple = kind == 8;
                     var fruit = Mat(apple ? "Apple" : "Peach", apple ? "#F0645A" : "#FFB38A", rim: 0.3f);
                     var visuals = new Transform[gatheringRules.fruitMaxOnTree];
                     for (int i = 0; i < visuals.Length; i++)
                     {
-                        float a = i * 360f / visuals.Length * Mathf.Deg2Rad;
-                        visuals[i] = Prim(PrimitiveType.Sphere, "Fruit", tree, new Vector3(Mathf.Cos(a) * 1.05f, 2.2f + (i % 2) * 0.5f, Mathf.Sin(a) * 1.05f), Vector3.one * 0.3f, fruit).transform;
+                        float a = (i * 360f / visuals.Length - 90f) * Mathf.Deg2Rad;  // 첫 열매는 카메라 쪽
+                        visuals[i] = Prim(PrimitiveType.Sphere, "Fruit", tree, new Vector3(Mathf.Cos(a) * 1.45f, 1.9f + (i % 2) * 0.5f, Mathf.Sin(a) * 1.45f), Vector3.one * 0.38f, fruit).transform;
                     }
 
                     var fruitTree = tree.gameObject.AddComponent<FruitTreeBehaviour>();
@@ -709,7 +694,6 @@ namespace PogeunVillage.EditorTools
         {
             var rocks = new GameObject("Rocks").transform;
             rocks.SetParent(parent, false);
-            var rock = Mat("Rock", "#B9B4AE");
             int placed = 0;
             for (int attempt = 0; attempt < 800 && placed < 14; attempt++)
             {
@@ -719,8 +703,12 @@ namespace PogeunVillage.EditorTools
                     continue;
                 Occupied.Add(new Vector3(x, z, 1f));
                 float s = Range(random, 0.7f, 1.3f);
-                var go = Prim(PrimitiveType.Sphere, "Rock", rocks, OnGround(x, z, 0.1f), new Vector3(1.3f * s, 0.8f * s, 1.1f * s), rock, collider: true);
+                var go = Prim(PrimitiveType.Sphere, "Rock", rocks, OnGround(x, z, 0.1f), new Vector3(1.3f * s, 0.8f * s, 1.1f * s), null, collider: true);
                 go.transform.localRotation = Quaternion.Euler(0f, Range(random, 0f, 360f), Range(random, -8f, 8f));
+                ColliderOnly(go);
+                var model = ModelVisual("Rock", rocks, OnGround(x, z, -0.1f));
+                model.transform.localRotation = go.transform.localRotation * model.transform.localRotation;
+                model.transform.localScale *= s;
                 placed++;
             }
         }
@@ -735,9 +723,6 @@ namespace PogeunVillage.EditorTools
         {
             var flowers = new GameObject("Flowers").transform;
             flowers.SetParent(parent, false);
-            string[] palette = { "#FF9EC4", "#FFFFFF", "#FFE066", "#C9A7F2", "#FF8C7A" };
-            var stem = Mat("Stem", "#5BAA5E");
-            var center = Mat("FlowerCenter", "#FFD34D");
             var grid = ground.data.CreateGrid();
 
             int placed = 0;
@@ -747,7 +732,7 @@ namespace PogeunVillage.EditorTools
                 float z = Range(random, -32f, 46f);
                 if (!CanPlaceNature(x, z, 0.8f))
                     continue;
-                var petal = Mat("Flower_" + placed % palette.Length, palette[placed % palette.Length], rim: 0.25f);
+                string look = FlowerModels[placed % FlowerModels.Length];  // 무리마다 한 종류
                 int count = random.Next(3, 6);
                 Vector2Int middle = grid.ToCell(new Vector2(x, z));
                 int planted = 0;
@@ -761,9 +746,7 @@ namespace PogeunVillage.EditorTools
                     var flower = new GameObject("Flower").transform;
                     flower.SetParent(flowers, false);
                     flower.localPosition = OnGround(c.x, c.y);
-                    Prim(PrimitiveType.Cylinder, "Stem", flower, new Vector3(0f, 0.15f, 0f), new Vector3(0.05f, 0.15f, 0.05f), stem, castShadows: false);
-                    Prim(PrimitiveType.Sphere, "Petals", flower, new Vector3(0f, 0.33f, 0f), new Vector3(0.32f, 0.14f, 0.32f), petal, castShadows: false);
-                    Prim(PrimitiveType.Sphere, "Center", flower, new Vector3(0f, 0.4f, 0f), Vector3.one * 0.1f, center, castShadows: false);
+                    FlowerVisual(flower, look, random);
                     AddInteractable(flower.gameObject, "꽃", InteractableKind.Flower, radius: 0.15f, markerHeight: 0.75f, wiggle: false);
                     flower.gameObject.AddComponent<Pickup>().item = flowerItem;
                     var gridObject = flower.gameObject.AddComponent<GridObject>();
@@ -773,6 +756,16 @@ namespace PogeunVillage.EditorTools
                 Occupied.Add(new Vector3(x, z, 0.8f));
                 placed++;
             }
+        }
+
+        // 꽃 모델 3종(P-3): 모습 이름 = 재질 이름(저장 look)
+        static readonly string[] FlowerModels = { "FlowerTulip", "FlowerDaisy", "FlowerPansy" };
+
+        static void FlowerVisual(Transform flower, string id, System.Random random)
+        {
+            var petals = ModelVisual(id, flower, Vector3.zero, castShadows: false);
+            petals.name = "Petals";
+            petals.transform.localRotation = Quaternion.Euler(0f, random == null ? 180f : Range(random, 0f, 360f), 0f);
         }
 
         static float Range(System.Random random, float min, float max) => min + (float)random.NextDouble() * (max - min);
@@ -1430,13 +1423,9 @@ namespace PogeunVillage.EditorTools
         static GameObject BuildGrownTreePrefab()
         {
             var root = new GameObject("GrownTree");
-            var trunk = Mat("Trunk", "#A57A52");
-            var leaves = Mat("Leaves", "#6FC27A");
-            Prim(PrimitiveType.Cylinder, "Trunk", root.transform, new Vector3(0f, 0.8f, 0f), new Vector3(0.4f, 0.8f, 0.4f), trunk, collider: true);
-            Prim(PrimitiveType.Sphere, "Crown", root.transform, new Vector3(0f, 2.4f, 0f), new Vector3(2.4f, 2.1f, 2.4f), leaves);
-            Prim(PrimitiveType.Sphere, "Crown2", root.transform, new Vector3(0.6f, 2.0f, 0.3f), new Vector3(1.5f, 1.3f, 1.5f), leaves);
-            Prim(PrimitiveType.Sphere, "Crown3", root.transform, new Vector3(-0.5f, 2.1f, -0.4f), new Vector3(1.4f, 1.2f, 1.4f), leaves);
-            AddInteractable(root, "나무", InteractableKind.Tree, radius: 0.4f, markerHeight: 3.7f);
+            ColliderOnly(Prim(PrimitiveType.Cylinder, "Trunk", root.transform, new Vector3(0f, 0.8f, 0f), new Vector3(0.4f, 0.8f, 0.4f), null, collider: true));
+            ModelVisual("TreeRound", root.transform, Vector3.zero);
+            AddInteractable(root, "나무", InteractableKind.Tree, radius: 0.4f, markerHeight: 4.2f);
             var choppable = root.AddComponent<ChoppableTreeBehaviour>();
             choppable.rules = gatheringRules;
             choppable.settings = settings;
@@ -1451,9 +1440,7 @@ namespace PogeunVillage.EditorTools
         static GameObject BuildPlantedFlowerPrefab()
         {
             var root = new GameObject("Flower");
-            Prim(PrimitiveType.Cylinder, "Stem", root.transform, new Vector3(0f, 0.15f, 0f), new Vector3(0.05f, 0.15f, 0.05f), Mat("Stem", "#5BAA5E"), castShadows: false);
-            Prim(PrimitiveType.Sphere, "Petals", root.transform, new Vector3(0f, 0.33f, 0f), new Vector3(0.32f, 0.14f, 0.32f), Mat("Flower_0", "#FF9EC4", rim: 0.25f), castShadows: false);
-            Prim(PrimitiveType.Sphere, "Center", root.transform, new Vector3(0f, 0.4f, 0f), Vector3.one * 0.1f, Mat("FlowerCenter", "#FFD34D"), castShadows: false);
+            FlowerVisual(root.transform, FlowerModels[0], null);
             AddInteractable(root, "꽃", InteractableKind.Flower, radius: 0.15f, markerHeight: 0.75f, wiggle: false);
             root.AddComponent<Pickup>().item = flowerItem;
             root.AddComponent<GridObject>().kind = GroundObjectKind.Flower;
@@ -2331,6 +2318,67 @@ namespace PogeunVillage.EditorTools
             if (!collider)
                 Object.DestroyImmediate(go.GetComponent<Collider>());
             return go;
+        }
+
+        // Varco3D 모델(P-3, MODELING_SPEC.md): 원본을 그대로 자식으로 두고 바깥 그릇에서 높이(ModelLibrary) · 정면 회전을 맞춤. 충돌 없음
+        static ModelLibrary models;
+
+        static GameObject ModelVisual(string id, Transform parent, Vector3 localPosition, bool castShadows = true)
+        {
+            var entry = models ? models.Find(id) : null;
+            var holder = new GameObject("Model_" + id);  // 원점에서 크기를 잰 뒤 부모에 붙임(이름은 원래 물체와 겹치지 않게)
+            if (entry == null || !entry.model)
+            {
+                Debug.LogError($"모델 '{id}'이 ModelLibrary에 없습니다 — 메뉴 Pogeun Village/Import Varco Models");
+                holder.transform.SetParent(parent, false);
+                return holder;
+            }
+            var model = (GameObject)PrefabUtility.InstantiatePrefab(entry.model, holder.transform);
+            float height = 0f;
+            foreach (var renderer in model.GetComponentsInChildren<MeshRenderer>())
+            {
+                renderer.sharedMaterial = entry.material;
+                if (!castShadows)
+                    renderer.shadowCastingMode = ShadowCastingMode.Off;
+                height = Mathf.Max(height, renderer.bounds.max.y);
+            }
+            holder.transform.SetParent(parent, false);
+            holder.transform.localPosition = localPosition;
+            holder.transform.localRotation = Quaternion.Euler(0f, entry.yaw, 0f);
+            holder.transform.localScale = Vector3.one * (entry.height / Mathf.Max(height, 0.01f));
+            return holder;
+        }
+
+        // 모델 바닥 크기를 길이(부모 X) · 폭(부모 Z)에 맞춤 — 높이는 폭과 같은 비율. 그릇 회전(yaw)은 90도 단위
+        static void FitFootprint(GameObject holder, float length, float width)
+        {
+            var t = holder.transform;
+            var (position, rotation, parent) = (t.localPosition, t.localRotation, t.parent);
+            t.SetParent(null, false);
+            t.position = Vector3.zero;
+            t.rotation = rotation;
+            t.localScale = Vector3.one;
+            var bounds = new Bounds();
+            bool first = true;
+            foreach (var renderer in holder.GetComponentsInChildren<MeshRenderer>())
+            {
+                if (first) { bounds = renderer.bounds; first = false; }
+                else bounds.Encapsulate(renderer.bounds);
+            }
+            // 그릇 축으로 본 크기: 회전 뒤 월드 X · Z가 부모의 길이 · 폭
+            Vector3 local = Quaternion.Inverse(rotation) * new Vector3(length / bounds.size.x, 0f, width / bounds.size.z);
+            float sw = width / bounds.size.z;
+            t.localScale = new Vector3(Mathf.Abs(local.x), sw, Mathf.Abs(local.z));
+            t.SetParent(parent, false);
+            t.localPosition = position;
+            t.localRotation = rotation;
+        }
+
+        // 보이는 몸통은 모델이 맡고 기본 도형은 충돌만 남김
+        static void ColliderOnly(GameObject go)
+        {
+            Object.DestroyImmediate(go.GetComponent<MeshRenderer>());
+            Object.DestroyImmediate(go.GetComponent<MeshFilter>());
         }
 
         static GameObject MeshObject(string name, Transform parent, Mesh mesh, Material material)

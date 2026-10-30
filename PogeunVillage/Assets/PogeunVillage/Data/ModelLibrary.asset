@@ -1,0 +1,80 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 56a2464b1fba1cf4e99012f8c055cc84, type: 3}
+  m_Name: ModelLibrary
+  m_EditorClassIdentifier: PogeunVillage::PogeunVillage.ModelLibrary
+  entries:
+  - id: Bridge
+    model: {fileID: 919132149155446097, guid: 641a87a581bb9dd43be545ee5fc17cb1, type: 3}
+    material: {fileID: 2100000, guid: eac907a014991ed4e9cecc877cd4f9f7, type: 2}
+    height: 2.2
+    yaw: 90
+  - id: FlowerDaisy
+    model: {fileID: 919132149155446097, guid: 1e27df8c59d41e04282ed4042bbab336, type: 3}
+    material: {fileID: 2100000, guid: 090404f376f49314f9bf47a765aa9f31, type: 2}
+    height: 0.42
+    yaw: 0
+  - id: FlowerPansy
+    model: {fileID: 919132149155446097, guid: bbe4a37faabcf04458008c07a88dfa07, type: 3}
+    material: {fileID: 2100000, guid: b84b601d4a202184b8aae2c361bf4afe, type: 2}
+    height: 0.42
+    yaw: 0
+  - id: FlowerTulip
+    model: {fileID: 919132149155446097, guid: 702b90104ecd6b345bf47e567769f21d, type: 3}
+    material: {fileID: 2100000, guid: 718b00f6405bc6644adb9099a4fb28e9, type: 2}
+    height: 0.5
+    yaw: 0
+  - id: Fountain
+    model: {fileID: 919132149155446097, guid: 3ddd9b4f5cb7bc54cbdf04c476d898fd, type: 3}
+    material: {fileID: 2100000, guid: 4577cee4403d1e445b8c369062c70f62, type: 2}
+    height: 3.6
+    yaw: 0
+  - id: Mailbox
+    model: {fileID: 919132149155446097, guid: a6e61d60c87d4ba40a5a4e2f3332033e, type: 3}
+    material: {fileID: 2100000, guid: b1d0ca302b0e10e43aa5b82dd50abdd0, type: 2}
+    height: 1.3
+    yaw: 0
+  - id: NoticeBoard
+    model: {fileID: 919132149155446097, guid: 6bdd277b82b77af42a1ebbe373139652, type: 3}
+    material: {fileID: 2100000, guid: a5bc822638c29b84bb5118db24782633, type: 2}
+    height: 2.3
+    yaw: 0
+  - id: Rock
+    model: {fileID: 919132149155446097, guid: 5dbd57c68dad57e46a6f61defae53776, type: 3}
+    material: {fileID: 2100000, guid: d941b433a0e9d2e42802ec645e442418, type: 2}
+    height: 0.7
+    yaw: 0
+  - id: StreetLamp
+    model: {fileID: 919132149155446097, guid: 03f6ce047aa6203469debf5386dae1c7, type: 3}
+    material: {fileID: 2100000, guid: 4b931513da793394d9baf606ba30deb8, type: 2}
+    height: 2.6
+    yaw: 0
+  - id: TreeApple
+    model: {fileID: 919132149155446097, guid: 96f9cf12af5b4af4fbddee8d4c3bbd33, type: 3}
+    material: {fileID: 2100000, guid: d1039826742d0e040a9e211597246766, type: 2}
+    height: 3.8
+    yaw: 0
+  - id: TreePeach
+    model: {fileID: 919132149155446097, guid: a3509ef58f0bf5d40920c8775a5955a2, type: 3}
+    material: {fileID: 2100000, guid: eb56a87ebb87ec242ace70329f866678, type: 2}
+    height: 3.8
+    yaw: 0
+  - id: TreePine
+    model: {fileID: 919132149155446097, guid: 390eb20509f5e0c429d6aaade6bc8eb7, type: 3}
+    material: {fileID: 2100000, guid: 582e52937086b6e42b3e5426ff6f31fb, type: 2}
+    height: 4.2
+    yaw: 0
+  - id: TreeRound
+    model: {fileID: 919132149155446097, guid: b707ca03015532a4ba7f0e19a753e7c6, type: 3}
+    material: {fileID: 2100000, guid: 9a7bc7ec7de273f419b8f1e08eaf1909, type: 2}
+    height: 3.8
+    yaw: 0

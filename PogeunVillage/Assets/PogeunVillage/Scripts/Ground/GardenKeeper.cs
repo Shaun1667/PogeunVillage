@@ -55,11 +55,10 @@ namespace PogeunVillage
 
             foreach (var (from, to) in morning.spreadFlowers)
             {
-                var sourcePetals = Petals(ground.ObjectAt(from));
+                var look = FlowerLook.Of(ground.ObjectAt(from));
                 var spawned = ground.Placer.Spawn(GroundObjectKind.Flower, to);
-                var petals = spawned ? Petals(spawned.GetComponent<GridObject>()) : null;
-                if (petals && sourcePetals)
-                    petals.sharedMaterial = sourcePetals.sharedMaterial;
+                if (spawned)
+                    look.ApplyTo(spawned.GetComponent<GridObject>());
             }
 
             foreach (var cell in morning.grownSaplings)
@@ -103,16 +102,9 @@ namespace PogeunVillage
             Destroy(obj.gameObject);
         }
 
-        static Renderer Petals(GridObject flower)
-        {
-            if (!flower) return null;
-            var t = flower.transform.Find("Petals");
-            return t ? t.GetComponent<Renderer>() : null;
-        }
-
         void ShowWilted(GridObject flower, bool wilted)
         {
-            var petals = Petals(flower);
+            var petals = FlowerLook.Petals(flower);
             if (petals)
             {
                 block.Clear();
