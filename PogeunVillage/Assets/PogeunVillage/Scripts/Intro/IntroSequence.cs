@@ -9,7 +9,7 @@ namespace PogeunVillage
     /// 인트로 연출(P-5, GDD 결정 2026-10-30): 마을 화면 가득 → 뒤로 빠지며 아이 방 모니터 화면이었음이 드러남 → 방
     /// → 화면 속 커서가 '게임 시작'을 누름 → 모니터로 돌진 · 섬광 → 마을로 컷 → 플레이어가 하늘에서 떨어져 착지(먼지) → 카메라가 평소 자리로 → 조작.
     /// 마을 카메라를 텍스처로 받아 모니터 화면에 띄우고(화면 속 버튼 · 커서도 마을 카메라의 화면 UI), 방 카메라는 화면이 꽉 찬 자리에서 출발 · 돌아옴(매치 컷).
-    /// 새로 시작할 때만 시작 화면(StartScreen)이 부름. 그동안 시계 · 플레이어 · HUD를 멈추고 숨김, 아무 키 = 건너뛰기. 시간표는 IntroTimeline, 수치는 IntroSettings.
+    /// 새로 시작할 때만 시작 화면(StartScreen)이 부름. 그동안 시계 · 플레이어 · HUD를 멈추고 숨김, ESC = 건너뛰기. 시간표는 IntroTimeline, 수치는 IntroSettings.
     /// </summary>
     public class IntroSequence : MonoBehaviour
     {
@@ -131,7 +131,7 @@ namespace PogeunVillage
             return new Pose(screen.position - screen.forward * distance, Quaternion.LookRotation(screen.forward, screen.up));
         }
 
-        /// <summary>건너뛰기(아무 키) — 바로 끝 상태</summary>
+        /// <summary>건너뛰기(ESC) — 바로 끝 상태</summary>
         public void Skip()
         {
             if (IsPlaying)
@@ -162,12 +162,10 @@ namespace PogeunVillage
 
         static bool SkipPressed()
         {
+            // ESC(패드 Start)만 — 클릭 · 다른 키로는 넘어가지 않음(결정 2026-10-30)
             var keyboard = Keyboard.current;
-            var mouse = Mouse.current;
             var gamepad = Gamepad.current;
-            return (keyboard?.anyKey.wasPressedThisFrame ?? false)
-                   || (mouse?.leftButton.wasPressedThisFrame ?? false)
-                   || (gamepad?.buttonSouth.wasPressedThisFrame ?? false)
+            return (keyboard?.escapeKey.wasPressedThisFrame ?? false)
                    || (gamepad?.startButton.wasPressedThisFrame ?? false);
         }
 

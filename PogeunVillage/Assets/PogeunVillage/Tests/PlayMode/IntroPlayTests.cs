@@ -7,7 +7,7 @@ namespace PogeunVillage.PlayModeTests
 {
     /// <summary>
     /// P-5a · b 확인(BALANCE 20번): 저장 없이 시작하면 인트로 — 시계 · 플레이어 · HUD 멈춤 · 숨김, 마을 → 뒤로 빠지기(시작 순간 모니터 화면이 방 카메라를 꽉 채움) → 방 → 끝나면 조작.
-    /// 아무 키 = 건너뛰기. 이어하기에는 인트로 없음(다른 저장 테스트는 AutoPlay가 꺼져 있음).
+    /// ESC = 건너뛰기(클릭 · 다른 키는 무시). 이어하기에는 인트로 없음(다른 저장 테스트는 AutoPlay가 꺼져 있음).
     /// </summary>
     public class IntroPlayTests : ToolSceneTest
     {
@@ -146,10 +146,21 @@ namespace PogeunVillage.PlayModeTests
         }
 
         [UnityTest]
-        public IEnumerator AnyKey_Skips()
+        public IEnumerator ClickOrOtherKey_DoesNotSkip()
         {
             yield return null;
+            yield return Tap(mouse.leftButton);
+            Assert.IsTrue(intro.IsPlaying, "클릭으로는 안 넘어감");
             yield return Tap(keyboard.spaceKey);
+            Assert.IsTrue(intro.IsPlaying, "다른 키로도 안 넘어감");
+            Assert.IsFalse(intro.playerLock.IsFree);
+        }
+
+        [UnityTest]
+        public IEnumerator Escape_Skips()
+        {
+            yield return null;
+            yield return Tap(keyboard.escapeKey);
             Assert.IsFalse(intro.IsPlaying, "건너뜀");
             Assert.IsNull(intro.mainCamera.targetTexture);
             Assert.IsFalse(intro.flash.enabled, "섬광 없음");

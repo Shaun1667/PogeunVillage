@@ -63,6 +63,7 @@
   - 구현: 데이터 `IntroSettings`(BALANCE 20번) · 순수 `Intro/IntroTimeline`(장면 Village · PullOut · Room · Done, 진행 · 감속) · 어댑터 `Intro/IntroSequence`(시계 · 플레이어 · HUD 멈춤/숨김, 마을 카메라를 화면 크기 텍스처로 받아 모니터 쿼드에 프로퍼티 블록으로, 방 카메라는 화면이 시야를 꽉 채우는 자리 `FillPose`에서 끝 자리로 ease-out, 아무 키 · 클릭 · 패드 A/Start = 건너뛰기, `Finished` 이벤트). `StartScreen`이 저장 없음 · 새로 시작 때 `Play`. 새 셰이더 `PogeunVillage/CurvedScreen`(빛 안 받는 화면, CurvedWorld.hlsl 휨 · 가림 포함), `FlatWorldCamera`(이 카메라는 휨 · 가림 끔 — `CurvedWorld`가 확인). 맵 생성 `BuildIntro`(방 (3000,0,0) · 방 카메라 · 연결)
   - 고친 것: 방 카메라 후처리를 끔 — 화면 속 마을이 이미 후처리돼 두 번 하면 컷 순간 어두워졌음. 끝 자리를 뒤 1.8m · 아래를 보게(키보드 · 마우스까지)
   - 테스트: EditMode `IntroTimelineTests` 3개 — 전체 268개 통과. PlayMode `IntroPlayTests` 3개(새로 시작 = 인트로 · 멈춤/숨김 → 끝나면 조작 / 뒤로 빠지기 시작 순간 모니터 화면이 방 카메라를 꽉 채움(20-4) / 아무 키 건너뛰기) — 전체 189개 통과. 다른 PlayMode 테스트는 `VillageSceneTest.WithIntro`(기본 false)로 인트로를 끔(`IntroSequence.AutoPlay`)
+  - 결정 (2026-10-30, 플레이 확인 뒤 사용자 요청): 건너뛰기는 **ESC(패드 Start)만**. 클릭 · 다른 키로는 넘어가지 않음 — `IntroPlayTests.ClickOrOtherKey_DoesNotSkip` · `Escape_Skips`
   - 참고: 방은 해가 비치는 밝은 색이라 '저녁' 느낌이 약함(조명 · 모델은 방 소품 모델 때). 마을 화면에서 손 흔드는 주민은 아직 없음. 지금은 방 머물기가 끝나면 마을로 바로 돌아감(P-5b에서 클릭 · 빨려 들기로)
 - [x] **P-5b. 클릭 · 빨려 들기** (2026-10-30) — 플레이 확인 완료 — 화면 속 '게임 시작' 버튼과 커서, 클릭, 모니터로 돌진 · 섬광 → 마을 카메라로 컷
   - 상태 (2026-10-30): 근거는 EditMode 268 · PlayMode 190 통과 + 실제 화면 캡처(방 · 화면 속 제목 · 버튼 · 커서, 돌진 중) + 에디터에서 인트로가 끝까지 실시간으로 재생됨(오류 없음)
