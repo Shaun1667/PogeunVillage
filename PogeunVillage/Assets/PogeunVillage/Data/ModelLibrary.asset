@@ -38,6 +38,106 @@ MonoBehaviour:
     material: {fileID: 2100000, guid: 4577cee4403d1e445b8c369062c70f62, type: 2}
     height: 3.6
     yaw: 0
+  - id: House01
+    model: {fileID: 919132149155446097, guid: 9229d06368eccb34594cd98b9861221a, type: 3}
+    material: {fileID: 2100000, guid: 0620d232e08181c48ae7c40f122a53c5, type: 2}
+    height: 3.6
+    yaw: 0
+  - id: House02
+    model: {fileID: 919132149155446097, guid: 896254da418886148ae691c0b11a0e66, type: 3}
+    material: {fileID: 2100000, guid: 527968c61a918b144ad55eb9832f1d1d, type: 2}
+    height: 3.6
+    yaw: 0
+  - id: House03
+    model: {fileID: 919132149155446097, guid: 4ea59722943fe4a4a8377d504f2458e2, type: 3}
+    material: {fileID: 2100000, guid: 38abc09f12650f4479b7840429b7a3ba, type: 2}
+    height: 3.6
+    yaw: 0
+  - id: House04
+    model: {fileID: 919132149155446097, guid: 54bea6aa4ca256b428303cc01b43cf64, type: 3}
+    material: {fileID: 2100000, guid: 29c847da31fe70048b645f9459ce769e, type: 2}
+    height: 3.6
+    yaw: 0
+  - id: House05
+    model: {fileID: 919132149155446097, guid: 0499109b0f2ca4b419847b07eaabd4b4, type: 3}
+    material: {fileID: 2100000, guid: 49e21660ecba05943a4ae616b96342bd, type: 2}
+    height: 3.6
+    yaw: 0
+  - id: House06
+    model: {fileID: 919132149155446097, guid: 0dd178512c51e04478d6802103d04ea7, type: 3}
+    material: {fileID: 2100000, guid: 12a7e4ca9cebb1b4a8450f16908952e2, type: 2}
+    height: 3.6
+    yaw: 0
+  - id: House07
+    model: {fileID: 919132149155446097, guid: ab578d7ade5f8be46ad01fda14a89367, type: 3}
+    material: {fileID: 2100000, guid: d2e72ace820c68b47b806e28b35b78e0, type: 2}
+    height: 3.6
+    yaw: 0
+  - id: House08
+    model: {fileID: 919132149155446097, guid: 203e9ed93105c664fb2dc0c9f615e346, type: 3}
+    material: {fileID: 2100000, guid: f6bab152dfe133e43b90b7e0f9b5c034, type: 2}
+    height: 3.6
+    yaw: 0
+  - id: House09
+    model: {fileID: 919132149155446097, guid: eaf615c7a4d54be4684c6bfc3d400ffa, type: 3}
+    material: {fileID: 2100000, guid: d588cdeb859464c49a96ae512d1ec823, type: 2}
+    height: 3.6
+    yaw: 0
+  - id: House10
+    model: {fileID: 919132149155446097, guid: 9d3bcb90562340a41abcba040120dfaf, type: 3}
+    material: {fileID: 2100000, guid: 29abe8f8a67d93d49b58c2d212135ab4, type: 2}
+    height: 3.6
+    yaw: 0
+  - id: House11
+    model: {fileID: 919132149155446097, guid: 0652bb04d7be6994b98ed2376d001424, type: 3}
+    material: {fileID: 2100000, guid: 0b4b1cd596a6a81448f150dbc4bf5d05, type: 2}
+    height: 3.6
+    yaw: 0
+  - id: House12
+    model: {fileID: 919132149155446097, guid: c60b2d3aad7791346bd404aa68fcc36a, type: 3}
+    material: {fileID: 2100000, guid: 7fe8784f83450fb47842245cb305a458, type: 2}
+    height: 3.6
+    yaw: 0
+  - id: House13
+    model: {fileID: 919132149155446097, guid: ed4aff203f627a04f9006b4485098cb0, type: 3}
+    material: {fileID: 2100000, guid: 11772989ce751cc409b160949c62cd9b, type: 2}
+    height: 3.6
+    yaw: 0
+  - id: House14
+    model: {fileID: 919132149155446097, guid: f0f73e479dc9bda4a8bd0ded2af1e403, type: 3}
+    material: {fileID: 2100000, guid: 7329db5d76696244e90cfa82041580f6, type: 2}
+    height: 3.6
+    yaw: 0
+  - id: House15
+    model: {fileID: 919132149155446097, guid: bdff4897be269774684b7dfdc9bff468, type: 3}
+    material: {fileID: 2100000, guid: ecbd09c5b60ce434fa65c5b3d624fca6, type: 2}
+    height: 3.6
+    yaw: 0
+  - id: House16
+    model: {fileID: 919132149155446097, guid: 5abcdfd0e5057774288a6a315f8dbeed, type: 3}
+    material: {fileID: 2100000, guid: c0451d9404b6ee34ca9284358dd5049f, type: 2}
+    height: 3.6
+    yaw: 0
+  - id: House17
+    model: {fileID: 919132149155446097, guid: e66777965f5c578449ed68ac70a92a33, type: 3}
+    material: {fileID: 2100000, guid: 8dd3066c059fedd4fb687887a9175dba, type: 2}
+    height: 3.6
+    yaw: 0
+  - id: House18
+    model: {fileID: 919132149155446097, guid: 897775743747f5e42bb9282425f13418, type: 3}
+    material: {fileID: 2100000, guid: 2e565adb75b191b4dab20622a1b7abb7, type: 2}
+    height: 3.6
+    yaw: 0
+  - id: House19
+    model: {fileID: 919132149155446097, guid: f924360c5680b7c4b89bd40d0b8922cb, type: 3}
+    material: {fileID: 2100000, guid: 60a7ed3cc65c86648bcec8b7c6fd0a82, type: 2}
+    height: 3.6
+    yaw: 0
+  - id: House20
+    model: {fileID: 919132149155446097, guid: a3f3d302afa23fe4d9e7ec069870d6ad, type: 3}
+    material: {fileID: 2100000, guid: a2840f22cf899b54a9ff33df7e1c3b36, type: 2}
+    height: 3.6
+    yaw: 0
   - id: Mailbox
     model: {fileID: 919132149155446097, guid: a6e61d60c87d4ba40a5a4e2f3332033e, type: 3}
     material: {fileID: 2100000, guid: b1d0ca302b0e10e43aa5b82dd50abdd0, type: 2}

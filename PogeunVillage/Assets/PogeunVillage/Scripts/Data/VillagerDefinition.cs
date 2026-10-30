@@ -40,6 +40,10 @@ namespace PogeunVillage
         [Tooltip("테마 가구 답례(3-4d). {0} = 가구 이름")]
         public string[] themeGiftLines = { "우리 친해진 기념이야! {0}을(를) 줄게.", "너한테 꼭 주고 싶었어. {0}이야!" };
 
+        [Header("모델 (P-3)")]
+        [Tooltip("이 주민의 집(Prefabs/Houses/House번호, 맵 생성 메뉴가 비어 있을 때 채움). 없으면 그레이박스 집")]
+        public GameObject houseModel;
+
         [Header("테마 가구 (3-4d)")]
         [Tooltip("자기 테마 가구 4가지: 화분 · 벤치 · 탁자 · 가로등 = 친밀도 보상 차례(맵 생성 메뉴가 채움)")]
         public FurnitureDefinition[] themeFurniture = { };

@@ -54,6 +54,7 @@ MonoBehaviour:
   themeGiftLines:
   - "\uC6B0\uB9AC \uCE5C\uD574\uC9C4 \uAE30\uB150\uC774\uC57C! {0}\uC744(\uB97C) \uC904\uAC8C."
   - "\uB108\uD55C\uD14C \uAF2D \uC8FC\uACE0 \uC2F6\uC5C8\uC5B4. {0}\uC774\uC57C!"
+  houseModel: {fileID: 6874215610897954442, guid: 90cb4837c71ef244b9f73a61b4b1bab3, type: 3}
   themeFurniture:
   - {fileID: 11400000, guid: 03b307709beddaf45ad8e1e3a3fa201c, type: 2}
   - {fileID: 11400000, guid: c9cc63a886429634d9837f6fc33445ba, type: 2}

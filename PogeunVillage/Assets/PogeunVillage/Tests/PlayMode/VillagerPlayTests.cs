@@ -52,10 +52,15 @@ namespace PogeunVillage.PlayModeTests
         }
 
         [Test]
-        public void HouseWall_HasResidentColor()
+        public void House_IsResidents()
         {
             var plot = village.plots.First(p => p.Resident);
-            var block = new MaterialPropertyBlock();
+            if (plot.Resident.houseModel)
+            {
+                StringAssert.StartsWith(plot.Resident.houseModel.name, plot.Model.name, "주민의 집 모델(P-3b)");
+                return;
+            }
+            var block = new MaterialPropertyBlock();  // 모델이 없으면 그레이박스 벽이 주민 색
             plot.wallRenderers[0].GetPropertyBlock(block);
             Color c = block.GetColor("_BaseColor");
             Assert.AreEqual(plot.Resident.bodyColor.r, c.r, 0.01f);

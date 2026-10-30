@@ -139,7 +139,9 @@ namespace PogeunVillage.EditorTools
             flowerClumpItem = EnsureItem("FlowerClump", "꽃 포기", GroundObjectKind.Flower, sellPrice: 60);
             saplingItem = EnsureItem("Sapling", "묘목", GroundObjectKind.Sapling, buyPrice: 300, sellPrice: 150);
             furniture = EnsureFurniture();
-            themeFurniture = EnsureThemeFurniture(EnsureVillagers());
+            var villagers = EnsureVillagers();
+            themeFurniture = EnsureThemeFurniture(villagers);
+            BuildHousePrefabs(villagers);
             fish = EnsureFish();
             insects = EnsureInsects();
             shopData = EnsureAsset<ShopData>(ShopDataPath);
@@ -516,18 +518,18 @@ namespace PogeunVillage.EditorTools
             roofObj.transform.localPosition = new Vector3(0f, 2.5f, 0f);
             roofObj.transform.localScale = new Vector3(4.8f, 1.7f, 4.4f);
             var chimney = Prim(PrimitiveType.Cube, "Chimney", house, new Vector3(1.2f, 3.6f, -0.6f), new Vector3(0.5f, 1f, 0.5f), wall);
-            Prim(PrimitiveType.Cube, "Door", house, new Vector3(0f, 0.8f, 1.82f), new Vector3(1f, 1.6f, 0.08f), wood);
-            Prim(PrimitiveType.Sphere, "DoorKnob", house, new Vector3(0.3f, 0.8f, 1.88f), Vector3.one * 0.12f, Mat("Gold", "#F2C94C", rim: 0.4f));
-            Prim(PrimitiveType.Cube, "Window_L", house, new Vector3(-1.3f, 1.4f, 1.82f), new Vector3(0.8f, 0.8f, 0.08f), glass);
-            Prim(PrimitiveType.Cube, "Window_R", house, new Vector3(1.3f, 1.4f, 1.82f), new Vector3(0.8f, 0.8f, 0.08f), glass);
-            Prim(PrimitiveType.Cube, "Step", house, new Vector3(0f, -0.05f, 2.15f), new Vector3(1.6f, 0.2f, 0.7f), Mat("Stone", "#E8E2D6"));
+            var greybox = new List<Renderer> { body.GetComponent<Renderer>(), roofObj.GetComponent<Renderer>(), chimney.GetComponent<Renderer>() };
+            greybox.Add(Prim(PrimitiveType.Cube, "Door", house, new Vector3(0f, 0.8f, 1.82f), new Vector3(1f, 1.6f, 0.08f), wood).GetComponent<Renderer>());
+            greybox.Add(Prim(PrimitiveType.Sphere, "DoorKnob", house, new Vector3(0.3f, 0.8f, 1.88f), Vector3.one * 0.12f, Mat("Gold", "#F2C94C", rim: 0.4f)).GetComponent<Renderer>());
+            greybox.Add(Prim(PrimitiveType.Cube, "Window_L", house, new Vector3(-1.3f, 1.4f, 1.82f), new Vector3(0.8f, 0.8f, 0.08f), glass).GetComponent<Renderer>());
+            greybox.Add(Prim(PrimitiveType.Cube, "Window_R", house, new Vector3(1.3f, 1.4f, 1.82f), new Vector3(0.8f, 0.8f, 0.08f), glass).GetComponent<Renderer>());
+            greybox.Add(Prim(PrimitiveType.Cube, "Step", house, new Vector3(0f, -0.05f, 2.15f), new Vector3(1.6f, 0.2f, 0.7f), Mat("Stone", "#E8E2D6")).GetComponent<Renderer>());
 
-            // 우체통 (흔들림이 우체통에만 걸리도록 묶음)
+            // 우체통 (흔들림이 우체통에만 걸리도록 묶음) — 모델(P-3b)
             var mailbox = new GameObject("Mailbox").transform;
             mailbox.SetParent(house, false);
             mailbox.localPosition = new Vector3(1.9f, 0f, 2.9f);
-            Prim(PrimitiveType.Cylinder, "MailboxPost", mailbox, new Vector3(0f, 0.45f, 0f), new Vector3(0.12f, 0.45f, 0.12f), wood);
-            var mailboxBox = Prim(PrimitiveType.Cube, "MailboxBox", mailbox, new Vector3(0f, 1f, 0f), new Vector3(0.45f, 0.35f, 0.6f), roof);
+            ModelVisual("Mailbox", mailbox, Vector3.zero);
             AddInteractable(mailbox.gameObject, "우체통", InteractableKind.Mailbox, radius: 0.3f, markerHeight: 1.5f);
 
             // 빈 집터: 낮은 흙판 + 말뚝 표지판
@@ -547,7 +549,8 @@ namespace PogeunVillage.EditorTools
             plot.house = house.gameObject;
             plot.emptySign = sign.gameObject;
             plot.wallRenderers = new Renderer[] { body.GetComponent<Renderer>(), chimney.GetComponent<Renderer>() };
-            plot.roofRenderers = new Renderer[] { roofObj.GetComponent<Renderer>(), mailboxBox.GetComponent<Renderer>() };
+            plot.roofRenderers = new Renderer[] { roofObj.GetComponent<Renderer>() };
+            plot.greyboxRenderers = greybox.ToArray();
             return plot;
         }
 
@@ -1135,6 +1138,26 @@ namespace PogeunVillage.EditorTools
             return all;
         }
 
+        // 주민별 집 모델(P-3b): 주민 n = House n(Varco3D 플로우 순서, MODELING_SPEC). 프리팹은 매번 다시 만들고, 주민 데이터에는 비어 있을 때만 연결
+        static void BuildHousePrefabs(VillagerDefinition[] villagers)
+        {
+            EnsureFolder(PrefabDir + "/Houses");
+            for (int i = 0; i < villagers.Length; i++)
+            {
+                string id = $"House{i + 1:00}";
+                if (models.Find(id) == null)
+                    continue;
+                var root = ModelVisual(id, null, Vector3.zero);
+                root.name = id;
+                var prefab = SavePrefab(root, "Houses/" + id);
+                if (!villagers[i].houseModel)
+                {
+                    villagers[i].houseModel = prefab;
+                    EditorUtility.SetDirty(villagers[i]);
+                }
+            }
+        }
+
         // 주민 그레이박스(동그란 몸 + 머리 + 귀). 색은 VillagerBehaviour가 프로퍼티 블록으로
         static VillagerBehaviour BuildVillagerPrefab()
         {
@@ -1196,6 +1219,7 @@ namespace PogeunVillage.EditorTools
 
             var site = camp.gameObject.AddComponent<HousePlot>();
             site.door = door;
+            site.showsResidentHouse = false;  // 캠핑은 텐트 그대로(P-3b)
             return site;
         }
 

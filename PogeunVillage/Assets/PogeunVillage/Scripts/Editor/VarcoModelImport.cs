@@ -37,6 +37,8 @@ namespace PogeunVillage.EditorTools
             ["Mailbox"] = (1.3f, 0f),
         };
 
+        static readonly (float height, float yaw) HouseDefault = (3.6f, 0f);  // 주민별 집 House01 ~ 20
+
         [MenuItem("Pogeun Village/Import Varco Models")]
         public static void ImportAll()
         {
@@ -66,7 +68,9 @@ namespace PogeunVillage.EditorTools
                     var entry = library.Find(id);
                     if (entry == null)
                     {
-                        var (height, yaw) = Defaults.TryGetValue(id, out var d) ? d : (1f, 0f);
+                        var (height, yaw) = Defaults.TryGetValue(id, out var d) ? d
+                            : id.StartsWith("House") ? HouseDefault
+                            : (1f, 0f);
                         entry = new ModelLibrary.Entry { id = id, height = height, yaw = yaw };
                         library.entries.Add(entry);
                     }
