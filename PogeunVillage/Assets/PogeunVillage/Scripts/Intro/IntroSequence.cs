@@ -7,7 +7,7 @@ namespace PogeunVillage
 {
     /// <summary>
     /// 인트로 연출(P-5, GDD 결정 2026-10-30): 마을 화면 가득 → 뒤로 빠지며 아이 방 모니터 화면이었음이 드러남 → 방
-    /// → 화면 속 커서가 '게임 시작'을 누름 → 모니터로 돌진 · 섬광 → 마을로 컷(→ P-5c 낙하).
+    /// → 화면 속 커서가 '게임 시작'을 누름 → 모니터로 돌진 · 섬광 → 마을로 컷 → 플레이어가 하늘에서 떨어져 착지(먼지) → 카메라가 평소 자리로 → 조작.
     /// 마을 카메라를 텍스처로 받아 모니터 화면에 띄우고(화면 속 버튼 · 커서도 마을 카메라의 화면 UI), 방 카메라는 화면이 꽉 찬 자리에서 출발 · 돌아옴(매치 컷).
     /// 새로 시작할 때만 시작 화면(StartScreen)이 부름. 그동안 시계 · 플레이어 · HUD를 멈추고 숨김, 아무 키 = 건너뛰기. 시간표는 IntroTimeline, 수치는 IntroSettings.
     /// </summary>
@@ -40,6 +40,10 @@ namespace PogeunVillage
         [Tooltip("화면 전체 흰 섬광(맨 위 캔버스)")]
         public Image flash;
 
+        [Header("낙하 · 착지 (P-5c)")]
+        [Tooltip("착지 먼지(자식들이 둥글게 퍼짐)")]
+        public Transform landingDust;
+
         public bool IsPlaying { get; private set; }
         public IntroPhase Phase => timeline == null ? IntroPhase.Done : timeline.PhaseAt(time);
         public float Total => timeline?.Total ?? 0f;
@@ -55,8 +59,9 @@ namespace PogeunVillage
         int startFrame;
         RenderTexture screenTexture;
         MaterialPropertyBlock block;
-        Pose roomStart, roomEnd;
+        Pose roomStart, roomEnd, villagePose, followPose;
         Color buttonColor;
+        Vector3 visualBase;
 
         public void Play()
         {
@@ -76,6 +81,8 @@ namespace PogeunVillage
                 (IntroPhase.Click, settings.clickTime),
                 (IntroPhase.Dive, settings.diveTime),
                 (IntroPhase.Fall, settings.fallTime),
+                (IntroPhase.Land, settings.landTime),
+                (IntroPhase.Settle, settings.settleTime),
             });
             time = 0f;
             startFrame = UnityEngine.Time.frameCount;
@@ -88,9 +95,18 @@ namespace PogeunVillage
             if (hud) hud.enabled = false;
             follow.enabled = false;
             Vector3 focus = player.position + Vector3.up * 0.8f;
-            mainCamera.transform.SetPositionAndRotation(
-                CameraOrbit.Position(focus, settings.villagePitch, 0f, settings.villageDistance),
-                CameraOrbit.Rotation(settings.villagePitch, 0f));
+            villagePose = new Pose(CameraOrbit.Position(focus, settings.villagePitch, 0f, settings.villageDistance), CameraOrbit.Rotation(settings.villagePitch, 0f));
+            mainCamera.transform.SetPositionAndRotation(villagePose.position, villagePose.rotation);
+            // 끝 자리 = 카메라가 평소 플레이어를 따라가는 자리(새로 시작이라 회전 0 · 기본 거리)
+            var world = follow.settings;
+            Vector3 followFocus = player.position + Vector3.up * world.cameraHeightOffset;
+            followPose = new Pose(CameraOrbit.Position(followFocus, world.cameraPitch, 0f, world.cameraDistance), CameraOrbit.Rotation(world.cameraPitch, 0f));
+            if (playerVisual) visualBase = playerVisual.transform.localPosition;
+            if (landingDust)
+            {
+                landingDust.position = player.position;
+                landingDust.gameObject.SetActive(false);
+            }
 
             // 모니터 화면 = 마을 카메라 그림, 화면 비율은 게임 창과 같게
             screenTexture = new RenderTexture(Mathf.Max(16, Screen.width), Mathf.Max(16, Screen.height), 24) { name = "IntroScreen" };
@@ -172,9 +188,32 @@ namespace PogeunVillage
             SetFlash(phase switch
             {
                 IntroPhase.Dive => Mathf.InverseLerp(settings.flashStart, 1f, progress),
-                IntroPhase.Fall => 1f - progress,
+                IntroPhase.Fall => 1f - progress * settings.fallTime / Mathf.Max(0.01f, settings.flashOutTime),
                 _ => 0f,
             });
+            bool showPlayer = phase is IntroPhase.Fall or IntroPhase.Land or IntroPhase.Settle;
+            if (playerVisual)
+            {
+                playerVisual.SetActive(showPlayer);
+                if (showPlayer) PlacePlayerVisual(phase, progress);
+            }
+            if (landingDust) ShowDust(phase == IntroPhase.Land, progress);
+            if (phase is IntroPhase.Village or IntroPhase.Land)
+                mainCamera.transform.SetPositionAndRotation(villagePose.position, villagePose.rotation);
+            else if (phase == IntroPhase.Fall)
+            {
+                // 떨어지는 플레이어를 올려다보며 따라 내려옴 — 땅에 닿을 때 처음 화면 각도로 돌아옴
+                float height = settings.fallHeight * (1f - IntroTimeline.EaseInQuad(progress));
+                Vector3 landingFocus = player.position + Vector3.up * 0.8f;
+                Quaternion toPlayer = Quaternion.LookRotation(landingFocus + Vector3.up * height - villagePose.position);
+                Quaternion offset = villagePose.rotation * Quaternion.Inverse(Quaternion.LookRotation(landingFocus - villagePose.position));
+                mainCamera.transform.SetPositionAndRotation(villagePose.position, offset * toPlayer);
+            }
+            else if (phase == IntroPhase.Settle)
+            {
+                float t = IntroTimeline.EaseInOutSine(progress);
+                mainCamera.transform.SetPositionAndRotation(Vector3.Lerp(villagePose.position, followPose.position, t), Quaternion.Slerp(villagePose.rotation, followPose.rotation, t));
+            }
 
             switch (phase)
             {
@@ -194,6 +233,34 @@ namespace PogeunVillage
                 case IntroPhase.Dive:
                     PlaceRoomCamera(roomEnd, roomStart, IntroTimeline.EaseInCubic(progress) * settings.diveOvershoot);
                     break;
+            }
+        }
+
+        // 낙하: 하늘에서 중력처럼 점점 빠르게 / 착지: 찌그러졌다 펴짐
+        void PlacePlayerVisual(IntroPhase phase, float progress)
+        {
+            var t = playerVisual.transform;
+            float height = phase == IntroPhase.Fall ? settings.fallHeight * (1f - IntroTimeline.EaseInQuad(progress)) : 0f;
+            t.localPosition = visualBase + Vector3.up * height;
+            float y = phase == IntroPhase.Land ? IntroTimeline.LandSquash(progress, settings.landSquash) : 1f;
+            float xz = 1f / Mathf.Sqrt(Mathf.Max(0.01f, y));
+            t.localScale = new Vector3(xz, y, xz);
+        }
+
+        void ShowDust(bool show, float progress)
+        {
+            landingDust.gameObject.SetActive(show);
+            if (!show)
+                return;
+            int count = landingDust.childCount;
+            float radius = Mathf.Lerp(0.2f, settings.dustRadius, IntroTimeline.EaseOutCubic(progress));
+            float size = 0.3f * (1f - progress);
+            for (int i = 0; i < count; i++)
+            {
+                float a = i * Mathf.PI * 2f / count;
+                var puff = landingDust.GetChild(i);
+                puff.localPosition = new Vector3(Mathf.Cos(a) * radius, 0.12f, Mathf.Sin(a) * radius);
+                puff.localScale = Vector3.one * size;
             }
         }
 
@@ -232,7 +299,13 @@ namespace PogeunVillage
                 screenTexture = null;
             }
             follow.enabled = true;
-            if (playerVisual) playerVisual.SetActive(true);
+            if (playerVisual)
+            {
+                playerVisual.transform.localPosition = visualBase;
+                playerVisual.transform.localScale = Vector3.one;
+                playerVisual.SetActive(true);
+            }
+            if (landingDust) landingDust.gameObject.SetActive(false);
             if (hud) hud.enabled = true;
             playerLock.Release(this);
             dayCycle.enabled = true;

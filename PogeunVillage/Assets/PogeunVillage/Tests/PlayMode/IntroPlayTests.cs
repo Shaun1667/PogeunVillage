@@ -108,6 +108,43 @@ namespace PogeunVillage.PlayModeTests
             yield break;
         }
 
+        // P-5c: 하늘에서 떨어짐(높이 → 0, 점점 빠름) → 착지(찌그러짐 · 먼지) → 카메라가 평소 따라가는 자리로 → 조작
+        [UnityTest]
+        public IEnumerator Fall_Land_Settle()
+        {
+            var visual = intro.playerVisual.transform;
+            float fall = intro.StartOf(IntroPhase.Fall);
+            intro.JumpTo(fall + 0.01f);
+            Assert.IsTrue(intro.playerVisual.activeSelf, "떨어지는 플레이어가 보임");
+            float high = visual.localPosition.y;
+            Assert.Greater(high, intro.settings.fallHeight * 0.9f, "하늘 높이에서");
+            intro.JumpTo(fall + intro.settings.fallTime * 0.5f);
+            float mid = visual.localPosition.y;
+            intro.JumpTo(fall + intro.settings.fallTime * 0.9f);
+            Assert.Greater(high - mid, 0f, "아래로");
+            Assert.Greater(mid - visual.localPosition.y, (high - mid) * 0.5f, "점점 빨라짐");
+
+            float land = intro.StartOf(IntroPhase.Land);
+            intro.JumpTo(land + 0.01f);
+            Assert.Less(visual.localScale.y, 0.8f, "착지 찌그러짐");
+            Assert.IsTrue(intro.landingDust.gameObject.activeSelf, "먼지");
+            Assert.AreEqual(intro.player.position.x, intro.landingDust.position.x, 0.01f, "먼지는 착지 자리");
+
+            intro.JumpTo(intro.StartOf(IntroPhase.Settle) + intro.settings.settleTime * 0.99f);
+            Assert.IsFalse(intro.landingDust.gameObject.activeSelf);
+            Assert.AreEqual(1f, visual.localScale.y, 0.01f);
+            var world = intro.follow.settings;
+            Vector3 followPosition = CameraOrbit.Position(intro.player.position + Vector3.up * world.cameraHeightOffset, world.cameraPitch, 0f, world.cameraDistance);
+            Assert.Less(Vector3.Distance(intro.mainCamera.transform.position, followPosition), 0.3f, "카메라가 평소 자리 가까이");
+
+            intro.JumpTo(intro.Total + 0.01f);
+            yield return null;
+            yield return null;
+            Assert.IsFalse(intro.IsPlaying);
+            Assert.Less(Vector3.Distance(intro.mainCamera.transform.position, followPosition), 0.3f, "따라가기로 넘어갈 때 튀지 않음");
+            Assert.IsTrue(intro.playerLock.IsFree);
+        }
+
         [UnityTest]
         public IEnumerator AnyKey_Skips()
         {

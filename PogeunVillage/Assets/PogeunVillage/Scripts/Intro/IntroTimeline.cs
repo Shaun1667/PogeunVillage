@@ -12,7 +12,9 @@ namespace PogeunVillage
         Done,
         Click,  // P-5b: 화면 속 커서가 '게임 시작'으로 가서 누름
         Dive,   // P-5b: 모니터로 돌진 · 섬광
-        Fall,   // P-5b: 마을로 컷 · 섬광이 걷힘(P-5c: 플레이어 낙하 · 착지)
+        Fall,   // P-5b: 마을로 컷 · 섬광이 걷힘 / P-5c: 플레이어가 하늘에서 떨어짐
+        Land,   // P-5c: 착지(찌그러졌다 펴짐 · 먼지)
+        Settle, // P-5c: 카메라가 평소 따라가는 자리로
     }
 
     /// <summary>
@@ -75,6 +77,20 @@ namespace PogeunVillage
             t = Math.Clamp(t, 0f, 1f);
             float u = 1f - t;
             return 1f - u * u * u;
+        }
+
+        /// <summary>떨어지기(중력처럼 점점 빠름)</summary>
+        public static float EaseInQuad(float t)
+        {
+            t = Math.Clamp(t, 0f, 1f);
+            return t * t;
+        }
+
+        /// <summary>착지 찌그러짐(키 배율): 처음 squash → 살짝 늘었다가 → 1</summary>
+        public static float LandSquash(float t, float squash)
+        {
+            t = Math.Clamp(t, 0f, 1f);
+            return 1f - (1f - squash) * (float)Math.Cos(t * Math.PI * 1.5) * (1f - t);
         }
 
         /// <summary>처음에 느리고 끝에서 빠름(돌진)</summary>

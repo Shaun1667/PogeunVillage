@@ -15,6 +15,22 @@ MonoBehaviour:
   villageTime: 1.5
   pullOutTime: 1
   roomTime: 1.5
+  clickTime: 1
+  diveTime: 0.8
+  fallTime: 1.2
+  landTime: 0.35
+  settleTime: 0.6
+  clickPressAt: 0.75
+  cursorStartOffset: {x: 380, y: -240}
+  cursorEndOffset: {x: 40, y: -20}
+  buttonPressScale: 0.92
+  buttonPressTint: 0.8
+  diveOvershoot: 1.15
+  flashStart: 0.55
+  flashOutTime: 0.4
+  fallHeight: 12
+  landSquash: 0.7
+  dustRadius: 0.9
   roomOrigin: {x: 3000, y: 0, z: 0}
   screenHeight: 0.36
   roomCameraBack: 1.8

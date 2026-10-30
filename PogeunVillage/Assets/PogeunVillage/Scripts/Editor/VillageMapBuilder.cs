@@ -2347,6 +2347,14 @@ namespace PogeunVillage.EditorTools
             sequence.hud = Object.FindAnyObjectByType<HudView>().GetComponent<Canvas>();
             Object.FindAnyObjectByType<StartScreen>().intro = sequence;
             BuildIntroScreenUi(sequence, mainCamera);
+
+            // 착지 먼지(P-5c, 그레이박스): 작은 공 6개가 둥글게 퍼지며 사라짐 — 자리 · 크기는 인트로가 정함
+            var dust = new GameObject("LandingDust").transform;
+            var puff = Mat("Dust", "#F3E6CF", rim: 0.3f);
+            for (int i = 0; i < 6; i++)
+                Prim(PrimitiveType.Sphere, "Puff", dust, Vector3.zero, Vector3.one * 0.3f, puff, castShadows: false);
+            dust.gameObject.SetActive(false);
+            sequence.landingDust = dust;
         }
 
         // 인트로 화면 속 UI(P-5b): 마을 카메라에 그려져 모니터에 보이는 제목 · '게임 시작' 버튼 · 커서, 맨 위 흰 섬광

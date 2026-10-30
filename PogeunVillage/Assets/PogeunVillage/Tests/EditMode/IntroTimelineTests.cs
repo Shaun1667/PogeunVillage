@@ -39,6 +39,10 @@ namespace PogeunVillage.Tests
             Assert.Greater(IntroTimeline.EaseOutCubic(0.5f), 0.8f, "뒤로 빠지기: 앞쪽에서 대부분 움직임");
             Assert.Less(IntroTimeline.EaseInCubic(0.5f), 0.2f, "돌진: 끝에서 빠름");
             Assert.AreEqual(0.5f, IntroTimeline.EaseInOutSine(0.5f), 1e-5f);
+            Assert.AreEqual(0.25f, IntroTimeline.EaseInQuad(0.5f), 1e-5f, "낙하: 점점 빠름");
+            Assert.AreEqual(0.7f, IntroTimeline.LandSquash(0f, 0.7f), 1e-5f, "착지 순간 찌그러짐");
+            Assert.Greater(IntroTimeline.LandSquash(0.5f, 0.7f), 1f, "펴지며 살짝 늘어남");
+            Assert.AreEqual(1f, IntroTimeline.LandSquash(1f, 0.7f), 1e-5f, "끝은 원래 키");
         }
     }
 }

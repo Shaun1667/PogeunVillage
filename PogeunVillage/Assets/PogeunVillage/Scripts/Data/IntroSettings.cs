@@ -19,8 +19,12 @@ namespace PogeunVillage
         public float clickTime = 1f;
         [Tooltip("모니터로 돌진하는 시간(P-5b)")]
         public float diveTime = 0.8f;
-        [Tooltip("마을로 컷한 뒤 섬광이 걷히는 시간(P-5b · P-5c 낙하)")]
-        public float fallTime = 0.5f;
+        [Tooltip("마을로 컷한 뒤 플레이어가 하늘에서 떨어지는 시간(P-5c) — 앞부분에서 섬광이 걷힘")]
+        public float fallTime = 1.2f;
+        [Tooltip("착지(찌그러졌다 펴짐 · 먼지) 시간(P-5c)")]
+        public float landTime = 0.35f;
+        [Tooltip("카메라가 평소 따라가는 자리로 가는 시간(P-5c)")]
+        public float settleTime = 0.6f;
 
         [Header("클릭 · 돌진 (P-5b)")]
         [Tooltip("클릭 장면에서 누르는 순간(0~1) — 그 전까지 커서가 움직임")]
@@ -36,6 +40,16 @@ namespace PogeunVillage
         public float diveOvershoot = 1.15f;
         [Tooltip("돌진 중 섬광이 시작하는 순간(0~1)")]
         [Range(0f, 1f)] public float flashStart = 0.55f;
+
+        [Header("낙하 · 착지 (P-5c)")]
+        [Tooltip("섬광이 걷히는 시간(낙하 앞부분)")]
+        public float flashOutTime = 0.4f;
+        [Tooltip("떨어지기 시작하는 높이(m)")]
+        public float fallHeight = 12f;
+        [Tooltip("착지 순간 키 배율(찌그러짐)")]
+        [Range(0.3f, 1f)] public float landSquash = 0.7f;
+        [Tooltip("먼지가 퍼지는 반지름(m)")]
+        public float dustRadius = 0.9f;
 
         [Header("방")]
         [Tooltip("방 위치(맵 바깥)")]
