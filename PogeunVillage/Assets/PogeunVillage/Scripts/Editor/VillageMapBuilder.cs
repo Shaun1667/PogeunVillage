@@ -2346,6 +2346,78 @@ namespace PogeunVillage.EditorTools
             sequence.dayCycle = Object.FindAnyObjectByType<DayCycle>();
             sequence.hud = Object.FindAnyObjectByType<HudView>().GetComponent<Canvas>();
             Object.FindAnyObjectByType<StartScreen>().intro = sequence;
+            BuildIntroScreenUi(sequence, mainCamera);
+        }
+
+        // 인트로 화면 속 UI(P-5b): 마을 카메라에 그려져 모니터에 보이는 제목 · '게임 시작' 버튼 · 커서, 맨 위 흰 섬광
+        static void BuildIntroScreenUi(IntroSequence sequence, Camera mainCamera)
+        {
+            var font = EnsureFontAsset();
+            var rounded = AssetDatabase.GetBuiltinExtraResource<Sprite>("UI/Skin/UISprite.psd");
+            var center = new Vector2(0.5f, 0.5f);
+
+            var uiGo = new GameObject("IntroScreenUI", typeof(RectTransform));
+            var ui = uiGo.AddComponent<Canvas>();
+            ui.renderMode = RenderMode.ScreenSpaceCamera;
+            ui.worldCamera = mainCamera;
+            ui.planeDistance = 1f;
+            var scaler = uiGo.AddComponent<CanvasScaler>();
+            scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+            scaler.referenceResolution = new Vector2(1920f, 1080f);
+            scaler.matchWidthOrHeight = 0.5f;
+            HudPlate(uiGo.transform, "TitlePlate", center, center, new Vector2(0f, 170f), new Vector2(760f, 170f));
+            var title = HudLabel(uiGo.transform, "Title", font, 120, TextAlignmentOptions.Center, center, center, new Vector2(0f, 170f), new Vector2(1200f, 160f));
+            title.text = "포근 마을";
+
+            var button = new GameObject("StartButton", typeof(RectTransform), typeof(Image)).GetComponent<RectTransform>();
+            button.SetParent(uiGo.transform, false);
+            button.anchorMin = button.anchorMax = button.pivot = center;
+            button.anchoredPosition = new Vector2(0f, -120f);
+            button.sizeDelta = new Vector2(440f, 120f);
+            var buttonImage = button.GetComponent<Image>();
+            buttonImage.sprite = rounded;
+            buttonImage.type = Image.Type.Sliced;
+            buttonImage.color = Hex("#F49AB4");
+            buttonImage.raycastTarget = false;
+            var label = HudLabel(button, "Label", font, 56, TextAlignmentOptions.Center, center, center, Vector2.zero, new Vector2(420f, 110f));
+            label.text = "게임 시작";
+            label.color = Color.white;
+
+            // 커서(그레이박스): 흰 화살 대신 기울인 작은 판 + 테두리
+            var cursor = new GameObject("Cursor", typeof(RectTransform), typeof(Image), typeof(Outline)).GetComponent<RectTransform>();
+            cursor.SetParent(uiGo.transform, false);
+            cursor.anchorMin = cursor.anchorMax = center;
+            cursor.pivot = new Vector2(0.5f, 1f);
+            cursor.sizeDelta = new Vector2(44f, 64f);
+            cursor.localRotation = Quaternion.Euler(0f, 0f, 25f);
+            var cursorImage = cursor.GetComponent<Image>();
+            cursorImage.color = Color.white;
+            cursorImage.raycastTarget = false;
+            var outline = cursor.GetComponent<Outline>();
+            outline.effectColor = Hex("#3A3340");
+            outline.effectDistance = new Vector2(3f, -3f);
+            cursor.gameObject.SetActive(false);
+            ui.enabled = false;
+
+            var flashGo = new GameObject("IntroFlash", typeof(RectTransform));
+            var flashCanvas = flashGo.AddComponent<Canvas>();
+            flashCanvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            flashCanvas.sortingOrder = 100;
+            var flash = new GameObject("Flash", typeof(RectTransform), typeof(Image)).GetComponent<Image>();
+            flash.transform.SetParent(flashGo.transform, false);
+            var frt = flash.rectTransform;
+            frt.anchorMin = Vector2.zero;
+            frt.anchorMax = Vector2.one;
+            frt.offsetMin = frt.offsetMax = Vector2.zero;
+            flash.color = new Color(1f, 0.98f, 0.94f, 0f);
+            flash.raycastTarget = false;
+            flash.enabled = false;
+
+            sequence.screenUi = ui;
+            sequence.startButton = button;
+            sequence.startButtonImage = buttonImage;
+            sequence.cursor = cursor;
+            sequence.flash = flash;
         }
 
         // 모니터 화면 재질(빛을 받지 않음, 텍스처는 인트로가 프로퍼티 블록으로)
