@@ -5,6 +5,7 @@ namespace PogeunVillage
     /// <summary>
     /// 주민 한 명(20명 중 하나). 에셋: Assets/PogeunVillage/Data/Villagers/Villager01 ~ 20.asset
     /// 결정 (2026-10-28): 이름 · 종족은 임시('주민 01' …), 나중에 에셋에서 바꿈. 색은 그레이박스 몸 · 집 색.
+    /// 결정 (2026-10-30, P-3c): 종족은 Varco3D 주민 모델(플로우 순서 01~20)에 맞춰 채움, 이름은 임시 그대로.
     /// </summary>
     [CreateAssetMenu(fileName = "Villager", menuName = "Pogeun Village/Villager")]
     public class VillagerDefinition : ScriptableObject
@@ -43,6 +44,8 @@ namespace PogeunVillage
         [Header("모델 (P-3)")]
         [Tooltip("이 주민의 집(Prefabs/Houses/House번호, 맵 생성 메뉴가 비어 있을 때 채움). 없으면 그레이박스 집")]
         public GameObject houseModel;
+        [Tooltip("이 주민의 모습(Prefabs/Villagers/Villager번호, 정적 모델). 없으면 그레이박스 몸")]
+        public GameObject model;
 
         [Header("테마 가구 (3-4d)")]
         [Tooltip("자기 테마 가구 4가지: 화분 · 벤치 · 탁자 · 가로등 = 친밀도 보상 차례(맵 생성 메뉴가 채움)")]

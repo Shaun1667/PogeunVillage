@@ -142,6 +142,7 @@ namespace PogeunVillage.EditorTools
             var villagers = EnsureVillagers();
             themeFurniture = EnsureThemeFurniture(villagers);
             BuildHousePrefabs(villagers);
+            BuildVillagerModels(villagers);
             fish = EnsureFish();
             insects = EnsureInsects();
             shopData = EnsureAsset<ShopData>(ShopDataPath);
@@ -1158,6 +1159,42 @@ namespace PogeunVillage.EditorTools
             }
         }
 
+        // 주민 모델(P-3c): 주민 n = Villager n(Varco3D 플로우 순서). 종족은 그 모델(플로우 글)에 맞춰 — 비어 있거나 '미정'일 때만 채움
+        static readonly string[] ModelSpecies =
+        {
+            "토끼", "곰", "고양이", "여우", "너구리", "양", "고슴도치", "사슴", "부엉이", "오리",
+            "돼지", "다람쥐", "개구리", "펭귄", "강아지", "판다", "생쥐", "수달", "햄스터", "카피바라",
+        };
+
+        static void BuildVillagerModels(VillagerDefinition[] villagers)
+        {
+            EnsureFolder(PrefabDir + "/Villagers");
+            for (int i = 0; i < villagers.Length; i++)
+            {
+                var v = villagers[i];
+                bool changed = false;
+                if ((string.IsNullOrEmpty(v.species) || v.species == "미정") && i < ModelSpecies.Length)
+                {
+                    v.species = ModelSpecies[i];
+                    changed = true;
+                }
+                string id = $"Villager{i + 1:00}";
+                if (models.Find(id) != null)
+                {
+                    var root = ModelVisual(id, null, Vector3.zero);
+                    root.name = id;
+                    var prefab = SavePrefab(root, "Villagers/" + id);
+                    if (!v.model)
+                    {
+                        v.model = prefab;
+                        changed = true;
+                    }
+                }
+                if (changed)
+                    EditorUtility.SetDirty(v);
+            }
+        }
+
         // 주민 그레이박스(동그란 몸 + 머리 + 귀). 색은 VillagerBehaviour가 프로퍼티 블록으로
         static VillagerBehaviour BuildVillagerPrefab()
         {
@@ -1185,6 +1222,7 @@ namespace PogeunVillage.EditorTools
             var villager = root.AddComponent<VillagerBehaviour>();
             villager.bodyRenderers = new Renderer[] { b.GetComponent<Renderer>(), h.GetComponent<Renderer>() };
             villager.accentRenderers = new Renderer[] { el.GetComponent<Renderer>(), er.GetComponent<Renderer>() };
+            villager.greyboxRenderers = visual.GetComponentsInChildren<Renderer>();
             villager.visual = visual;
             return SavePrefab(root, "Villager").GetComponent<VillagerBehaviour>();
         }

@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: PogeunVillage::PogeunVillage.VillagerDefinition
   id: Villager18
   displayName: "\uC8FC\uBBFC 18"
-  species: "\uBBF8\uC815"
+  species: "\uC218\uB2EC"
   bodyColor: {r: 0.98, g: 0.7056, b: 0.78792006, a: 1}
   accentColor: {r: 0.82, g: 0.41, b: 0.53300005, a: 1}
   morningLines:
@@ -55,6 +55,7 @@ MonoBehaviour:
   - "\uC6B0\uB9AC \uCE5C\uD574\uC9C4 \uAE30\uB150\uC774\uC57C! {0}\uC744(\uB97C) \uC904\uAC8C."
   - "\uB108\uD55C\uD14C \uAF2D \uC8FC\uACE0 \uC2F6\uC5C8\uC5B4. {0}\uC774\uC57C!"
   houseModel: {fileID: 7196222446673571611, guid: 9bcd911a81d34d044ae0a958a957992f, type: 3}
+  model: {fileID: 6057285338475545219, guid: a94698e657488dc40a74391a1556249e, type: 3}
   themeFurniture:
   - {fileID: 11400000, guid: 51a964b4aee234c4a8748888cd0c3de9, type: 2}
   - {fileID: 11400000, guid: ee912f49ca6429e4e9593d3a89889bc6, type: 2}

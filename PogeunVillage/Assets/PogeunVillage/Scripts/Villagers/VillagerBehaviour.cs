@@ -27,8 +27,12 @@ namespace PogeunVillage
         public Renderer[] accentRenderers = { };
         [Tooltip("구멍에 빠지면 내려가는 겉모습")]
         public Transform visual;
+        [Tooltip("주민 모델(VillagerDefinition.model)이 있으면 감추는 그레이박스 렌더러(P-3c)")]
+        public Renderer[] greyboxRenderers = { };
 
         public VillagerDefinition Definition { get; private set; }
+        /// <summary>세운 주민 모델(없으면 null, P-3c)</summary>
+        public GameObject Model { get; private set; }
         public HousePlot Home { get; private set; }
         public State Current { get; private set; } = State.Home;
         public Vector2? Target { get; private set; }
@@ -70,6 +74,12 @@ namespace PogeunVillage
             }
             if (visual)
                 visualRest = visual.localPosition;
+            if (visual && definition.model)
+            {
+                Model = Instantiate(definition.model, visual);  // 정적 모델(P-3c) — 통통 튐 · 구멍 빠짐은 visual이 그대로 맡음
+                foreach (var r in greyboxRenderers) if (r) r.enabled = false;
+                return;
+            }
             var block = new MaterialPropertyBlock();
             block.SetColor(BaseColorId, definition.bodyColor);
             foreach (var r in bodyRenderers) if (r) r.SetPropertyBlock(block);

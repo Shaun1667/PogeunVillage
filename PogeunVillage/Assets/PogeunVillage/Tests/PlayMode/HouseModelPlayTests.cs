@@ -42,6 +42,23 @@ namespace PogeunVillage.PlayModeTests
             Assert.IsTrue(plot.emptySign.activeSelf);
         }
 
+        // P-3c: 주민은 자기 모델(VillagerDefinition.model)로 보이고 그레이박스 몸은 숨김, 충돌(CharacterController)은 그대로, 종족이 채워짐
+        [Test]
+        public void Villagers_ShowTheirModel()
+        {
+            var villagers = Object.FindObjectsByType<VillagerBehaviour>();
+            Assert.IsNotEmpty(villagers);
+            foreach (var v in villagers)
+            {
+                Assert.IsNotNull(v.Model, v.name);
+                StringAssert.StartsWith(v.Definition.model.name, v.Model.name);
+                Assert.IsTrue(v.Model.transform.IsChildOf(v.visual), "통통 튐 · 구멍 빠짐을 따라감");
+                Assert.IsTrue(v.greyboxRenderers.All(r => !r.enabled), "그레이박스 몸 숨김");
+                Assert.IsTrue(v.GetComponent<CharacterController>().enabled || !v.gameObject.activeInHierarchy);
+                Assert.AreNotEqual("미정", v.Definition.species, "종족");
+            }
+        }
+
         [Test]
         public void CampSite_KeepsTent()
         {
