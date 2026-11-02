@@ -13,11 +13,21 @@ MonoBehaviour:
   m_Name: ModelLibrary
   m_EditorClassIdentifier: PogeunVillage::PogeunVillage.ModelLibrary
   entries:
+  - id: Bed
+    model: {fileID: 919132149155446097, guid: c4464676a14355449952a43853e06f04, type: 3}
+    material: {fileID: 2100000, guid: bb490bb03f464b742846cc3dc73a794d, type: 2}
+    height: 0.8
+    yaw: 0
   - id: Bridge
     model: {fileID: 919132149155446097, guid: 641a87a581bb9dd43be545ee5fc17cb1, type: 3}
     material: {fileID: 2100000, guid: eac907a014991ed4e9cecc877cd4f9f7, type: 2}
     height: 2.2
     yaw: 90
+  - id: CampTent
+    model: {fileID: 919132149155446097, guid: f2c75b08fff970949a4fda52926028f0, type: 3}
+    material: {fileID: 2100000, guid: 01a82782f99912747afc3f7a356ba04c, type: 2}
+    height: 2.3
+    yaw: 0
   - id: FlowerDaisy
     model: {fileID: 919132149155446097, guid: 1e27df8c59d41e04282ed4042bbab336, type: 3}
     material: {fileID: 2100000, guid: 090404f376f49314f9bf47a765aa9f31, type: 2}
@@ -188,6 +198,11 @@ MonoBehaviour:
     material: {fileID: 2100000, guid: a2840f22cf899b54a9ff33df7e1c3b36, type: 2}
     height: 3.6
     yaw: 0
+  - id: LotSign
+    model: {fileID: 919132149155446097, guid: f49cf2ccff311724295096455d251f40, type: 3}
+    material: {fileID: 2100000, guid: 641c63013b894764393e8f865b7db1a7, type: 2}
+    height: 1.25
+    yaw: 0
   - id: Mailbox
     model: {fileID: 919132149155446097, guid: a6e61d60c87d4ba40a5a4e2f3332033e, type: 3}
     material: {fileID: 2100000, guid: b1d0ca302b0e10e43aa5b82dd50abdd0, type: 2}
@@ -237,6 +252,21 @@ MonoBehaviour:
     model: {fileID: 919132149155446097, guid: 7ca807e2a84dc7947a297d82949f2e3b, type: 3}
     material: {fileID: 2100000, guid: bdc16a043a261fb4194e203d3cea3010, type: 2}
     height: 1
+    yaw: 0
+  - id: SellBox
+    model: {fileID: 919132149155446097, guid: b8f2361b92c446a4caa1f8efec2ef9dd, type: 3}
+    material: {fileID: 2100000, guid: ae802023d386ba34f8901592a6ac2bbc, type: 2}
+    height: 0.8
+    yaw: 0
+  - id: ShopStall
+    model: {fileID: 919132149155446097, guid: a197c90d891826143b9d88299b16b7fe, type: 3}
+    material: {fileID: 2100000, guid: ac1b88f9b2354b842b5fa3c94120c1db, type: 2}
+    height: 2.6
+    yaw: 0
+  - id: Shopkeeper
+    model: {fileID: 919132149155446097, guid: 163fecca6b9f575488da64a5923db229, type: 3}
+    material: {fileID: 2100000, guid: 12e03d0eda8a3e442a9d7677f59e4f8a, type: 2}
+    height: 1.6
     yaw: 0
   - id: StreetLamp
     model: {fileID: 919132149155446097, guid: 03f6ce047aa6203469debf5386dae1c7, type: 3}
@@ -362,4 +392,9 @@ MonoBehaviour:
     model: {fileID: 919132149155446097, guid: 0f7d5163a8a2dde4381cb9269d729041, type: 3}
     material: {fileID: 2100000, guid: 74bf55f9c9e3f474e82bef489072bc81, type: 2}
     height: 1.5
+    yaw: 0
+  - id: Workbench
+    model: {fileID: 919132149155446097, guid: dcffc52d1c8b4fc4f980d014be285b11, type: 3}
+    material: {fileID: 2100000, guid: 671d3c7b7c608f54e8bfa1b28e5d837d, type: 2}
+    height: 1.05
     yaw: 0

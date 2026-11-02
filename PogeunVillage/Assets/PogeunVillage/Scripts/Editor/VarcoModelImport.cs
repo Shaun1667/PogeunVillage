@@ -35,6 +35,13 @@ namespace PogeunVillage.EditorTools
             ["StreetLamp"] = (2.6f, 0f),
             ["Bridge"] = (2.2f, 90f),
             ["Mailbox"] = (1.3f, 0f),
+            ["ShopStall"] = (2.6f, 0f),
+            ["SellBox"] = (0.8f, 0f),
+            ["Bed"] = (0.8f, 0f),
+            ["Workbench"] = (1.05f, 0f),
+            ["CampTent"] = (2.3f, 0f),
+            ["LotSign"] = (1.25f, 0f),
+            ["Shopkeeper"] = (1.6f, 0f),
         };
 
         static readonly (float height, float yaw) HouseDefault = (3.6f, 0f);  // 주민별 집 House01 ~ 20

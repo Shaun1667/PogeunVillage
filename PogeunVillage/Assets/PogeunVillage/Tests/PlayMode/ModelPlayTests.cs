@@ -63,6 +63,38 @@ namespace PogeunVillage.PlayModeTests
             Assert.IsFalse(GameObject.Find("FountainBase").GetComponent<MeshRenderer>(), "도형은 충돌만");
         }
 
+        // P-4f: 시설 · 상점 주인은 모델, 기본 도형은 충돌만(충돌 크기 · 상호작용 자리는 그대로)
+        [Test]
+        public void Facilities_UseModels_KeepColliders()
+        {
+            foreach (var id in new[] { "ShopStall", "Shopkeeper", "SellBox", "Bed", "Workbench", "CampTent" })
+            {
+                var fit = GameObject.Find("Fit_" + id);
+                Assert.IsTrue(fit, id + " 모델");
+                Assert.IsNotEmpty(fit.GetComponentsInChildren<MeshRenderer>(), id + " 보임");
+            }
+            Assert.IsTrue(Object.FindObjectsByType<HousePlot>(FindObjectsInactive.Include)
+                .Where(p => p.emptySign).All(p => p.emptySign.transform.Find("Fit_LotSign")), "빈 집터 표지판");
+
+            var keeper = Object.FindAnyObjectByType<Shop>().keeper.transform;
+            Assert.IsTrue(keeper.Find("Body").GetComponent<Collider>() && !keeper.Find("Body").GetComponent<MeshRenderer>(), "주인 몸은 충돌만");
+            Assert.IsNull(keeper.Find("Head"), "그레이박스 머리 없음");
+            var sellBox = Object.FindAnyObjectByType<SellBox>().transform.Find("Box");
+            Assert.IsTrue(sellBox.GetComponent<Collider>() && !sellBox.GetComponent<MeshRenderer>(), "판매함은 충돌만");
+            var bench = Object.FindAnyObjectByType<Workbench>().transform.Find("Top");
+            Assert.IsTrue(bench.GetComponent<Collider>() && !bench.GetComponent<MeshRenderer>(), "작업대는 충돌만");
+            var bed = Object.FindAnyObjectByType<Bed>().transform.Find("Frame");
+            Assert.IsTrue(bed.GetComponent<Collider>() && !bed.GetComponent<MeshRenderer>(), "침대는 충돌만");
+            var tent = GameObject.Find("CampSite").transform.Find("Tent");
+            Assert.IsTrue(tent.GetComponent<Collider>() && !tent.GetComponent<MeshRenderer>(), "텐트는 충돌만");
+            Assert.IsNull(GameObject.Find("CampSite").transform.Find("Fire"), "그레이박스 모닥불 없음");
+
+            // 물건은 매대(노점 모델) 위에 보임
+            var stall = GameObject.Find("Fit_ShopStall").GetComponentsInChildren<MeshRenderer>();
+            float counterTop = Object.FindObjectsByType<ShopStand>().First().transform.Find("Goods").GetComponent<Renderer>().bounds.min.y;
+            Assert.Greater(stall.Max(r => r.bounds.max.y), counterTop + 1f, "차양이 물건보다 위");
+        }
+
         [UnityTest]
         public IEnumerator Flower_UsesModelLook()
         {

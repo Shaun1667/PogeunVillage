@@ -79,6 +79,8 @@ namespace PogeunVillage.EditorTools
 
         // 캠핑 구역(결정 2026-10-28, 2-6): 마을 중간 좌측 = 광장 서쪽 끝, 텐트 입구는 광장 쪽
         static readonly Vector2 CampPosition = new(-38f, -4f);
+        const float CampTentOffset = 0.66f;  // CampTent 모델 안에서 텐트 가운데가 +x로 치우친 거리(m, 높이 2.3 기준)
+        const float GoodsHeight = 1.0f;  // 노점 매대(모델) 위 물건 높이
         static Vector2 CampDoor => CampPosition + (PlazaCenter - CampPosition).normalized * 2.4f;
 
         static Shader toonShader;
@@ -539,8 +541,7 @@ namespace PogeunVillage.EditorTools
             var sign = new GameObject("EmptySign").transform;
             sign.SetParent(plotRoot, false);
             Prim(PrimitiveType.Cube, "Lot", sign, new Vector3(0f, 0.04f, 0f), new Vector3(4.2f, 0.1f, 3.8f), Mat("EmptyLot", "#D9C49A"));
-            Prim(PrimitiveType.Cube, "Post", sign, new Vector3(0f, 0.5f, 2.3f), new Vector3(0.12f, 1f, 0.12f), wood);
-            Prim(PrimitiveType.Cube, "Board", sign, new Vector3(0f, 0.95f, 2.3f), new Vector3(0.8f, 0.45f, 0.08f), Mat("BoardPaper", "#FFF4D8"));
+            FitModel("LotSign", sign, new Vector3(0f, 0f, 2.3f), new Vector3(0f, 1.25f, 0f));
             sign.gameObject.SetActive(false);
 
             var door = new GameObject("Door").transform;
@@ -1244,14 +1245,9 @@ namespace PogeunVillage.EditorTools
             tent.transform.localRotation = Quaternion.Euler(0f, 90f, 0f);
             tent.transform.localScale = new Vector3(3.2f, 2.2f, 2.8f);
             tent.AddComponent<BoxCollider>();
-            Prim(PrimitiveType.Cube, "Flap", camp, new Vector3(0f, 0.55f, 1.62f), new Vector3(0.8f, 1.1f, 0.05f), Mat("TentFlap", "#E58F78"));
-            var stone = Mat("Stone", "#E8E2D6");
-            for (int i = 0; i < 6; i++)
-            {
-                float a = i * Mathf.PI / 3f;
-                Prim(PrimitiveType.Sphere, "FireStone", camp, new Vector3(1.8f + Mathf.Cos(a) * 0.4f, 0.08f, 2.4f + Mathf.Sin(a) * 0.4f), new Vector3(0.22f, 0.16f, 0.22f), stone);
-            }
-            Prim(PrimitiveType.Sphere, "Fire", camp, new Vector3(1.8f, 0.2f, 2.4f), new Vector3(0.3f, 0.35f, 0.3f), Mat("CampFire", "#FFB347", rim: 0.5f), castShadows: false);
+            ColliderOnly(tent);
+            // 텐트 + 모닥불 모델(P-4f): 모델 안에서 텐트가 +x 쪽이라 그만큼 옮겨 텐트를 가운데에, 모닥불은 -x 앞쪽
+            FitModel("CampTent", camp, new Vector3(-CampTentOffset, 0f, 0f), new Vector3(0f, 2.3f, 0f));
 
             var door = new GameObject("Door").transform;
             door.SetParent(camp, false);
@@ -1363,16 +1359,14 @@ namespace PogeunVillage.EditorTools
             stall.localRotation = Quaternion.Euler(0f, 90f, 0f);  // 앞(+z)이 동쪽 = 광장
 
             var wood = Mat("Wood", "#B98A5E");
-            var awning = Mat("ShopAwning", "#F2A65A", rim: 0.2f);
-            foreach (float x in new[] { -2.6f, 2.6f })
-                Prim(PrimitiveType.Cylinder, "Post", stall, new Vector3(x, 1.2f, -1.2f), new Vector3(0.12f, 1.2f, 0.12f), wood, collider: true);
-            Prim(PrimitiveType.Cube, "Awning", stall, new Vector3(0f, 2.45f, -0.6f), new Vector3(5.6f, 0.12f, 1.8f), awning);
+            // 노점 모델(P-4f): 매대 + 차양. 매대 뒤(-z)에 주인, 매대 위에 물건
+            FitModel("ShopStall", stall, new Vector3(0f, 0f, -0.75f), new Vector3(5.6f, 2.6f, 1.4f), alignBack: true);
 
             var keeper = new GameObject("ShopKeeper").transform;
             keeper.SetParent(stall, false);
             keeper.localPosition = new Vector3(0f, 0f, -1.2f);
-            Prim(PrimitiveType.Capsule, "Body", keeper, new Vector3(0f, 0.55f, 0f), new Vector3(0.6f, 0.55f, 0.55f), Mat("ShopKeeperBody", "#9AD1B5"), collider: true);
-            Prim(PrimitiveType.Sphere, "Head", keeper, new Vector3(0f, 1.3f, 0f), Vector3.one * 0.6f, Mat("ShopKeeperHead", "#F6E3C8"));
+            ColliderOnly(Prim(PrimitiveType.Capsule, "Body", keeper, new Vector3(0f, 0.55f, 0f), new Vector3(0.6f, 0.55f, 0.55f), wood, collider: true));
+            FitModel("Shopkeeper", keeper, Vector3.zero, new Vector3(0f, 1.6f, 0f));  // 나무늘보(P-4f, 정적 자세)
             AddInteractable(keeper.gameObject, "상점 주인", InteractableKind.ShopKeeper, radius: 0.4f, markerHeight: 1.9f);
 
             var shop = stall.gameObject.AddComponent<Shop>();
@@ -1388,8 +1382,8 @@ namespace PogeunVillage.EditorTools
                 var stand = new GameObject("Stand_" + goods[i].id).transform;
                 stand.SetParent(stall, false);
                 stand.localPosition = new Vector3(-2.5f + i * 1.0f, 0f, 0f);
-                Prim(PrimitiveType.Cube, "Table", stand, new Vector3(0f, 0.4f, 0f), new Vector3(0.8f, 0.8f, 0.6f), wood, collider: true);
-                Prim(PrimitiveType.Sphere, "Goods", stand, new Vector3(0f, 0.95f, 0f), Vector3.one * 0.3f, Mat("ShopGoods_" + goods[i].id, colors[i], rim: 0.3f), castShadows: false);
+                ColliderOnly(Prim(PrimitiveType.Cube, "Table", stand, new Vector3(0f, 0.4f, 0f), new Vector3(0.8f, 0.8f, 0.6f), wood, collider: true));  // 매대는 노점 모델
+                Prim(PrimitiveType.Sphere, "Goods", stand, new Vector3(0f, GoodsHeight, 0f), Vector3.one * 0.3f, Mat("ShopGoods_" + goods[i].id, colors[i], rim: 0.3f), castShadows: false);
                 AddInteractable(stand.gameObject, goods[i].displayName, InteractableKind.ShopStand, radius: 0.4f, markerHeight: 1.4f, wiggle: false);
                 var shopStand = stand.gameObject.AddComponent<ShopStand>();
                 shopStand.shop = shop;
@@ -1399,8 +1393,8 @@ namespace PogeunVillage.EditorTools
             var sellBox = new GameObject("SellBox").transform;
             sellBox.SetParent(stall, false);
             sellBox.localPosition = new Vector3(3.7f, 0f, 0.2f);
-            Prim(PrimitiveType.Cube, "Box", sellBox, new Vector3(0f, 0.35f, 0f), new Vector3(0.8f, 0.7f, 0.8f), Mat("SellBox", "#E07A5F", rim: 0.2f), collider: true);
-            Prim(PrimitiveType.Cube, "Lid", sellBox, new Vector3(0f, 0.72f, 0f), new Vector3(0.9f, 0.06f, 0.9f), wood);
+            ColliderOnly(Prim(PrimitiveType.Cube, "Box", sellBox, new Vector3(0f, 0.35f, 0f), new Vector3(0.8f, 0.7f, 0.8f), wood, collider: true));
+            FitModel("SellBox", sellBox, Vector3.zero, new Vector3(0.85f, 0f, 0f));
             AddInteractable(sellBox.gameObject, "판매함", InteractableKind.SellBox, radius: 0.45f, markerHeight: 1.2f, wiggle: false);
             sellBox.gameObject.AddComponent<SellBox>().shop = shop;
         }
@@ -1416,9 +1410,8 @@ namespace PogeunVillage.EditorTools
             bed.SetParent(props, false);
             bed.localPosition = OnGround(PlazaCenter.x + 4f, PlazaCenter.y - 3.5f);
             bed.localRotation = Quaternion.Euler(0f, -30f, 0f);
-            Prim(PrimitiveType.Cube, "Frame", bed, new Vector3(0f, 0.2f, 0f), new Vector3(1f, 0.4f, 1.9f), Mat("Wood", "#B98A5E"), collider: true);
-            Prim(PrimitiveType.Cube, "Blanket", bed, new Vector3(0f, 0.43f, -0.2f), new Vector3(0.95f, 0.08f, 1.3f), Mat("BedBlanket", "#8FB8E8", rim: 0.2f));
-            Prim(PrimitiveType.Cube, "Pillow", bed, new Vector3(0f, 0.47f, 0.65f), new Vector3(0.7f, 0.12f, 0.35f), Mat("BedPillow", "#FFF7EE", rim: 0.2f));
+            ColliderOnly(Prim(PrimitiveType.Cube, "Frame", bed, new Vector3(0f, 0.2f, 0f), new Vector3(1f, 0.4f, 1.9f), Mat("Wood", "#B98A5E"), collider: true));
+            FitModel("Bed", bed, Vector3.zero, new Vector3(1.05f, 0f, 1.95f), yaw: 180f);  // 모델은 머리가 -z → 돌려 베개가 +z
             AddInteractable(bed.gameObject, "침대", InteractableKind.Bed, radius: 0.9f, markerHeight: 1.2f, wiggle: false);
             bed.gameObject.AddComponent<Bed>().dayCycle = dayCycle;
         }
@@ -1762,12 +1755,8 @@ namespace PogeunVillage.EditorTools
             bench.localPosition = OnGround(PlazaCenter.x + 5f, PlazaCenter.y + 2.3f);
             bench.localRotation = Quaternion.Euler(0f, 270f, 0f);  // 앞(+z)이 서쪽 = 광장
             var wood = Mat("Wood", "#B98A5E");
-            foreach (float x in new[] { -0.6f, 0.6f })
-                Prim(PrimitiveType.Cube, "Leg", bench, new Vector3(x, 0.35f, 0f), new Vector3(0.14f, 0.7f, 0.6f), wood);
-            Prim(PrimitiveType.Cube, "Top", bench, new Vector3(0f, 0.76f, 0f), new Vector3(1.6f, 0.12f, 0.8f), Mat("WorkbenchTop", "#D9B48A"), collider: true);
-            Prim(PrimitiveType.Cube, "Saw", bench, new Vector3(-0.35f, 0.86f, 0.05f), new Vector3(0.5f, 0.06f, 0.18f), Mat("ToolMetal", "#C9D2DC", rim: 0.3f));
-            Prim(PrimitiveType.Cylinder, "Log", bench, new Vector3(0.4f, 0.9f, 0f), new Vector3(0.18f, 0.25f, 0.18f), wood)
-                .transform.localRotation = Quaternion.Euler(0f, 0f, 90f);
+            ColliderOnly(Prim(PrimitiveType.Cube, "Top", bench, new Vector3(0f, 0.76f, 0f), new Vector3(1.6f, 0.12f, 0.8f), wood, collider: true));
+            FitModel("Workbench", bench, Vector3.zero, new Vector3(1.6f, 0f, 0.9f));
             AddInteractable(bench.gameObject, "작업대", InteractableKind.Workbench, radius: 0.8f, markerHeight: 1.5f, wiggle: false);
             bench.gameObject.AddComponent<Workbench>().recipes = furniture.Where(f => CraftRules.IsRecipe(f.woodCost)).ToArray();
         }
@@ -2390,6 +2379,24 @@ namespace PogeunVillage.EditorTools
             var bounds = ModelBounds(fit.gameObject);
             var target = room.TransformPoint(localPosition);
             fit.position += new Vector3(target.x - bounds.center.x, target.y - bounds.min.y, againstWall ? target.z - bounds.max.z : target.z - bounds.center.z);
+            return fit.gameObject;
+        }
+
+        // 모델을 부모 축 기준 크기(m)에 맞춰 놓음(P-4f 시설). size의 0인 축은 정한 축의 비율을 따름(기준은 y → x → z 순).
+        // 바닥 높이 · 가로 가운데 · 앞뒤 가운데(alignBack이면 뒤 끝)가 localPosition. 모델 정면(+z)은 yaw만큼 돌림
+        static GameObject FitModel(string id, Transform parent, Vector3 localPosition, Vector3 size, float yaw = 0f, bool alignBack = false)
+        {
+            var fit = new GameObject("Fit_" + id).transform;  // 원점에서 재고 맞춘 뒤 부모에 붙임
+            var turn = ModelVisual(id, fit, Vector3.zero).transform;
+            turn.localRotation = Quaternion.Euler(0f, yaw, 0f) * turn.localRotation;
+            var raw = ModelBounds(fit.gameObject).size;
+            float ratio = size.y > 0f ? size.y / raw.y : size.x > 0f ? size.x / raw.x : size.z / raw.z;
+            fit.localScale = new Vector3(size.x > 0f ? size.x / raw.x : ratio, size.y > 0f ? size.y / raw.y : ratio, size.z > 0f ? size.z / raw.z : ratio);
+            var b = ModelBounds(fit.gameObject);
+            var offset = new Vector3(b.center.x, b.min.y, alignBack ? b.min.z : b.center.z);
+            turn.localPosition -= new Vector3(offset.x / fit.localScale.x, offset.y / fit.localScale.y, offset.z / fit.localScale.z);
+            fit.SetParent(parent, false);
+            fit.localPosition = localPosition;
             return fit.gameObject;
         }
 
