@@ -273,6 +273,31 @@ MonoBehaviour:
     material: {fileID: 2100000, guid: 4b931513da793394d9baf606ba30deb8, type: 2}
     height: 2.6
     yaw: 0
+  - id: ToolAxe
+    model: {fileID: 919132149155446097, guid: 19419c4cb59fa1e4289faec62aa164fe, type: 3}
+    material: {fileID: 2100000, guid: b4a482d832687ff4eb9d4720cc273156, type: 2}
+    height: 0.45
+    yaw: 0
+  - id: ToolFishingRod
+    model: {fileID: 919132149155446097, guid: 0ad9d15d5c9aa3b4d9e9aa4d3970567b, type: 3}
+    material: {fileID: 2100000, guid: 78d62ece670e7284b9ecbf15ef0aa4b9, type: 2}
+    height: 0.6
+    yaw: 0
+  - id: ToolNet
+    model: {fileID: 919132149155446097, guid: 02651f577bf6b61458a30a1123b6e5d6, type: 3}
+    material: {fileID: 2100000, guid: 8e78b22a460c3d74aa567ed91e08ce3b, type: 2}
+    height: 0.6
+    yaw: 0
+  - id: ToolShovel
+    model: {fileID: 919132149155446097, guid: 612419b3c57d5234c9538a9ca1c21b41, type: 3}
+    material: {fileID: 2100000, guid: 51c5fd8efea6497409ede0c8276f6ad3, type: 2}
+    height: 0.55
+    yaw: 0
+  - id: ToolWateringCan
+    model: {fileID: 919132149155446097, guid: 9b92f85cf0ec90f46aa2ea1bc4f0fd3f, type: 3}
+    material: {fileID: 2100000, guid: c945ae5ab7af4974e863e0562ae27a35, type: 2}
+    height: 0.35
+    yaw: 0
   - id: TreeApple
     model: {fileID: 919132149155446097, guid: 96f9cf12af5b4af4fbddee8d4c3bbd33, type: 3}
     material: {fileID: 2100000, guid: d1039826742d0e040a9e211597246766, type: 2}

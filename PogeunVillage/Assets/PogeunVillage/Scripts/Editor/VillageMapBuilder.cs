@@ -80,7 +80,9 @@ namespace PogeunVillage.EditorTools
         // 캠핑 구역(결정 2026-10-28, 2-6): 마을 중간 좌측 = 광장 서쪽 끝, 텐트 입구는 광장 쪽
         static readonly Vector2 CampPosition = new(-38f, -4f);
         const float CampTentOffset = 0.66f;  // CampTent 모델 안에서 텐트 가운데가 +x로 치우친 거리(m, 높이 2.3 기준)
-        const float GoodsHeight = 1.0f;  // 노점 매대(모델) 위 물건 높이
+        const float CounterTop = 0.85f;  // 노점 매대(모델) 윗면 높이 — 물건을 이 위에 놓음
+        // 누워서 생성된 도구 모델을 세우는 x축 회전(P-4h): 삽은 날이 -z로 누움, 잠자리채는 45° 기움
+        static readonly Dictionary<string, float> ToolPitch = new() { ["ToolShovel"] = -90f, ["ToolNet"] = 45f };
         static Vector2 CampDoor => CampPosition + (PlazaCenter - CampPosition).normalized * 2.4f;
 
         static Shader toonShader;
@@ -1374,7 +1376,7 @@ namespace PogeunVillage.EditorTools
             shop.dayCycle = Object.FindAnyObjectByType<DayCycle>();
             shop.keeper = keeper.GetComponent<Interactable>();
 
-            // 매대: 도구 5종 + 묘목, 1m 간격. 위에 물건 모양(그레이박스)
+            // 매대: 도구 5종 + 묘목, 1m 간격. 도구는 모델(P-4h)을 매대 위에 세움, 묘목은 아직 공(그레이박스)
             var goods = tools.Cast<ItemDefinition>().Append(saplingItem).ToArray();
             string[] colors = { "#F4F1EA", "#8E6B4A", "#C9D2DC", "#9AA6B2", "#7FB8E6", "#6FC27A" };
             for (int i = 0; i < goods.Length; i++)
@@ -1383,7 +1385,12 @@ namespace PogeunVillage.EditorTools
                 stand.SetParent(stall, false);
                 stand.localPosition = new Vector3(-2.5f + i * 1.0f, 0f, 0f);
                 ColliderOnly(Prim(PrimitiveType.Cube, "Table", stand, new Vector3(0f, 0.4f, 0f), new Vector3(0.8f, 0.8f, 0.6f), wood, collider: true));  // 매대는 노점 모델
-                Prim(PrimitiveType.Sphere, "Goods", stand, new Vector3(0f, GoodsHeight, 0f), Vector3.one * 0.3f, Mat("ShopGoods_" + goods[i].id, colors[i], rim: 0.3f), castShadows: false);
+                var toolModel = goods[i] is ToolDefinition && models ? models.Find("Tool" + goods[i].id) : null;
+                if (toolModel != null)
+                    FitModel(toolModel.id, stand, new Vector3(0f, CounterTop, 0f), new Vector3(0f, toolModel.height, 0f),
+                        pitch: ToolPitch.TryGetValue(toolModel.id, out float pitch) ? pitch : 0f);
+                else
+                    Prim(PrimitiveType.Sphere, "Goods", stand, new Vector3(0f, CounterTop + 0.15f, 0f), Vector3.one * 0.3f, Mat("ShopGoods_" + goods[i].id, colors[i], rim: 0.3f), castShadows: false);
                 AddInteractable(stand.gameObject, goods[i].displayName, InteractableKind.ShopStand, radius: 0.4f, markerHeight: 1.4f, wiggle: false);
                 var shopStand = stand.gameObject.AddComponent<ShopStand>();
                 shopStand.shop = shop;
@@ -2383,12 +2390,12 @@ namespace PogeunVillage.EditorTools
         }
 
         // 모델을 부모 축 기준 크기(m)에 맞춰 놓음(P-4f 시설). size의 0인 축은 정한 축의 비율을 따름(기준은 y → x → z 순).
-        // 바닥 높이 · 가로 가운데 · 앞뒤 가운데(alignBack이면 뒤 끝)가 localPosition. 모델 정면(+z)은 yaw만큼 돌림
-        static GameObject FitModel(string id, Transform parent, Vector3 localPosition, Vector3 size, float yaw = 0f, bool alignBack = false)
+        // 바닥 높이 · 가로 가운데 · 앞뒤 가운데(alignBack이면 뒤 끝)가 localPosition. 모델 정면(+z)은 yaw만큼, 누운 모델은 pitch(x축)만큼 세움
+        static GameObject FitModel(string id, Transform parent, Vector3 localPosition, Vector3 size, float yaw = 0f, bool alignBack = false, float pitch = 0f)
         {
             var fit = new GameObject("Fit_" + id).transform;  // 원점에서 재고 맞춘 뒤 부모에 붙임
             var turn = ModelVisual(id, fit, Vector3.zero).transform;
-            turn.localRotation = Quaternion.Euler(0f, yaw, 0f) * turn.localRotation;
+            turn.localRotation = Quaternion.Euler(pitch, yaw, 0f) * turn.localRotation;
             var raw = ModelBounds(fit.gameObject).size;
             float ratio = size.y > 0f ? size.y / raw.y : size.x > 0f ? size.x / raw.x : size.z / raw.z;
             fit.localScale = new Vector3(size.x > 0f ? size.x / raw.x : ratio, size.y > 0f ? size.y / raw.y : ratio, size.z > 0f ? size.z / raw.z : ratio);

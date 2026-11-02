@@ -42,6 +42,11 @@ namespace PogeunVillage.EditorTools
             ["CampTent"] = (2.3f, 0f),
             ["LotSign"] = (1.25f, 0f),
             ["Shopkeeper"] = (1.6f, 0f),
+            ["ToolNet"] = (0.6f, 0f),  // 도구(P-4h): 노점 매대 위에 세운 높이
+            ["ToolFishingRod"] = (0.6f, 0f),
+            ["ToolAxe"] = (0.45f, 0f),
+            ["ToolShovel"] = (0.55f, 0f),
+            ["ToolWateringCan"] = (0.35f, 0f),
         };
 
         static readonly (float height, float yaw) HouseDefault = (3.6f, 0f);  // 주민별 집 House01 ~ 20

@@ -45,8 +45,9 @@ namespace PogeunVillage.PlayModeTests
                     }
                     float top = renderers.Max(r => r.bounds.max.y) - holder.position.y;
                     float expected = entry.height * holder.parent.lossyScale.y;
-                    // 다리는 판에 맞춰 늘림, 바위는 크기를 섞음, 인트로 방 소품(Room…)은 폭에 맞춤(IntroPlayTests에서 확인)
-                    if (entry.id != "Bridge" && entry.id != "Rock" && !entry.id.StartsWith("Room"))
+                    // 다리는 판에 맞춰 늘림, 바위는 크기를 섞음, 인트로 방 소품(Room…)은 폭에 맞춤(IntroPlayTests에서 확인),
+                    // 도구(Tool…)는 누운 모델을 세워 높이가 그릇 기준과 다름(ShopStands_ShowToolModels에서 확인)
+                    if (entry.id != "Bridge" && entry.id != "Rock" && !entry.id.StartsWith("Room") && !entry.id.StartsWith("Tool"))
                         Assert.AreEqual(expected, top, expected * 0.05f, entry.id + " 높이");
                     checkedCount++;
                 }
@@ -91,8 +92,28 @@ namespace PogeunVillage.PlayModeTests
 
             // 물건은 매대(노점 모델) 위에 보임
             var stall = GameObject.Find("Fit_ShopStall").GetComponentsInChildren<MeshRenderer>();
-            float counterTop = Object.FindObjectsByType<ShopStand>().First().transform.Find("Goods").GetComponent<Renderer>().bounds.min.y;
+            float counterTop = Object.FindObjectsByType<ShopStand>().First().GetComponentsInChildren<Renderer>().Min(r => r.bounds.min.y);
             Assert.Greater(stall.Max(r => r.bounds.max.y), counterTop + 1f, "차양이 물건보다 위");
+        }
+
+        // P-4h: 매대의 도구 5종은 도구 모델(세워서 매대 위), 묘목은 아직 공
+        [Test]
+        public void ShopStands_ShowToolModels()
+        {
+            var stands = Object.FindObjectsByType<ShopStand>();
+            foreach (var stand in stands.Where(s => s.item is ToolDefinition))
+            {
+                var fit = stand.transform.Find("Fit_Tool" + stand.item.id);
+                Assert.IsTrue(fit, stand.item.id + " 도구 모델");
+                Assert.IsNull(stand.transform.Find("Goods"), stand.item.id + " 공 없음");
+                var bounds = fit.GetComponentsInChildren<Renderer>().Select(r => r.bounds).ToArray();
+                float height = bounds.Max(b => b.max.y) - bounds.Min(b => b.min.y);
+                float depth = bounds.Max(b => b.max.z) - bounds.Min(b => b.min.z);
+                float width = bounds.Max(b => b.max.x) - bounds.Min(b => b.min.x);
+                Assert.Greater(height, Mathf.Max(width, depth) * 0.6f, stand.item.id + " 세워 놓음");
+                Assert.Greater(bounds.Min(b => b.min.y), stand.transform.position.y + 0.7f, stand.item.id + " 매대 위");
+            }
+            Assert.IsTrue(stands.Any(s => s.transform.Find("Goods")), "묘목은 공");
         }
 
         [UnityTest]
