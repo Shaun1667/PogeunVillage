@@ -50,7 +50,7 @@ namespace PogeunVillage.PlayModeTests
             Assert.IsTrue(intro.playerLock.IsFree, "조작 가능");
         }
 
-        // P-5d: 방 소품은 Varco3D 모델(그릇 Model_Room…), 모니터 화면 쿼드는 모니터 모델 앞면 바로 앞 · 화면 안쪽
+        // P-5d: 방 소품은 Varco3D 모델(그릇 Model_Room…), 모니터 화면 쿼드는 모니터 화면 칸 안(테두리 앞으로 튀어나오지 않음)
         [UnityTest]
         public IEnumerator Room_UsesModels_ScreenOnMonitorFront()
         {
@@ -65,10 +65,19 @@ namespace PogeunVillage.PlayModeTests
 
             var monitor = room.Find("Model_RoomMonitor").GetComponentInChildren<MeshRenderer>().bounds;
             var screen = intro.screen.transform.position;
-            Assert.Less(screen.z, monitor.min.z, "화면이 모니터 앞에");
-            Assert.Less(monitor.min.z - screen.z, 0.02f, "앞면에 붙어 있음");
+            Assert.GreaterOrEqual(screen.z, monitor.min.z, "테두리 앞으로 튀어나오지 않음(화면 칸 안으로 들어감)");
+            Assert.Less(screen.z - monitor.min.z, monitor.size.z * 0.5f, "모니터 앞쪽(뒷면이 아님)");
             Assert.Greater(screen.y, monitor.min.y + monitor.size.y * 0.3f, "받침대가 아닌 화면 높이");
             Assert.Less(screen.y, monitor.max.y);
+
+            // 게임 화면이 모니터 화면 칸(모델 폭 0.10 ~ 0.91 · 높이 0.42 ~ 0.88) 안 — 테두리 · 모서리로 튀어나오지 않음
+            var quad = intro.screen.bounds;
+            float Fx(float x) => (x - monitor.min.x) / monitor.size.x;
+            float Fy(float y) => (y - monitor.min.y) / monitor.size.y;
+            Assert.Greater(Fx(quad.min.x), 0.10f, "왼쪽");
+            Assert.Less(Fx(quad.max.x), 0.91f, "오른쪽");
+            Assert.Greater(Fy(quad.min.y), 0.42f, "아래");
+            Assert.Less(Fy(quad.max.y), 0.88f, "위");
             yield break;
         }
 

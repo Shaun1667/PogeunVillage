@@ -115,10 +115,12 @@ namespace PogeunVillage
             screen.SetPropertyBlock(block);
             float aspect = (float)screenTexture.width / screenTexture.height;
             var screenTransform = screen.transform;
-            screenTransform.localScale = new Vector3(settings.screenHeight * aspect, settings.screenHeight, 1f);
+            // 게임 창이 아주 넓으면 화면 높이를 줄여 모니터 화면 칸 폭을 넘지 않게
+            float screenHeight = Mathf.Min(settings.screenHeight, settings.screenHeight * settings.screenMaxAspect / aspect);
+            screenTransform.localScale = new Vector3(screenHeight * aspect, screenHeight, 1f);
             roomCamera.aspect = aspect;
             roomCamera.fieldOfView = mainCamera.fieldOfView;
-            roomStart = FillPose(screenTransform, settings.screenHeight, roomCamera.fieldOfView);
+            roomStart = FillPose(screenTransform, screenHeight, roomCamera.fieldOfView);
             Vector3 endPosition = screenTransform.position - screenTransform.forward * settings.roomCameraBack + Vector3.up * settings.roomCameraUp;
             roomEnd = new Pose(endPosition, Quaternion.LookRotation(screenTransform.position + Vector3.down * settings.roomLookDown - endPosition));
             Apply();

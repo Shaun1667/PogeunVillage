@@ -2310,7 +2310,7 @@ namespace PogeunVillage.EditorTools
 
             // 모니터 화면 쿼드: 모델 앞면 바로 앞, 화면 영역 가운데(MonitorScreenCenter = 모델 높이 비율). 크기는 인트로가 정함(screenHeight × 화면 비율)
             var mb = ModelBounds(monitor);
-            var screenCenter = new Vector3(mb.center.x, mb.min.y + mb.size.y * MonitorScreenCenter, mb.min.z - 0.004f) - room.position;
+            var screenCenter = new Vector3(mb.min.x + mb.size.x * MonitorScreenCenterX, mb.min.y + mb.size.y * MonitorScreenCenter, MonitorScreenSurfaceZ(monitor, mb) - 0.003f) - room.position;
             var screen = Prim(PrimitiveType.Quad, "MonitorScreen", room, screenCenter, Vector3.one, ScreenMaterial(), castShadows: false);
 
             // 저녁 조명(P-5d): 방 물건은 해를 거의 받지 않고(재질 _MainLightScale), 스탠드 · 모니터 · 노을 창 점 조명으로 밝힘
@@ -2365,9 +2365,11 @@ namespace PogeunVillage.EditorTools
             sequence.landingDust = dust;
         }
 
-        // 인트로 방 모니터 모델(P-5d): 화면 높이 대비 모델 폭, 화면 가운데 높이(모델 바닥 0 ~ 꼭대기 1) — 모델을 보고 맞춘 값
-        const float MonitorWidthPerScreenHeight = 2.4f;
-        const float MonitorScreenCenter = 0.625f;
+        // 인트로 방 모니터 모델(P-5d): 모델 정면을 렌더해 잰 어두운 화면 칸(모델 폭 0.10 ~ 0.91 · 높이 0.42 ~ 0.88)에
+        // 16:9 화면이 위아래 4% 여백을 두고 들어가는 값 — 화면 높이 대비 모델 폭, 화면 가운데(모델 폭 · 높이 비율). 모델을 바꾸면 다시 잼
+        const float MonitorWidthPerScreenHeight = 2.49f;
+        const float MonitorScreenCenterX = 0.505f;
+        const float MonitorScreenCenter = 0.651f;
 
         // 인트로 방 소품(P-5d): 모델을 yaw만큼 돌려(기본 180 = 정면이 방 카메라 쪽 -Z) 폭(m)에 맞추고 바닥을 자리에 둠.
         // height · depth를 주면 그 축만 따로 맞춤(책상처럼 비율이 어긋난 모델). againstWall이면 뒷면을 그 Z(벽 앞)에 붙임
@@ -2389,6 +2391,24 @@ namespace PogeunVillage.EditorTools
             var target = room.TransformPoint(localPosition);
             fit.position += new Vector3(target.x - bounds.center.x, target.y - bounds.min.y, againstWall ? target.z - bounds.max.z : target.z - bounds.center.z);
             return fit.gameObject;
+        }
+
+        // 모니터 화면 칸의 표면 깊이(Z): 화면 칸 가운데 영역의 정점 중 가장 앞(-Z) — 테두리보다 들어가 있어 쿼드를 테두리 앞에 띄우지 않음
+        static float MonitorScreenSurfaceZ(GameObject monitor, Bounds bounds)
+        {
+            float z = float.MaxValue;
+            foreach (var filter in monitor.GetComponentsInChildren<MeshFilter>())
+            {
+                var toWorld = filter.transform.localToWorldMatrix;
+                foreach (var v in filter.sharedMesh.vertices)
+                {
+                    var p = toWorld.MultiplyPoint3x4(v);
+                    float fx = (p.x - bounds.min.x) / bounds.size.x, fy = (p.y - bounds.min.y) / bounds.size.y;
+                    if (fx > 0.25f && fx < 0.75f && fy > 0.5f && fy < 0.8f)
+                        z = Mathf.Min(z, p.z);
+                }
+            }
+            return z == float.MaxValue ? bounds.min.z : z;
         }
 
         static void RoomLight(string name, Transform room, Vector3 worldPosition, Color color, float intensity, float range)

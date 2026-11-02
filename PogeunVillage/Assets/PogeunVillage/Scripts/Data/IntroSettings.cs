@@ -56,6 +56,8 @@ namespace PogeunVillage
         public Vector3 roomOrigin = new(3000f, 0f, 0f);
         [Tooltip("모니터 화면 높이(m). 폭은 화면 비율에 맞춤")]
         public float screenHeight = 0.36f;
+        [Tooltip("모니터 화면 칸에 들어가는 가장 넓은 화면 비율 — 게임 창이 이보다 넓으면 화면 높이를 줄임(P-5d)")]
+        public float screenMaxAspect = 1.9f;
         [Tooltip("방 카메라 끝 자리: 모니터에서 뒤(m)")]
         public float roomCameraBack = 1.8f;
         [Tooltip("방 카메라 끝 자리: 모니터보다 위(m)")]
