@@ -47,6 +47,11 @@ namespace PogeunVillage.EditorTools
             ["ToolAxe"] = (0.45f, 0f),
             ["ToolShovel"] = (0.55f, 0f),
             ["ToolWateringCan"] = (0.35f, 0f),
+            ["Stump"] = (0.35f, 0f),  // 땅 물건(P-4i)
+            ["SaplingStage0"] = (0.5f, 0f),
+            ["SaplingStage1"] = (0.9f, 0f),
+            ["SaplingStage2"] = (1.4f, 0f),
+            ["PickupWood"] = (0.3f, 0f),
         };
 
         static readonly (float height, float yaw) HouseDefault = (3.6f, 0f);  // 주민별 집 House01 ~ 20

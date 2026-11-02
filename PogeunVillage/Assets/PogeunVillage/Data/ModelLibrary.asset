@@ -213,6 +213,11 @@ MonoBehaviour:
     material: {fileID: 2100000, guid: a5bc822638c29b84bb5118db24782633, type: 2}
     height: 2.3
     yaw: 0
+  - id: PickupWood
+    model: {fileID: 919132149155446097, guid: 1d64479ecb687674dbb3767ba2383be9, type: 3}
+    material: {fileID: 2100000, guid: 550946b8248df2a49bd4912c346ba33e, type: 2}
+    height: 0.3
+    yaw: 0
   - id: Rock
     model: {fileID: 919132149155446097, guid: 5dbd57c68dad57e46a6f61defae53776, type: 3}
     material: {fileID: 2100000, guid: d941b433a0e9d2e42802ec645e442418, type: 2}
@@ -253,6 +258,21 @@ MonoBehaviour:
     material: {fileID: 2100000, guid: bdc16a043a261fb4194e203d3cea3010, type: 2}
     height: 1
     yaw: 0
+  - id: SaplingStage0
+    model: {fileID: 919132149155446097, guid: 18b858cd980b39444a6d24e87fe96fb8, type: 3}
+    material: {fileID: 2100000, guid: d22ef2d94c9d9b140b98ee5467452296, type: 2}
+    height: 0.5
+    yaw: 0
+  - id: SaplingStage1
+    model: {fileID: 919132149155446097, guid: 8df31a301c44bfc429dbb21ff0ce8f99, type: 3}
+    material: {fileID: 2100000, guid: cb73faf37c9ede648b5e1283ad21187d, type: 2}
+    height: 0.9
+    yaw: 0
+  - id: SaplingStage2
+    model: {fileID: 919132149155446097, guid: 995c70ea72a3beb4cbb2f230bd1b2d93, type: 3}
+    material: {fileID: 2100000, guid: 4c18124c1775180448c2c6f70f9f7d70, type: 2}
+    height: 1.4
+    yaw: 0
   - id: SellBox
     model: {fileID: 919132149155446097, guid: b8f2361b92c446a4caa1f8efec2ef9dd, type: 3}
     material: {fileID: 2100000, guid: ae802023d386ba34f8901592a6ac2bbc, type: 2}
@@ -272,6 +292,11 @@ MonoBehaviour:
     model: {fileID: 919132149155446097, guid: 03f6ce047aa6203469debf5386dae1c7, type: 3}
     material: {fileID: 2100000, guid: 4b931513da793394d9baf606ba30deb8, type: 2}
     height: 2.6
+    yaw: 0
+  - id: Stump
+    model: {fileID: 919132149155446097, guid: c33c8cd3e81bf554984d6d45d5112376, type: 3}
+    material: {fileID: 2100000, guid: f8fc3d8c255b38442b7dbc06eb39c916, type: 2}
+    height: 0.35
     yaw: 0
   - id: ToolAxe
     model: {fileID: 919132149155446097, guid: 19419c4cb59fa1e4289faec62aa164fe, type: 3}

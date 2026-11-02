@@ -14,6 +14,20 @@ namespace PogeunVillage
         Interactable interactable;
 
         void Awake() => interactable = GetComponent<Interactable>();
+
+        // 물건에 떨어진 모습 모델이 있으면 공 대신 보임(P-4i). item은 만든 쪽이 Instantiate 직후 채우므로 Start에서
+        void Start()
+        {
+            if (!item || !item.pickupModel || transform.Find("Model"))
+                return;
+            foreach (var ball in GetComponentsInChildren<Renderer>())
+                ball.enabled = false;
+            var model = Instantiate(item.pickupModel, transform);
+            model.name = "Model";
+            model.transform.localScale = Vector3.one * item.pickupScale;
+            foreach (var r in model.GetComponentsInChildren<Renderer>())
+                r.sharedMaterial = item.pickupMaterial;
+        }
         void OnEnable() => interactable.Interacted += OnPicked;
         void OnDisable() => interactable.Interacted -= OnPicked;
 

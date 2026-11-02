@@ -18,6 +18,9 @@ MonoBehaviour:
   plantsAs: 0
   buyPrice: 400
   sellPrice: 200
+  pickupModel: {fileID: 0}
+  pickupMaterial: {fileID: 0}
+  pickupScale: 1
   prefab: {fileID: 6459400815266528486, guid: d2b157df921129e4a918c21eac150a7b, type: 3}
   woodCost: 0
   ratingPoint: 10

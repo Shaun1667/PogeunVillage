@@ -21,5 +21,12 @@ namespace PogeunVillage
         [Min(0)] public int buyPrice;
         [Tooltip("판매함에 팔 때 1개 가격(모아). 0이면 팔 수 없음")]
         [Min(0)] public int sellPrice;
+
+        [Header("땅에 떨어진 모습 (P-4i, 없으면 공)")]
+        [Tooltip("떨어진 물건(Pickup)으로 보일 모델. 비우면 공 모양 그대로")]
+        public GameObject pickupModel;
+        public Material pickupMaterial;
+        [Tooltip("모델 크기 배율(맵 생성 메뉴가 높이에 맞춰 채움)")]
+        public float pickupScale = 1f;
     }
 }

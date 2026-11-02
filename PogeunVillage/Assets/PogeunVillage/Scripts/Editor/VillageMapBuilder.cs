@@ -141,6 +141,7 @@ namespace PogeunVillage.EditorTools
             flowerItem = EnsureItem("Flower", "꽃", sellPrice: 40);
             pickupPrefab = BuildPickupPrefab();
             woodItem = EnsureItem("Wood", "목재", sellPrice: 20);
+            SetPickupLook(woodItem, "PickupWood");  // 떨어진 목재는 통나무 단 모델(P-4i)
             flowerClumpItem = EnsureItem("FlowerClump", "꽃 포기", GroundObjectKind.Flower, sellPrice: 60);
             saplingItem = EnsureItem("Sapling", "묘목", GroundObjectKind.Sapling, buyPrice: 300, sellPrice: 150);
             furniture = EnsureFurniture();
@@ -1467,16 +1468,11 @@ namespace PogeunVillage.EditorTools
         static GameObject BuildSaplingPrefab()
         {
             var root = new GameObject("Sapling");
-            var trunk = Mat("Trunk", "#A57A52");
-            var leaves = Mat("Leaves", "#6FC27A");
-            float[] heights = { 0.5f, 0.9f, 1.4f };
-            for (int i = 0; i < heights.Length; i++)
+            for (int i = 0; i < 3; i++)
             {
                 var stage = new GameObject("Stage" + i).transform;
                 stage.SetParent(root.transform, false);
-                float h = heights[i];
-                Prim(PrimitiveType.Cylinder, "Stem", stage, new Vector3(0f, h * 0.5f, 0f), new Vector3(0.06f + i * 0.04f, h * 0.5f, 0.06f + i * 0.04f), trunk, castShadows: false);
-                Prim(PrimitiveType.Sphere, "Leaf", stage, new Vector3(0f, h, 0f), Vector3.one * (0.3f + i * 0.3f), leaves, castShadows: i > 0);
+                ModelVisual("SaplingStage" + i, stage, Vector3.zero, castShadows: i > 0);  // 새싹 → 작은 묘목 → 큰 묘목(P-4i), 높이는 ModelLibrary
                 stage.gameObject.SetActive(i == 0);
             }
             root.AddComponent<GridObject>().kind = GroundObjectKind.Sapling;
@@ -2198,6 +2194,24 @@ namespace PogeunVillage.EditorTools
             return item;
         }
 
+        // 물건이 땅에 떨어졌을 때 보일 모델(Pickup이 공 대신 보임). 크기는 ModelLibrary 높이에 맞춤
+        static void SetPickupLook(ItemDefinition item, string modelId)
+        {
+            var entry = models ? models.Find(modelId) : null;
+            if (entry == null || !entry.model)
+            {
+                Debug.LogError($"모델 '{modelId}'이 ModelLibrary에 없습니다 — 메뉴 Pogeun Village/Import Varco Models");
+                return;
+            }
+            var probe = (GameObject)Object.Instantiate(entry.model);
+            float height = probe.GetComponentsInChildren<MeshRenderer>().Max(r => r.bounds.max.y);
+            Object.DestroyImmediate(probe);
+            item.pickupModel = entry.model;
+            item.pickupMaterial = entry.material;
+            item.pickupScale = entry.height / Mathf.Max(height, 0.01f);
+            EditorUtility.SetDirty(item);
+        }
+
         static ToolDefinition EnsureTool(string id, string displayName, ToolKind kind, bool usesGroundCell, params InteractableKind[] hitKinds)
         {
             string path = $"{ToolDir}/{id}.asset";
@@ -2235,8 +2249,8 @@ namespace PogeunVillage.EditorTools
         static GameObject BuildStumpPrefab()
         {
             var root = new GameObject("Stump");
-            Prim(PrimitiveType.Cylinder, "Trunk", root.transform, new Vector3(0f, 0.15f, 0f), new Vector3(0.42f, 0.15f, 0.42f), Mat("Trunk", "#A57A52"), collider: true);
-            Prim(PrimitiveType.Cylinder, "Top", root.transform, new Vector3(0f, 0.305f, 0f), new Vector3(0.36f, 0.01f, 0.36f), Mat("StumpTop", "#E8C99A"), castShadows: false);
+            ColliderOnly(Prim(PrimitiveType.Cylinder, "Trunk", root.transform, new Vector3(0f, 0.15f, 0f), new Vector3(0.42f, 0.15f, 0.42f), Mat("Trunk", "#A57A52"), collider: true));
+            FitModel("Stump", root.transform, Vector3.zero, new Vector3(0.5f, 0f, 0f));  // 밑동 모델(P-4i): 폭 0.5(뿌리 포함), 높이는 비율대로
             AddInteractable(root, "밑동", InteractableKind.Stump, radius: 0.35f, markerHeight: 0.9f, wiggle: false);
             var prefab = PrefabUtility.SaveAsPrefabAsset(root, PrefabDir + "/Stump.prefab");
             Object.DestroyImmediate(root);

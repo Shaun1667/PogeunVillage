@@ -116,6 +116,31 @@ namespace PogeunVillage.PlayModeTests
             Assert.IsTrue(stands.Any(s => s.transform.Find("Goods")), "묘목은 공");
         }
 
+        // P-4i: 묘목 3단계 · 밑동은 모델, 떨어진 목재는 공 대신 통나무 단 모델
+        [UnityTest]
+        public IEnumerator GroundItems_UseModels()
+        {
+            var tree = Object.FindObjectsByType<ChoppableTreeBehaviour>().First();
+            var stump = tree.stumpPrefab;
+            Assert.IsTrue(stump.transform.Find("Fit_Stump"), "밑동 모델");
+            Assert.IsFalse(stump.transform.Find("Trunk").GetComponent<MeshRenderer>(), "밑동 원기둥은 충돌만");
+
+            var sapling = Object.FindAnyObjectByType<GroundPlacer>().saplingPrefab;
+            for (int i = 0; i < 3; i++)
+                Assert.IsTrue(sapling.transform.Find($"Stage{i}/Model_SaplingStage{i}"), "묘목 " + i + "단계 모델");
+
+            var wood = Object.Instantiate(tree.pickupPrefab, ground.transform.position + Vector3.up * 50f, Quaternion.identity);
+            wood.item = tree.woodItem;
+            yield return null;
+            var model = wood.transform.Find("Model");
+            Assert.IsTrue(model, "목재 모델");
+            Assert.IsTrue(model.GetComponentsInChildren<Renderer>().All(r => r.enabled && r.sharedMaterial == tree.woodItem.pickupMaterial));
+            Assert.IsFalse(wood.transform.Find("Ball").GetComponent<Renderer>().enabled, "공은 숨김");
+            float height = model.GetComponentsInChildren<Renderer>().Max(r => r.bounds.max.y) - wood.transform.position.y;
+            Assert.AreEqual(0.3f, height, 0.05f, "목재 높이");
+            Object.Destroy(wood.gameObject);
+        }
+
         [UnityTest]
         public IEnumerator Flower_UsesModelLook()
         {

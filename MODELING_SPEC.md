@@ -43,6 +43,9 @@
 | ToolAxe | 0.45 | 0 | 노점 매대 위 도끼 |
 | ToolShovel | 0.55 | 0 (누워 생성 → x -90°로 세움) | 노점 매대 위 삽 |
 | ToolWateringCan | 0.35 | 0 | 노점 매대 위 물뿌리개 |
+| Stump | 폭 0.5에 맞춤(× 베어진 나무 배율) | 0 | 나무 밑동(P-4i) |
+| SaplingStage0 / 1 / 2 | 0.5 / 0.9 / 1.4 | 0 | 심은 묘목 성장 3단계 |
+| PickupWood | 0.3 | 0 | 떨어진 목재(`ItemDefinition.pickupModel`) |
 | House01 ~ 20 | 3.6 | 0 | 주민 01~20의 집(정면 = 현관, 폭 약 4.8) |
 | Villager01 ~ 20 | 1.5 | 0 | 주민 01~20(T-pose 정적, 뼈대 없음) |
 
