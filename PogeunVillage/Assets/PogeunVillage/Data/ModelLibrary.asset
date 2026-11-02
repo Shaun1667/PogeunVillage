@@ -13,6 +13,11 @@ MonoBehaviour:
   m_Name: ModelLibrary
   m_EditorClassIdentifier: PogeunVillage::PogeunVillage.ModelLibrary
   entries:
+  - id: Aquarium
+    model: {fileID: 919132149155446097, guid: d84843b7fec23c14da3b24da4dd84de5, type: 3}
+    material: {fileID: 2100000, guid: 45bbbafad7586de48ad639e91b83d350, type: 2}
+    height: 0.8
+    yaw: 0
   - id: Bed
     model: {fileID: 919132149155446097, guid: c4464676a14355449952a43853e06f04, type: 3}
     material: {fileID: 2100000, guid: bb490bb03f464b742846cc3dc73a794d, type: 2}
@@ -27,6 +32,46 @@ MonoBehaviour:
     model: {fileID: 919132149155446097, guid: f2c75b08fff970949a4fda52926028f0, type: 3}
     material: {fileID: 2100000, guid: 01a82782f99912747afc3f7a356ba04c, type: 2}
     height: 2.3
+    yaw: 0
+  - id: FishCarp
+    model: {fileID: 919132149155446097, guid: 3a8a86e821b698449acf6e9291f14bc6, type: 3}
+    material: {fileID: 2100000, guid: 93214cd9ed78a4047a8798c9162a43db, type: 2}
+    height: 0.15
+    yaw: 0
+  - id: FishCatfish
+    model: {fileID: 919132149155446097, guid: d23215c6145e0f249ac3c648766e5b16, type: 3}
+    material: {fileID: 2100000, guid: 2266ce74da4177e4b9be848bf3b0b598, type: 2}
+    height: 0.15
+    yaw: 0
+  - id: FishCrucianCarp
+    model: {fileID: 919132149155446097, guid: 6d9aa3a2abaffbc45b7be1545b95a071, type: 3}
+    material: {fileID: 2100000, guid: 07992afa694ebf94b919080654febc5d, type: 2}
+    height: 0.12
+    yaw: 0
+  - id: FishGoldenCarp
+    model: {fileID: 919132149155446097, guid: 5e8ba2d189cc1ce4682a76ffb8be752d, type: 3}
+    material: {fileID: 2100000, guid: 9ce6bf0344f75b047bd8f93cfb6afb11, type: 2}
+    height: 0.15
+    yaw: 0
+  - id: FishLoach
+    model: {fileID: 919132149155446097, guid: 460e56b91c3aa5c49b573eae13a598da, type: 3}
+    material: {fileID: 2100000, guid: 2e3183ac00b5da042ac793398d36b110, type: 2}
+    height: 0.08
+    yaw: 0
+  - id: FishMandarinfish
+    model: {fileID: 919132149155446097, guid: 18847c984a1c8e649a932146ea87a197, type: 3}
+    material: {fileID: 2100000, guid: 410a3f546f67edf45b0e7a07790311cf, type: 2}
+    height: 0.12
+    yaw: 0
+  - id: FishMedaka
+    model: {fileID: 919132149155446097, guid: 50096a295dc316b4580a21f4778853a5, type: 3}
+    material: {fileID: 2100000, guid: fafbee08d159cb14ca3089e01f8f5524, type: 2}
+    height: 0.08
+    yaw: 0
+  - id: FishPaleChub
+    model: {fileID: 919132149155446097, guid: f6ea27b6630dd4d4d9547deb365a12b4, type: 3}
+    material: {fileID: 2100000, guid: 7b8402c0d6bc85d46a40e761a729aa1e, type: 2}
+    height: 0.08
     yaw: 0
   - id: FlowerDaisy
     model: {fileID: 919132149155446097, guid: 1e27df8c59d41e04282ed4042bbab336, type: 3}
