@@ -61,6 +61,15 @@ namespace PogeunVillage.EditorTools
             ["FishCarp"] = (0.15f, 0f),
             ["FishCatfish"] = (0.15f, 0f),
             ["FishGoldenCarp"] = (0.15f, 0f),
+            ["InsectCage"] = (0.5f, 0f),  // 곤충 · 채집통(P-4e, 생성만 — 적용 때 다시 맞춤)
+            ["InsectCabbageWhite"] = (0.12f, 0f),
+            ["InsectHoneyBee"] = (0.1f, 0f),
+            ["InsectGrasshopper"] = (0.1f, 0f),
+            ["InsectCricket"] = (0.08f, 0f),
+            ["InsectRedDragonfly"] = (0.1f, 0f),
+            ["InsectCicada"] = (0.1f, 0f),
+            ["InsectFirefly"] = (0.06f, 0f),
+            ["InsectStagBeetle"] = (0.1f, 0f),
         };
 
         static readonly (float height, float yaw) HouseDefault = (3.6f, 0f);  // 주민별 집 House01 ~ 20
