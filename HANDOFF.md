@@ -182,5 +182,5 @@ git checkout -- "Assets/PogeunVillage/Fonts/Cafe24Ssurround SDF.asset" Assets/Po
 | 이사 취소 기준 | -20 **초과**(-19 이상)로 회복하면 취소 | GDD 4-3 |
 | 구멍 -2 | 하루 상한 · 괴롭히기 연속과 별개, 하한 -20 적용 | GDD 10번 |
 | 다 자란 나무 | 옮길 수 없음 | GDD 10번 |
-| 상점 주인 | 이름 · 종족 · 모델 미정 | GDD 10번 |
+| 상점 주인 | 종족 = 나무늘보(2026-11-02), 이름 미정 | GDD 10번 |
 | 인트로 패드 건너뛰기 | ESC와 함께 패드 Start도 건너뛰기 | TASKS P-5a |
