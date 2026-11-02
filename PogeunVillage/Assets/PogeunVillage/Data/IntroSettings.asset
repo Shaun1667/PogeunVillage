@@ -37,5 +37,16 @@ MonoBehaviour:
   roomCameraUp: 0.25
   roomLookDown: 0.15
   roomDrift: 0.02
+  roomSunlight: 0.3
+  roomAmbient: 0.2
+  lampLightColor: {r: 1, g: 0.76, b: 0.45, a: 1}
+  lampLightIntensity: 0.55
+  lampLightRange: 2.2
+  monitorLightColor: {r: 0.75, g: 0.88, b: 1, a: 1}
+  monitorLightIntensity: 0.25
+  monitorLightRange: 1.6
+  windowLightColor: {r: 1, g: 0.58, b: 0.4, a: 1}
+  windowLightIntensity: 0.6
+  windowLightRange: 3.2
   villagePitch: 20
   villageDistance: 11

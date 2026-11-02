@@ -14,6 +14,7 @@ Shader "PogeunVillage/CurvedToon"
         _RimColor ("Rim Color", Color) = (1, 1, 1, 1)
         _RimStrength ("Rim Strength", Range(0, 1)) = 0.12
         [HDR] _EmissionColor ("Emission", Color) = (0, 0, 0, 0)
+        _MainLightScale ("Main Light Scale", Range(0, 1)) = 1
 
         [Header(Water Waves)]
         _WaveAmp ("Wave Amplitude", Float) = 0
@@ -39,6 +40,7 @@ Shader "PogeunVillage/CurvedToon"
             half4 _RimColor;
             half _RimStrength;
             half4 _EmissionColor;
+            half _MainLightScale;
             float _WaveAmp;
             float _WaveSpeed;
             float _WaveScale;
@@ -78,6 +80,8 @@ Shader "PogeunVillage/CurvedToon"
             #pragma fragment frag
             #pragma multi_compile _ _MAIN_LIGHT_SHADOWS _MAIN_LIGHT_SHADOWS_CASCADE
             #pragma multi_compile_fragment _ _SHADOWS_SOFT _SHADOWS_SOFT_LOW _SHADOWS_SOFT_MEDIUM _SHADOWS_SOFT_HIGH
+            #pragma multi_compile _ _ADDITIONAL_LIGHTS
+            #pragma multi_compile _ _CLUSTER_LIGHT_LOOP
             #pragma multi_compile_fog
             #pragma multi_compile_instancing
 
@@ -128,8 +132,22 @@ Shader "PogeunVillage/CurvedToon"
                 half lit = smoothstep(_RampThreshold - _RampSmooth, _RampThreshold + _RampSmooth, ndotl);
                 lit *= light.shadowAttenuation;
 
-                half3 color = lerp(albedo.rgb * _ShadowTint.rgb, albedo.rgb * light.color, lit);
+                // _MainLightScale: 해가 들지 않는 곳(인트로 저녁 방, P-5d)은 해 · 그림자 색을 함께 어둡게
+                half3 color = lerp(albedo.rgb * _ShadowTint.rgb, albedo.rgb * light.color, lit) * _MainLightScale;
                 color += albedo.rgb * SampleSH(normalWS) * _AmbientStrength;
+
+            #if defined(_ADDITIONAL_LIGHTS)
+                // 점 · 스포트 조명(스탠드 등): 툰 경계 그대로, 등진 면도 조금은 밝게
+                InputData inputData = (InputData)0;
+                inputData.positionWS = input.positionWS;
+                inputData.normalizedScreenSpaceUV = GetNormalizedScreenSpaceUV(input.positionCS);
+                uint additionalCount = GetAdditionalLightsCount();
+                LIGHT_LOOP_BEGIN(additionalCount)
+                    Light extra = GetAdditionalLight(lightIndex, input.positionWS);
+                    half extraLit = smoothstep(_RampThreshold - _RampSmooth, _RampThreshold + _RampSmooth, dot(normalWS, extra.direction));
+                    color += albedo.rgb * extra.color * extra.distanceAttenuation * lerp(0.3, 1.0, extraLit);
+                LIGHT_LOOP_END
+            #endif
 
                 half3 viewDirWS = GetWorldSpaceNormalizeViewDir(input.positionWS);
                 half rim = pow(1.0 - saturate(dot(normalWS, viewDirWS)), 4.0) * _RimStrength;

@@ -2297,7 +2297,7 @@ namespace PogeunVillage.EditorTools
             Prim(PrimitiveType.Cube, "WallBack", room, new Vector3(0f, 1.4f, 2.2f), new Vector3(5f, 2.8f, 0.1f), wall);
             Prim(PrimitiveType.Cube, "WallLeft", room, new Vector3(-2.2f, 1.4f, 0f), new Vector3(0.1f, 2.8f, 5f), wall);
             Prim(PrimitiveType.Cube, "WallRight", room, new Vector3(2.2f, 1.4f, 0f), new Vector3(0.1f, 2.8f, 5f), wall);
-            RoomModel("RoomWindow", room, new Vector3(-1.1f, 1.0f, 2.15f), 1.1f, againstWall: true);
+            var window = RoomModel("RoomWindow", room, new Vector3(-1.1f, 1.0f, 2.15f), 1.1f, againstWall: true);
 
             // 책상 · 모니터(화면 앞 = -Z 쪽 카메라를 봄) · 키보드 · 마우스 · 스탠드 · 머그 — 폭(m)에 맞추고 책상 윗면에 올림
             var desk = RoomModel("RoomDesk", room, new Vector3(0f, 0f, 1.3f), 1.6f, height: 0.76f, depth: 0.8f, yaw: 90f);  // 긴 변이 모델 Z축
@@ -2305,13 +2305,27 @@ namespace PogeunVillage.EditorTools
             var monitor = RoomModel("RoomMonitor", room, new Vector3(0f, deskTop, 1.5f), intro.screenHeight * MonitorWidthPerScreenHeight);
             RoomModel("RoomKeyboard", room, new Vector3(-0.05f, deskTop, 1.05f), 0.44f);
             RoomModel("RoomMouse", room, new Vector3(0.32f, deskTop, 1.05f), 0.07f);
-            RoomModel("RoomLamp", room, new Vector3(-0.6f, deskTop, 1.45f), 0.26f);
+            var lamp = RoomModel("RoomLamp", room, new Vector3(-0.6f, deskTop, 1.45f), 0.26f);
             RoomModel("RoomMug", room, new Vector3(0.55f, deskTop, 1.25f), 0.1f);
 
             // 모니터 화면 쿼드: 모델 앞면 바로 앞, 화면 영역 가운데(MonitorScreenCenter = 모델 높이 비율). 크기는 인트로가 정함(screenHeight × 화면 비율)
             var mb = ModelBounds(monitor);
             var screenCenter = new Vector3(mb.center.x, mb.min.y + mb.size.y * MonitorScreenCenter, mb.min.z - 0.004f) - room.position;
             var screen = Prim(PrimitiveType.Quad, "MonitorScreen", room, screenCenter, Vector3.one, ScreenMaterial(), castShadows: false);
+
+            // 저녁 조명(P-5d): 방 물건은 해를 거의 받지 않고(재질 _MainLightScale), 스탠드 · 모니터 · 노을 창 점 조명으로 밝힘
+            foreach (var renderer in room.GetComponentsInChildren<Renderer>())
+                if (renderer.sharedMaterial && renderer.sharedMaterial.HasProperty("_MainLightScale"))
+                {
+                    renderer.sharedMaterial.SetFloat("_MainLightScale", intro.roomSunlight);
+                    renderer.sharedMaterial.SetFloat("_AmbientStrength", intro.roomAmbient);
+                    EditorUtility.SetDirty(renderer.sharedMaterial);
+                }
+            var lb = ModelBounds(lamp);
+            RoomLight("LampLight", room, new Vector3(lb.center.x, lb.max.y - lb.size.y * 0.35f, lb.min.z - 0.03f), intro.lampLightColor, intro.lampLightIntensity, intro.lampLightRange);
+            RoomLight("MonitorLight", room, screen.transform.position + new Vector3(0f, 0f, -0.35f), intro.monitorLightColor, intro.monitorLightIntensity, intro.monitorLightRange);
+            var wb = ModelBounds(window);
+            RoomLight("WindowLight", room, new Vector3(wb.center.x, wb.center.y, wb.min.z - 0.4f), intro.windowLightColor, intro.windowLightIntensity, intro.windowLightRange);
 
             // 방 카메라(처음엔 꺼 둠, 휨 없음) — 마을 카메라보다 나중에 그림
             var camGo = new GameObject("IntroRoomCamera");
@@ -2375,6 +2389,19 @@ namespace PogeunVillage.EditorTools
             var target = room.TransformPoint(localPosition);
             fit.position += new Vector3(target.x - bounds.center.x, target.y - bounds.min.y, againstWall ? target.z - bounds.max.z : target.z - bounds.center.z);
             return fit.gameObject;
+        }
+
+        static void RoomLight(string name, Transform room, Vector3 worldPosition, Color color, float intensity, float range)
+        {
+            var go = new GameObject(name);
+            go.transform.SetParent(room, false);
+            go.transform.position = worldPosition;
+            var light = go.AddComponent<Light>();
+            light.type = LightType.Point;
+            light.color = color;
+            light.intensity = intensity;
+            light.range = range;
+            light.shadows = LightShadows.None;
         }
 
         static Bounds ModelBounds(GameObject go)

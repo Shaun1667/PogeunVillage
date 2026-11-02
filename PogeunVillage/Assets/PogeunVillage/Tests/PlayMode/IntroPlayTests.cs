@@ -72,6 +72,25 @@ namespace PogeunVillage.PlayModeTests
             yield break;
         }
 
+        // P-5d 저녁 조명: 방 물건은 해를 조금만 받고(마을은 그대로), 스탠드 · 모니터 · 창 점 조명이 방 안에
+        [UnityTest]
+        public IEnumerator Room_EveningLights()
+        {
+            var room = intro.transform;
+            foreach (string name in new[] { "LampLight", "MonitorLight", "WindowLight" })
+            {
+                var light = room.Find(name).GetComponent<Light>();
+                Assert.AreEqual(LightType.Point, light.type, name);
+                Assert.Greater(light.intensity, 0f, name);
+                Assert.Less(Vector3.Distance(light.transform.position, room.position), 4f, name + "는 방 안");
+            }
+            var desk = room.Find("Model_RoomDesk").GetComponentInChildren<MeshRenderer>().sharedMaterial;
+            Assert.AreEqual(intro.settings.roomSunlight, desk.GetFloat("_MainLightScale"), 1e-4f, "방은 해를 조금만");
+            var fountain = GameObject.Find("Model_Fountain").GetComponentInChildren<MeshRenderer>().sharedMaterial;
+            Assert.AreEqual(1f, fountain.GetFloat("_MainLightScale"), 1e-4f, "마을은 그대로");
+            yield break;
+        }
+
         [UnityTest]
         public IEnumerator PullOutStart_ScreenFillsRoomCamera()
         {

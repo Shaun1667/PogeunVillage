@@ -65,6 +65,24 @@ namespace PogeunVillage
         [Tooltip("방 머물 때 카메라 흔들림(m)")]
         public float roomDrift = 0.02f;
 
+        [Header("방 저녁 조명 (P-5d, 맵 생성 때 반영)")]
+        [Tooltip("방 물건이 받는 해 밝기(0~1) — 낮을수록 어두운 저녁 방")]
+        [Range(0f, 1f)] public float roomSunlight = 0.3f;
+        [Tooltip("방 물건의 주변광 세기")]
+        [Range(0f, 1f)] public float roomAmbient = 0.2f;
+        [Tooltip("스탠드 불빛(점 조명): 색 · 세기 · 범위(m)")]
+        public Color lampLightColor = new(1f, 0.76f, 0.45f);
+        public float lampLightIntensity = 0.55f;
+        public float lampLightRange = 2.2f;
+        [Tooltip("모니터 화면 빛(점 조명, 화면 앞)")]
+        public Color monitorLightColor = new(0.75f, 0.88f, 1f);
+        public float monitorLightIntensity = 0.25f;
+        public float monitorLightRange = 1.6f;
+        [Tooltip("노을 창 빛(점 조명, 창 앞)")]
+        public Color windowLightColor = new(1f, 0.58f, 0.4f);
+        public float windowLightIntensity = 0.6f;
+        public float windowLightRange = 3.2f;
+
         [Header("마을 카메라(인트로)")]
         [Range(5f, 80f)] public float villagePitch = 20f;
         public float villageDistance = 11f;

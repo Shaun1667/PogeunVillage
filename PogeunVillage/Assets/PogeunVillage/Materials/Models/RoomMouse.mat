@@ -29,7 +29,8 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - _AmbientStrength: 0.25
+    - _AmbientStrength: 0.2
+    - _MainLightScale: 0.3
     - _RampSmooth: 0.12
     - _RampThreshold: 0.05
     - _RimStrength: 0.12
