@@ -17,7 +17,7 @@ namespace PogeunVillage.EditorTools
         const string TextureDir = Root + "/Textures/Models";
         const string MaterialDir = Root + "/Materials/Models";
         public const string LibraryPath = Root + "/Data/ModelLibrary.asset";
-        static readonly string[] Groups = { "Props", "Houses", "Villagers", "Furniture" };
+        static readonly string[] Groups = { "Props", "Houses", "Villagers", "Furniture", "Room" };
 
         // 처음 항목의 게임 안 높이(m) · 정면 회전 — MODELING_SPEC.md 3번 표. 이미 있는 항목은 에셋 값을 씀
         static readonly Dictionary<string, (float height, float yaw)> Defaults = new()

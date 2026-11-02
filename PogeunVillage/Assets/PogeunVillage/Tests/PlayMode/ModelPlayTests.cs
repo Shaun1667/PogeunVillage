@@ -45,7 +45,8 @@ namespace PogeunVillage.PlayModeTests
                     }
                     float top = renderers.Max(r => r.bounds.max.y) - holder.position.y;
                     float expected = entry.height * holder.parent.lossyScale.y;
-                    if (entry.id != "Bridge" && entry.id != "Rock")  // 다리는 판에 맞춰 늘림, 바위는 크기를 섞음
+                    // 다리는 판에 맞춰 늘림, 바위는 크기를 섞음, 인트로 방 소품(Room…)은 폭에 맞춤(IntroPlayTests에서 확인)
+                    if (entry.id != "Bridge" && entry.id != "Rock" && !entry.id.StartsWith("Room"))
                         Assert.AreEqual(expected, top, expected * 0.05f, entry.id + " 높이");
                     checkedCount++;
                 }

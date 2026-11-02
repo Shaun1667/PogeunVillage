@@ -203,6 +203,41 @@ MonoBehaviour:
     material: {fileID: 2100000, guid: d941b433a0e9d2e42802ec645e442418, type: 2}
     height: 0.7
     yaw: 0
+  - id: RoomDesk
+    model: {fileID: 919132149155446097, guid: ea70d899de4ff72429fb167e0d866d2f, type: 3}
+    material: {fileID: 2100000, guid: 002916c36e6341a4dae5cbc4301e6d9c, type: 2}
+    height: 1
+    yaw: 0
+  - id: RoomKeyboard
+    model: {fileID: 919132149155446097, guid: 3184aa00fc251244a9984b9ab5093dd7, type: 3}
+    material: {fileID: 2100000, guid: 0139bb71b6119a640a9257355f823665, type: 2}
+    height: 1
+    yaw: 0
+  - id: RoomLamp
+    model: {fileID: 919132149155446097, guid: 95a83f7367c629940a49d74913920f81, type: 3}
+    material: {fileID: 2100000, guid: 36d1119f41c1d974b8c89a1bd7ca15f9, type: 2}
+    height: 1
+    yaw: 0
+  - id: RoomMonitor
+    model: {fileID: 919132149155446097, guid: 248e5382e893b0f40ab9e3df9d18bc39, type: 3}
+    material: {fileID: 2100000, guid: c59874cf951ff9f49b182bfe51c866db, type: 2}
+    height: 1
+    yaw: 0
+  - id: RoomMouse
+    model: {fileID: 919132149155446097, guid: f2ead33f53310e04a960a6cb5d22d2d1, type: 3}
+    material: {fileID: 2100000, guid: 5a156618296fa53438d4c4f8f5ceb999, type: 2}
+    height: 1
+    yaw: 0
+  - id: RoomMug
+    model: {fileID: 919132149155446097, guid: 84501f402402fcc40853d0141705d494, type: 3}
+    material: {fileID: 2100000, guid: 40e5acd3d5532994c9bde0e05291f114, type: 2}
+    height: 1
+    yaw: 0
+  - id: RoomWindow
+    model: {fileID: 919132149155446097, guid: 7ca807e2a84dc7947a297d82949f2e3b, type: 3}
+    material: {fileID: 2100000, guid: bdc16a043a261fb4194e203d3cea3010, type: 2}
+    height: 1
+    yaw: 0
   - id: StreetLamp
     model: {fileID: 919132149155446097, guid: 03f6ce047aa6203469debf5386dae1c7, type: 3}
     material: {fileID: 2100000, guid: 4b931513da793394d9baf606ba30deb8, type: 2}

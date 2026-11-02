@@ -50,6 +50,28 @@ namespace PogeunVillage.PlayModeTests
             Assert.IsTrue(intro.playerLock.IsFree, "조작 가능");
         }
 
+        // P-5d: 방 소품은 Varco3D 모델(그릇 Model_Room…), 모니터 화면 쿼드는 모니터 모델 앞면 바로 앞 · 화면 안쪽
+        [UnityTest]
+        public IEnumerator Room_UsesModels_ScreenOnMonitorFront()
+        {
+            var room = intro.transform;
+            foreach (string id in new[] { "RoomDesk", "RoomMonitor", "RoomKeyboard", "RoomMouse", "RoomLamp", "RoomMug", "RoomWindow" })
+            {
+                var holder = room.Find("Model_" + id);
+                Assert.IsNotNull(holder, id);
+                Assert.IsNotNull(holder.GetComponentInChildren<MeshRenderer>(), id + " 모델");
+            }
+            Assert.IsNull(room.Find("MonitorBezel"), "그레이박스 모니터 없음");
+
+            var monitor = room.Find("Model_RoomMonitor").GetComponentInChildren<MeshRenderer>().bounds;
+            var screen = intro.screen.transform.position;
+            Assert.Less(screen.z, monitor.min.z, "화면이 모니터 앞에");
+            Assert.Less(monitor.min.z - screen.z, 0.02f, "앞면에 붙어 있음");
+            Assert.Greater(screen.y, monitor.min.y + monitor.size.y * 0.3f, "받침대가 아닌 화면 높이");
+            Assert.Less(screen.y, monitor.max.y);
+            yield break;
+        }
+
         [UnityTest]
         public IEnumerator PullOutStart_ScreenFillsRoomCamera()
         {

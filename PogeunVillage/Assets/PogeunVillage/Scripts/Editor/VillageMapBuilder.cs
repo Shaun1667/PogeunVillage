@@ -2290,34 +2290,28 @@ namespace PogeunVillage.EditorTools
             var room = new GameObject("IntroRoom").transform;
             room.position = intro.roomOrigin;
 
-            var floor = Mat("RoomFloor", "#B88A6A");
-            var wall = Mat("RoomWall", "#9C8BB8");
-            var desk = Mat("RoomDesk", "#D7B28A");
-            var dark = Mat("RoomDark", "#4A4458");
+            // 벽 · 바닥은 큰 평면이라 색 상자 그대로(저녁 톤), 소품은 Varco3D 모델(P-5d, 정면 +Z → 카메라(-Z)를 보게 yaw 180)
+            var floor = Mat("RoomFloor", "#9C7458");
+            var wall = Mat("RoomWall", "#7F70A0");
             Prim(PrimitiveType.Cube, "Floor", room, new Vector3(0f, -0.05f, 0f), new Vector3(5f, 0.1f, 5f), floor);
             Prim(PrimitiveType.Cube, "WallBack", room, new Vector3(0f, 1.4f, 2.2f), new Vector3(5f, 2.8f, 0.1f), wall);
             Prim(PrimitiveType.Cube, "WallLeft", room, new Vector3(-2.2f, 1.4f, 0f), new Vector3(0.1f, 2.8f, 5f), wall);
             Prim(PrimitiveType.Cube, "WallRight", room, new Vector3(2.2f, 1.4f, 0f), new Vector3(0.1f, 2.8f, 5f), wall);
-            var window = Mat("RoomWindow", "#F2A07B", rim: 0f);
-            window.SetColor("_EmissionColor", Hex("#E8946E") * 0.8f);
-            Prim(PrimitiveType.Cube, "Window", room, new Vector3(-1.1f, 1.7f, 2.14f), new Vector3(1.1f, 0.8f, 0.02f), window, castShadows: false);
+            RoomModel("RoomWindow", room, new Vector3(-1.1f, 1.0f, 2.15f), 1.1f, againstWall: true);
 
-            // 책상 · 모니터(화면 앞 = -Z 쪽 카메라를 봄) · 키보드 · 마우스 · 스탠드 · 머그
-            Prim(PrimitiveType.Cube, "DeskTop", room, new Vector3(0f, 0.74f, 1.3f), new Vector3(1.6f, 0.05f, 0.75f), desk);
-            for (int sx = -1; sx <= 1; sx += 2)
-                Prim(PrimitiveType.Cube, "DeskLeg", room, new Vector3(sx * 0.74f, 0.36f, 1.3f), new Vector3(0.06f, 0.72f, 0.65f), desk);
-            Prim(PrimitiveType.Cube, "MonitorStand", room, new Vector3(0f, 0.86f, 1.5f), new Vector3(0.08f, 0.2f, 0.06f), dark);
-            Prim(PrimitiveType.Cube, "MonitorBase", room, new Vector3(0f, 0.775f, 1.5f), new Vector3(0.26f, 0.02f, 0.18f), dark);
-            Prim(PrimitiveType.Cube, "MonitorBezel", room, new Vector3(0f, 1.1f, 1.48f), new Vector3(0.72f, 0.42f, 0.03f), dark);
-            var screen = Prim(PrimitiveType.Quad, "MonitorScreen", room, new Vector3(0f, 1.1f, 1.462f), Vector3.one, ScreenMaterial(), castShadows: false);
-            Prim(PrimitiveType.Cube, "Keyboard", room, new Vector3(-0.05f, 0.775f, 1.05f), new Vector3(0.44f, 0.02f, 0.14f), Mat("RoomKeyboard", "#EDE6F2"));
-            Prim(PrimitiveType.Sphere, "Mouse", room, new Vector3(0.32f, 0.78f, 1.05f), new Vector3(0.06f, 0.035f, 0.1f), Mat("RoomKeyboard", "#EDE6F2"));
-            Prim(PrimitiveType.Cylinder, "LampBase", room, new Vector3(-0.6f, 0.78f, 1.45f), new Vector3(0.14f, 0.015f, 0.14f), dark);
-            Prim(PrimitiveType.Cylinder, "LampArm", room, new Vector3(-0.6f, 0.98f, 1.45f), new Vector3(0.025f, 0.2f, 0.025f), dark);
-            var lamp = Mat("RoomLamp", "#FFE3A8", rim: 0f);
-            lamp.SetColor("_EmissionColor", Hex("#FFD48A") * 0.9f);
-            Prim(PrimitiveType.Sphere, "LampHead", room, new Vector3(-0.6f, 1.2f, 1.42f), new Vector3(0.18f, 0.12f, 0.18f), lamp, castShadows: false);
-            Prim(PrimitiveType.Cylinder, "Mug", room, new Vector3(0.55f, 0.81f, 1.25f), new Vector3(0.08f, 0.05f, 0.08f), Mat("RoomMug", "#F4B9C8"));
+            // 책상 · 모니터(화면 앞 = -Z 쪽 카메라를 봄) · 키보드 · 마우스 · 스탠드 · 머그 — 폭(m)에 맞추고 책상 윗면에 올림
+            var desk = RoomModel("RoomDesk", room, new Vector3(0f, 0f, 1.3f), 1.6f, height: 0.76f, depth: 0.8f, yaw: 90f);  // 긴 변이 모델 Z축
+            float deskTop = ModelBounds(desk).max.y - room.position.y;
+            var monitor = RoomModel("RoomMonitor", room, new Vector3(0f, deskTop, 1.5f), intro.screenHeight * MonitorWidthPerScreenHeight);
+            RoomModel("RoomKeyboard", room, new Vector3(-0.05f, deskTop, 1.05f), 0.44f);
+            RoomModel("RoomMouse", room, new Vector3(0.32f, deskTop, 1.05f), 0.07f);
+            RoomModel("RoomLamp", room, new Vector3(-0.6f, deskTop, 1.45f), 0.26f);
+            RoomModel("RoomMug", room, new Vector3(0.55f, deskTop, 1.25f), 0.1f);
+
+            // 모니터 화면 쿼드: 모델 앞면 바로 앞, 화면 영역 가운데(MonitorScreenCenter = 모델 높이 비율). 크기는 인트로가 정함(screenHeight × 화면 비율)
+            var mb = ModelBounds(monitor);
+            var screenCenter = new Vector3(mb.center.x, mb.min.y + mb.size.y * MonitorScreenCenter, mb.min.z - 0.004f) - room.position;
+            var screen = Prim(PrimitiveType.Quad, "MonitorScreen", room, screenCenter, Vector3.one, ScreenMaterial(), castShadows: false);
 
             // 방 카메라(처음엔 꺼 둠, 휨 없음) — 마을 카메라보다 나중에 그림
             var camGo = new GameObject("IntroRoomCamera");
@@ -2355,6 +2349,44 @@ namespace PogeunVillage.EditorTools
                 Prim(PrimitiveType.Sphere, "Puff", dust, Vector3.zero, Vector3.one * 0.3f, puff, castShadows: false);
             dust.gameObject.SetActive(false);
             sequence.landingDust = dust;
+        }
+
+        // 인트로 방 모니터 모델(P-5d): 화면 높이 대비 모델 폭, 화면 가운데 높이(모델 바닥 0 ~ 꼭대기 1) — 모델을 보고 맞춘 값
+        const float MonitorWidthPerScreenHeight = 2.4f;
+        const float MonitorScreenCenter = 0.625f;
+
+        // 인트로 방 소품(P-5d): 모델을 yaw만큼 돌려(기본 180 = 정면이 방 카메라 쪽 -Z) 폭(m)에 맞추고 바닥을 자리에 둠.
+        // height · depth를 주면 그 축만 따로 맞춤(책상처럼 비율이 어긋난 모델). againstWall이면 뒷면을 그 Z(벽 앞)에 붙임
+        static GameObject RoomModel(string id, Transform room, Vector3 localPosition, float width, float height = 0f, float depth = 0f,
+            float yaw = 180f, bool againstWall = false)
+        {
+            var fit = new GameObject("Model_" + id).transform;  // 돌리지 않은 그릇 — 축마다 크기를 맞춤
+            fit.SetParent(room, false);
+            fit.localPosition = localPosition;
+            var turn = ModelVisual(id, fit, Vector3.zero, castShadows: !againstWall).transform;
+            turn.name = "Turn";
+            turn.localRotation = Quaternion.Euler(0f, yaw, 0f);
+
+            var size = ModelBounds(fit.gameObject).size;
+            float sx = width / Mathf.Max(size.x, 0.0001f);
+            fit.localScale = new Vector3(sx, height > 0f ? height / Mathf.Max(size.y, 0.0001f) : sx, depth > 0f ? depth / Mathf.Max(size.z, 0.0001f) : sx);
+
+            var bounds = ModelBounds(fit.gameObject);
+            var target = room.TransformPoint(localPosition);
+            fit.position += new Vector3(target.x - bounds.center.x, target.y - bounds.min.y, againstWall ? target.z - bounds.max.z : target.z - bounds.center.z);
+            return fit.gameObject;
+        }
+
+        static Bounds ModelBounds(GameObject go)
+        {
+            var bounds = new Bounds(go.transform.position, Vector3.zero);
+            bool first = true;
+            foreach (var renderer in go.GetComponentsInChildren<Renderer>())
+            {
+                if (first) { bounds = renderer.bounds; first = false; }
+                else bounds.Encapsulate(renderer.bounds);
+            }
+            return bounds;
         }
 
         // 인트로 화면 속 UI(P-5b): 마을 카메라에 그려져 모니터에 보이는 제목 · '게임 시작' 버튼 · 커서, 맨 위 흰 섬광
