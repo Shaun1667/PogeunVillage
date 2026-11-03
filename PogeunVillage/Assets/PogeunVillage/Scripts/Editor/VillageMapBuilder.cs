@@ -80,6 +80,7 @@ namespace PogeunVillage.EditorTools
         // 캠핑 구역(결정 2026-10-28, 2-6): 마을 중간 좌측 = 광장 서쪽 끝, 텐트 입구는 광장 쪽
         static readonly Vector2 CampPosition = new(-38f, -4f);
         const float CampTentOffset = 0.66f;  // CampTent 모델 안에서 텐트 가운데가 +x로 치우친 거리(m, 높이 2.3 기준)
+        const float AquariumWaterCenter = 0.72f;  // 수조 모델 높이 중 물(유리) 가운데 비율 — 물고기 높이
         const float CounterTop = 0.85f;  // 노점 매대(모델) 윗면 높이 — 물건을 이 위에 놓음
         // 누워서 생성된 도구 모델을 세우는 x축 회전(P-4h): 삽은 날이 -z로 누움, 잠자리채는 45° 기움
         static readonly Dictionary<string, float> ToolPitch = new() { ["ToolShovel"] = -90f, ["ToolNet"] = 45f };
@@ -1852,9 +1853,10 @@ namespace PogeunVillage.EditorTools
         {
             string dir = FurnitureDir + "/Aquarium";
             EnsureFolder(dir);
-            var prefab = BuildAquariumPrefab();
             foreach (var f in fishList)
             {
+                var prefab = BuildAquariumPrefab(f);
+                SetPickupLook(f, "Fish" + f.id);  // 떨어진 물고기도 그 물고기 모델(P-4d)
                 string path = $"{dir}/Aquarium_{f.id}.asset";
                 bool isNew = !AssetDatabase.LoadAssetAtPath<FurnitureDefinition>(path);
                 var tank = EnsureAsset<FurnitureDefinition>(path);
@@ -1872,6 +1874,31 @@ namespace PogeunVillage.EditorTools
             }
         }
 
+        // 물고기마다 수조 프리팹(P-4d): 수조 모델 + 그 물고기 모델(옆모습이 앞을 봄). 유리 모델이 불투명이라 물고기는 앞 유리 바로 앞에 붙임
+        static GameObject BuildAquariumPrefab(FishDefinition fish)
+        {
+            var tankModel = models ? models.Find("Aquarium") : null;
+            var fishModel = models ? models.Find("Fish" + fish.id) : null;
+            if (tankModel == null || fishModel == null)
+                return BuildAquariumPrefab();
+            var root = new GameObject("Aquarium");
+            var t = root.transform;
+            var tank = FitModel("Aquarium", t, Vector3.zero, new Vector3(0.75f, 0f, 0.5f));
+            var tankBounds = ModelBounds(tank);
+            float length = fish.size == FishSize.Small ? 0.2f : fish.size == FishSize.Medium ? 0.27f : 0.34f;
+            var body = FitModel("Fish" + fish.id, t, Vector3.zero, new Vector3(length, 0f, 0f), yaw: 90f);  // 모델은 머리가 +z → 90° 돌려 옆모습
+            var fishBounds = ModelBounds(body);
+            body.transform.localPosition = new Vector3(0f, tankBounds.size.y * AquariumWaterCenter - fishBounds.size.y * 0.5f, tankBounds.max.z + fishBounds.size.z * 0.5f - 0.02f);
+            var collider = root.AddComponent<BoxCollider>();
+            collider.center = new Vector3(0f, 0.4f, 0f);
+            collider.size = new Vector3(0.75f, 0.8f, 0.5f);
+            AddInteractable(root, "수조", InteractableKind.Furniture, radius: 0.4f, markerHeight: 1.2f, wiggle: false);
+            root.AddComponent<GridObject>().kind = GroundObjectKind.Furniture;
+            root.AddComponent<PlacedFurniture>();  // 물고기 모델이 제 색이라 칠하지 않음
+            return SavePrefab(root, "Furniture_Aquarium_" + fish.id);
+        }
+
+        // 그레이박스 수조(모델이 없을 때): 물고기 모양을 물고기 색으로 칠함
         static GameObject BuildAquariumPrefab()
         {
             var root = new GameObject("Aquarium");

@@ -49,9 +49,8 @@ namespace PogeunVillage.PlayModeTests
             Assert.AreSame(catfish.aquarium, tank.Definition);
             Assert.AreEqual(GroundObjectKind.Furniture, Grid.Get(cell));
             Assert.AreEqual("메기 수조", tank.GetComponent<Interactable>().displayName);
-            var block = new MaterialPropertyBlock();
-            tank.bodyRenderers[0].GetPropertyBlock(block);
-            Assert.AreEqual(catfish.color.r, block.GetColor("_BaseColor").r, 0.002f, "물고기 색");
+            Assert.IsTrue(tank.transform.Find("Fit_FishCatfish"), "수조 안에 메기 모델(P-4d)");
+            Assert.IsTrue(tank.transform.Find("Fit_Aquarium"), "수조 모델");
 
             yield return Frames(2);
             yield return Tap(keyboard.fKey);
