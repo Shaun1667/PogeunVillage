@@ -71,6 +71,12 @@
     - 결정 (2026-10-30, 사용자): **리깅 · 애니메이션은 Mixamo에서**(Varco3D Rig · Animate 대신). 올리기는 Claude in Chrome(앱 브라우저는 파일 올리기 불가), Varco OBJ zip에서 노멀 텍스처를 빼서 10MB 아래로. Mixamo 계정에 있던 다른 캐릭터(GGACHI_OBJ)는 사용자 확인 뒤 교체
     - 생성 (2026-10-30): 플레이어 원본 `Art/Raw/Characters/Player_Varco.fbx`(Varco3D 3만 삼각형, T-pose, 약 220점) → Mixamo 자동 리깅(Standard Skeleton 65, 뼈 46개) `Player.fbx`(FBX for Unity, T-pose, 몸 포함) · 동작(몸 없음, 30fps) `Player@Idle.fbx`(Breathing Idle) · `Player@Walk.fbx`(Happy Walk, In Place) · `Player@Jog.fbx`(Jogging, In Place). 게임 적용(Humanoid 아바타 · Animator · CurvedToon 스킨 셰이더)은 아직 — 플레이 확인 대기
     - 참고: Varco3D 플로우의 Rig · Animate 노드(무료)는 이미 실행돼 남아 있지만 쓰지 않음. 상점 주인은 아직 생성 전
+  - [x] **P-4j. 주민 리깅** (2026-11-03) — 플레이 확인 대기 — 사용자 요청 "주인공 플레이어와 마을 주민들 리깅은 모두 mixamo에서 … 리깅부터 다운로드, 적용까지 너가 다 진행"
+    - 결정 (2026-11-03, 사용자): Mixamo 계정의 다른 캐릭터(SIA)는 교체해도 됨(Mixamo는 캐릭터 하나만 보관 — 주민 20명을 차례로 올리며 교체)
+    - 리깅: 주민 20명의 Varco OBJ zip(노멀 텍스처 뺌, 4.9 ~ 7.1MB)을 Claude in Chrome으로 Mixamo에 올려 자동 리깅(Standard Skeleton 65, 대칭). 받은 파일(FBX for Unity, 30fps): `Art/Raw/Characters/Villager번호.fbx`(T-pose, 몸 포함) · `@Idle`(Breathing Idle) · `@Walk`(Happy Walk, In Place) = 60개. Varco 원본 `Art/Raw/Villagers/Villager번호.fbx`는 그대로 둠(색 텍스처 · 재질은 원본에서 꺼낸 것을 씀)
+    - 문제와 해결: 오리(10) · 카피바라(20)는 Mixamo가 "Unknown error while generating motion"으로 두 번씩 실패 → 손목 · 팔꿈치 표시를 몸 쪽으로, 무릎 · 사타구니를 조금 위로 옮기니 성공. 펭귄(14)은 다리가 거의 없어 무릎을 몸통 아래 끝에 둠(리깅은 됨, 걸음은 몸이 기우는 정도)
+    - 적용: 가져오기 메뉴가 주민 리깅 파일도 Generic · 배율 100 · 동작 반복으로(플레이어와 같은 `ConfigureRig`). 맵 생성이 주민 프리팹을 리깅 모델로 만들고(`RigModel`: CurvedToon · 화면 밖에서도 갱신 · 키 1.5) 애니메이터를 붙임 — 공통 틀 `Data/VillagerAnimator.controller`(Speed m/s: 0 서 있기 · 주민 걷는 속도 1.6 걷기) + 주민마다 자기 동작으로 바꾼 `Data/VillagerAnimators/Villager번호.overrideController`. `VillagerBehaviour`가 걷는 중(걷기 · 집에 가기)이면 Speed = 걷는 속도, 아니면 0(0.1초 부드럽게)
+    - 테스트: PlayMode `HouseModelPlayTests.Villagers_Rigged_WalkAnimates`(주민마다 자기 애니메이터 · CurvedToon · 화면 밖 갱신 / 걷는 주민 Speed > 0.5, 멈춘 주민 < 0.05)
 - [x] **P-5. 인트로 연출** (2026-10-30, 순서 예외 — 사용자 요청, P-5a ~ c 그레이박스 완료 · 방 소품 모델은 크레딧 충전 뒤) — 마을 화면 → 뒤로 빠지며 아이 방 모니터였음이 드러남 → 클릭 → 화면 속으로 빨려 들어감 → 광장으로 낙하 · 착지 (GDD 결정 2026-10-30, 수치 BALANCE 20번)
   - 결정 (2026-10-30): 레퍼런스 쁘띠플래닛 영상(1:16~1:22, 우측 하단 버추얼 제외)을 컴퓨터 화면으로. 들어가는 계기는 **마우스로 '게임 시작' 클릭 → 빨려 들어감**, **새로 시작할 때만 + 아무 키로 건너뛰기**, 방은 **플레이어 아이 방 · 저녁**, **그레이박스부터**(방 소품 모델은 크레딧 충전 뒤 교체) — 모두 사용자 선택(추천안)
 - [x] **P-5a. 방 · 모니터 · 뒤로 빠지기** (2026-10-30) — 플레이 확인 완료 — 맵 바깥 방(그레이박스: 바닥 · 벽 · 노을 창 · 책상 · 모니터 · 키보드 · 마우스 · 스탠드 · 머그), 마을 카메라 → 모니터 화면 텍스처, 화면이 꽉 찬 자리에서 뒤로 빠지기, 방 잠깐 머물기, 건너뛰기, 새로 시작 때만 재생(시작 화면 연결)

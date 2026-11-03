@@ -1,6 +1,8 @@
+using System.Collections;
 using System.Linq;
 using NUnit.Framework;
 using UnityEngine;
+using UnityEngine.TestTools;
 
 namespace PogeunVillage.PlayModeTests
 {
@@ -57,6 +59,36 @@ namespace PogeunVillage.PlayModeTests
                 Assert.IsTrue(v.GetComponent<CharacterController>().enabled || !v.gameObject.activeInHierarchy);
                 Assert.AreNotEqual("미정", v.Definition.species, "종족");
             }
+        }
+
+        // P-4j: 주민 모델은 Mixamo 리깅 — 애니메이터(자기 동작) · CurvedToon, 걸으면 Speed가 오르고 멈추면 0으로
+        [UnityTest]
+        public IEnumerator Villagers_Rigged_WalkAnimates()
+        {
+            var villagers = Object.FindObjectsByType<VillagerBehaviour>();
+            foreach (var v in villagers)
+            {
+                var animator = v.Model.GetComponentInChildren<Animator>();
+                Assert.IsTrue(animator && animator.runtimeAnimatorController, v.name);
+                StringAssert.StartsWith(v.Definition.model.name, animator.runtimeAnimatorController.name, "자기 동작");
+                var skin = v.Model.GetComponentInChildren<SkinnedMeshRenderer>();
+                Assert.AreEqual("PogeunVillage/CurvedToon", skin.sharedMaterial.shader.name);
+                Assert.IsTrue(skin.updateWhenOffscreen, "휜 화면에서 잘리지 않게");
+            }
+
+            float Speed(VillagerBehaviour v) => v.Model.GetComponentInChildren<Animator>().GetFloat("Speed");
+            bool walked = false, rested = false;
+            for (float until = Time.time + 20f; Time.time < until && !(walked && rested);)
+            {
+                yield return null;
+                foreach (var v in villagers.Where(v => v.isActiveAndEnabled))
+                {
+                    walked |= v.Current == VillagerBehaviour.State.Walking && Speed(v) > 0.5f;
+                    rested |= v.Current == VillagerBehaviour.State.Pausing && Speed(v) < 0.05f;
+                }
+            }
+            Assert.IsTrue(walked, "걷는 주민은 걷기 동작");
+            Assert.IsTrue(rested, "멈춘 주민은 서 있기 동작");
         }
 
         [Test]

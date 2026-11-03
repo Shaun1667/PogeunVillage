@@ -37,6 +37,8 @@ namespace PogeunVillage.EditorTools
         const string SaveRulesPath = Root + "/Data/SaveRules.asset";
         const string IntroSettingsPath = Root + "/Data/IntroSettings.asset";
         const string PlayerAnimatorPath = Root + "/Data/PlayerAnimator.controller";
+        const string VillagerAnimatorPath = Root + "/Data/VillagerAnimator.controller";
+        const string VillagerAnimatorDir = Root + "/Data/VillagerAnimators";
         const string VillagerDir = Root + "/Data/Villagers";
         const string FontSourcePath = Root + "/Fonts/Cafe24Ssurround-v2.0.ttf";
         const string FontAssetPath = Root + "/Fonts/Cafe24Ssurround SDF.asset";
@@ -852,13 +854,20 @@ namespace PogeunVillage.EditorTools
                 return null;
             foreach (Transform part in visual.Cast<Transform>().ToArray())
                 Object.DestroyImmediate(part.gameObject);
-            var model = (GameObject)PrefabUtility.InstantiatePrefab(entry.model, visual);
-            model.name = "Model_Player";
+            return RigModel(entry.model, entry, visual, controller);
+        }
+
+        // 리깅 모델을 parent 아래에 세움(플레이어 · 주민): CurvedToon 재질, 발바닥이 0 · 키 entry.height, 애니메이터(뿌리 움직임 끔)
+        static Animator RigModel(GameObject source, ModelLibrary.Entry entry, Transform parent, RuntimeAnimatorController controller)
+        {
+            var model = (GameObject)PrefabUtility.InstantiatePrefab(source, parent);
+            model.name = "Model_" + entry.id;
             var skin = model.GetComponentInChildren<SkinnedMeshRenderer>();
             skin.sharedMaterial = entry.material;
             skin.updateWhenOffscreen = true;  // 휘어진 화면에서 경계 상자로 잘려 사라지지 않게
             var baked = new Mesh();
             skin.BakeMesh(baked, true);
+            model.transform.localRotation = Quaternion.Euler(0f, entry.yaw, 0f);
             model.transform.localScale = Vector3.one * (entry.height / Mathf.Max(baked.bounds.size.y, 0.01f));
             model.transform.localPosition = Vector3.down * baked.bounds.min.y * model.transform.localScale.y;
             Object.DestroyImmediate(baked);
@@ -1282,10 +1291,22 @@ namespace PogeunVillage.EditorTools
                     changed = true;
                 }
                 string id = $"Villager{i + 1:00}";
-                if (models.Find(id) != null)
+                var entry = models.Find(id);
+                if (entry != null)
                 {
-                    var root = ModelVisual(id, null, Vector3.zero);
-                    root.name = id;
+                    var rig = AssetDatabase.LoadAssetAtPath<GameObject>(VarcoModelImport.RigPath(id));
+                    var controller = rig ? EnsureVillagerAnimator(id) : null;
+                    GameObject root;
+                    if (controller)
+                    {
+                        root = new GameObject(id);  // 리깅 모델(P-4j): 서 있기 · 걷기를 걷는 속도로 섞음
+                        RigModel(rig, entry, root.transform, controller);
+                    }
+                    else
+                    {
+                        root = ModelVisual(id, null, Vector3.zero);  // 정적 모델(P-3c)
+                        root.name = id;
+                    }
                     var prefab = SavePrefab(root, "Villagers/" + id);
                     if (!v.model)
                     {
@@ -1296,6 +1317,42 @@ namespace PogeunVillage.EditorTools
                 if (changed)
                     EditorUtility.SetDirty(v);
             }
+        }
+
+        // 주민 애니메이터(P-4j): 공통 틀 VillagerAnimator(Speed m/s: 0 서 있기 · 걷는 속도 걷기, 처음 한 번 Villager01 동작으로 만듦)
+        // + 주민마다 자기 동작으로 바꾼 덮어쓰기 컨트롤러(VillagerAnimators/주민.overrideController). 동작이 없으면 null
+        static RuntimeAnimatorController EnsureVillagerAnimator(string id)
+        {
+            var idle = VarcoModelImport.LoadClip(id, "Idle");
+            var walk = VarcoModelImport.LoadClip(id, "Walk");
+            if (!idle || !walk)
+                return null;
+            var baseController = AssetDatabase.LoadAssetAtPath<AnimatorController>(VillagerAnimatorPath);
+            if (!baseController)
+            {
+                baseController = AnimatorController.CreateAnimatorControllerAtPath(VillagerAnimatorPath);
+                baseController.AddParameter("Speed", AnimatorControllerParameterType.Float);
+                baseController.CreateBlendTreeInController("Move", out var tree);
+                tree.blendParameter = "Speed";
+                tree.useAutomaticThresholds = false;
+                tree.AddChild(idle, 0f);
+                tree.AddChild(walk, EnsureAsset<VillageRules>(VillageRulesPath).walkSpeed);
+                AssetDatabase.SaveAssets();
+            }
+            EnsureFolder(VillagerAnimatorDir);
+            string path = $"{VillagerAnimatorDir}/{id}.overrideController";
+            var overrides = AssetDatabase.LoadAssetAtPath<AnimatorOverrideController>(path);
+            if (!overrides)
+            {
+                overrides = new AnimatorOverrideController(baseController);
+                AssetDatabase.CreateAsset(overrides, path);
+            }
+            overrides.runtimeAnimatorController = baseController;
+            var pairs = new List<KeyValuePair<AnimationClip, AnimationClip>>();
+            overrides.GetOverrides(pairs);  // 틀의 클립 이름: Idle · Walk(동작 파일 이름의 @ 뒤)
+            overrides.ApplyOverrides(pairs.Select(p => new KeyValuePair<AnimationClip, AnimationClip>(p.Key, p.Key.name == walk.name ? walk : idle)).ToList());
+            EditorUtility.SetDirty(overrides);
+            return overrides;
         }
 
         // 주민 그레이박스(동그란 몸 + 머리 + 귀). 색은 VillagerBehaviour가 프로퍼티 블록으로

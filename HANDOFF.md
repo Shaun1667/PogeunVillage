@@ -50,11 +50,11 @@
 
 | 구역 | 캔버스 위치(y) | 구성 | 3D 설정 | 상태 |
 |---|---|---|---|---|
-| 주민 20명 | 0 ~ 8550 | 텍스트(x 0) → 이미지(x 400~1760, 5열) → 3D(x 2200~3560) | 3만 tri, 2048, T-pose | 적용 완료(P-3c) |
+| 주민 20명 | 0 ~ 8550 | 텍스트(x 0) → 이미지(x 400~1760, 5열) → 3D(x 2200~3560) | 3만 tri, 2048, T-pose | 적용 완료(P-3c) · Mixamo 리깅 적용(P-4j) |
 | 맵 소품 21종 | 메모 9050, 그룹 9300 ~ 13800 | 4열 그룹(x = 열 × 1100): 텍스트 +0 → 이미지 +340 → 3D +680, 행 간격 900 | 나무 1만 · 꽃 4천 · 바위·우체통 3천 · 분수대 1만 · 게시판 5천 · 가로등 4천 · 다리 8천 · 일반 집 1.5만 | 적용 완료(P-3a, 일반 집 8채는 안 씀) |
 | 주민별 집 20채 | 메모 14700, 공통 규칙 텍스트 (0, 14950), 그룹 15300 ~ 18900 | 4열: AI 어시스턴트 +0 → 이미지 +340 → 3D +680 | 1.5만 tri, 2048 | 적용 완료(P-3b) |
 | P-4 메모 | 20000 | 남은 모델 목록 메모 | — | — |
-| 플레이어 | 20300 | 텍스트 → 이미지 → 3D → (안 쓰는) Rig · Animate | 3만 tri, T-pose | 생성 · Mixamo 완료, 적용 전 |
+| 플레이어 | 20300 | 텍스트 → 이미지 → 3D → (안 쓰는) Rig · Animate | 3만 tri, T-pose | 생성 · Mixamo 완료 · 적용 완료(P-4f) |
 | 열매 2 | 21300 · 21800 | 4열 그룹 | 2천 tri, 1024 | 생성 완료, 적용 전 |
 | 기본 가구 8 | 22500 · 23400 | 4열 그룹 | 4천 tri, 1024 | 생성 완료, 적용 전 |
 | 인트로 방 소품 7 | 24300(메모) · 24600 · 25500 | 4열 그룹 | 2천 ~ 5천 tri, 1024 | 적용 완료(P-5d) |
@@ -78,7 +78,8 @@
 2. Claude in Chrome으로 mixamo.com → Upload Character → 자동 리깅(Standard Skeleton 65)
 3. 받기: 캐릭터 = **FBX for Unity · With Skin · T-pose**, 동작 = **Without Skin · 30fps**, 걷기 · 달리기는 **In Place**
 4. 받은 파일(`%USERPROFILE%/Downloads`)을 `Art/Raw/Characters/`로 옮기고 `이름@동작.fbx`로
-- 지금 있는 것: `Player_Varco.fbx`(원본) · `Player.fbx`(리깅, 뼈 46) · `Player@Idle` · `Player@Walk` · `Player@Jog`
+- 지금 있는 것: `Player_Varco.fbx`(원본) · `Player.fbx`(리깅, 뼈 46) · `Player@Idle` · `Player@Walk` · `Player@Jog`, 주민 `Villager01 ~ 20.fbx`(리깅) · `@Idle`(Breathing Idle) · `@Walk`(Happy Walk) — 주민 원본은 `Art/Raw/Villagers/`(P-4j, 2026-11-03)
+- 요령: 표시 5개(턱 · 손목 · 팔꿈치 · 무릎 · 사타구니)를 놓고 Next. "Unknown error while generating motion"이면 손목 · 팔꿈치를 몸 쪽으로, 무릎 · 사타구니를 조금 위로 옮겨 다시(오리 · 카피바라). Mixamo는 캐릭터를 하나만 보관해 올릴 때마다 앞 캐릭터가 바뀜
 
 ## 4. Claude 설정 · 사용자와 합의한 작업 방식
 ### 4-1. Claude 메모리 (저장소 밖 — 새 PC에서 다시 만들기)

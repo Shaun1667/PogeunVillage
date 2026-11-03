@@ -121,6 +121,9 @@ namespace PogeunVillage.EditorTools
             }
             if (SetupPlayer(library, toon))
                 count++;
+            foreach (var villager in library.entries.Where(e => e.id.StartsWith("Villager")))
+                if (File.Exists(RigPath(villager.id)))
+                    ConfigureRig(villager.id, VillagerClips);
             library.entries.Sort((a, b) => string.CompareOrdinal(a.id, b.id));
             EditorUtility.SetDirty(library);
             AssetDatabase.SaveAssets();
@@ -153,36 +156,7 @@ namespace PogeunVillage.EditorTools
                         AssetDatabase.DeleteAsset(file.Replace('\\', '/'));
                 }
             }
-            if (importer.materialImportMode != ModelImporterMaterialImportMode.None || importer.animationType != ModelImporterAnimationType.Generic
-                || importer.avatarSetup != ModelImporterAvatarSetup.CreateFromThisModel || !Mathf.Approximately(importer.globalScale, PlayerImportScale))
-            {
-                importer.materialImportMode = ModelImporterMaterialImportMode.None;
-                importer.animationType = ModelImporterAnimationType.Generic;
-                importer.avatarSetup = ModelImporterAvatarSetup.CreateFromThisModel;
-                importer.globalScale = PlayerImportScale;
-                importer.SaveAndReimport();
-            }
-            foreach (string clip in PlayerClips)
-            {
-                var clipImporter = (ModelImporter)AssetImporter.GetAtPath(PlayerClipPath(clip));
-                if (!clipImporter)
-                    continue;
-                bool loops = clipImporter.clipAnimations.Length > 0 && clipImporter.clipAnimations.All(c => c.loopTime);
-                // 동작 파일도 같은 뼈대 이름 — 각자 Generic 아바타
-                if (clipImporter.animationType == ModelImporterAnimationType.Generic && clipImporter.avatarSetup == ModelImporterAvatarSetup.CreateFromThisModel && loops
-                    && clipImporter.materialImportMode == ModelImporterMaterialImportMode.None && Mathf.Approximately(clipImporter.globalScale, PlayerImportScale))
-                    continue;
-                clipImporter.materialImportMode = ModelImporterMaterialImportMode.None;
-                clipImporter.animationType = ModelImporterAnimationType.Generic;
-                clipImporter.avatarSetup = ModelImporterAvatarSetup.CreateFromThisModel;
-                clipImporter.sourceAvatar = null;
-                clipImporter.globalScale = PlayerImportScale;
-                var clips = clipImporter.defaultClipAnimations;
-                foreach (var c in clips)
-                    c.loopTime = true;
-                clipImporter.clipAnimations = clips;
-                clipImporter.SaveAndReimport();
-            }
+            ConfigureRig("Player", PlayerClips);
 
             var entry = library.Find("Player");
             if (entry == null)
@@ -195,7 +169,52 @@ namespace PogeunVillage.EditorTools
             return true;
         }
 
-        public static string PlayerClipPath(string clip) => $"{RawDir}/Characters/Player@{clip}.fbx";
+        public static string PlayerClipPath(string clip) => ClipPath("Player", clip);
+        // 주민 리깅(P-4j): Mixamo 리깅 Characters/Villager번호.fbx + 동작 @Idle · @Walk. 색 · 재질은 Varco 원본(Villagers/)에서 꺼낸 그대로 씀
+        public static readonly string[] VillagerClips = { "Idle", "Walk" };
+        public static string RigPath(string id) => $"{RawDir}/Characters/{id}.fbx";
+        public static string ClipPath(string id, string clip) => $"{RawDir}/Characters/{id}@{clip}.fbx";
+
+        // 리깅 모델 · 동작 파일 가져오기 설정(Generic · 자기 아바타 · 재질 없음 · 배율 100, 동작은 반복). 이미 맞으면 다시 가져오지 않음
+        static void ConfigureRig(string id, IEnumerable<string> clips)
+        {
+            var importer = (ModelImporter)AssetImporter.GetAtPath(RigPath(id));
+            if (importer && (importer.materialImportMode != ModelImporterMaterialImportMode.None || importer.animationType != ModelImporterAnimationType.Generic
+                || importer.avatarSetup != ModelImporterAvatarSetup.CreateFromThisModel || !Mathf.Approximately(importer.globalScale, PlayerImportScale)))
+            {
+                importer.materialImportMode = ModelImporterMaterialImportMode.None;
+                importer.animationType = ModelImporterAnimationType.Generic;
+                importer.avatarSetup = ModelImporterAvatarSetup.CreateFromThisModel;
+                importer.globalScale = PlayerImportScale;
+                importer.SaveAndReimport();
+            }
+            foreach (string clip in clips)
+            {
+                var clipImporter = (ModelImporter)AssetImporter.GetAtPath(ClipPath(id, clip));
+                if (!clipImporter)
+                    continue;
+                bool loops = clipImporter.clipAnimations.Length > 0 && clipImporter.clipAnimations.All(c => c.loopTime);
+                // 동작 파일도 같은 뼈대 이름 — 각자 Generic 아바타
+                if (clipImporter.animationType == ModelImporterAnimationType.Generic && clipImporter.avatarSetup == ModelImporterAvatarSetup.CreateFromThisModel && loops
+                    && clipImporter.materialImportMode == ModelImporterMaterialImportMode.None && Mathf.Approximately(clipImporter.globalScale, PlayerImportScale))
+                    continue;
+                clipImporter.materialImportMode = ModelImporterMaterialImportMode.None;
+                clipImporter.animationType = ModelImporterAnimationType.Generic;
+                clipImporter.avatarSetup = ModelImporterAvatarSetup.CreateFromThisModel;
+                clipImporter.sourceAvatar = null;
+                clipImporter.globalScale = PlayerImportScale;
+                var defaults = clipImporter.defaultClipAnimations;
+                foreach (var c in defaults)
+                    c.loopTime = true;
+                clipImporter.clipAnimations = defaults;
+                clipImporter.SaveAndReimport();
+            }
+        }
+
+        /// <summary>리깅 동작 파일의 클립(없으면 null)</summary>
+        public static AnimationClip LoadClip(string id, string clip) =>
+            AssetDatabase.LoadAllAssetsAtPath(ClipPath(id, clip)).OfType<AnimationClip>().FirstOrDefault(a => !a.name.StartsWith("__"));
+
         const float PlayerHeight = 1.3f;  // 게임 안 키(m) — 그레이박스 토끼(귀 포함 1.6)보다 조금 작게, 주민(1.5)과 비슷하게
 
         // 원본 FBX 안의 색 텍스처를 꺼내고(처음 한 번), FBX 재질 가져오기는 끔

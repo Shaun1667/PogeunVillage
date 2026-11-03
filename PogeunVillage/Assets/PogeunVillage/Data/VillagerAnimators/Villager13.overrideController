@@ -1,0 +1,15 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!221 &22100000
+AnimatorOverrideController:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Villager13
+  m_Controller: {fileID: 9100000, guid: 5260a5581f6fcd546b39ad27516d0b5b, type: 2}
+  m_Clips:
+  - m_OriginalClip: {fileID: -203655887218126122, guid: 913f9f9a9551d604b9a2135ee0b3a524, type: 3}
+    m_OverrideClip: {fileID: -203655887218126122, guid: 250a27ae5a7e3c044b426a694693e028, type: 3}
+  - m_OriginalClip: {fileID: -203655887218126122, guid: bb25a311a4422df4eb1171d1db25413b, type: 3}
+    m_OverrideClip: {fileID: -203655887218126122, guid: f9efab2093cb0f14a8dc0b7241120548, type: 3}

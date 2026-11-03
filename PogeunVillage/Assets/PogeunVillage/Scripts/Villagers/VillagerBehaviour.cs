@@ -41,6 +41,7 @@ namespace PogeunVillage
         public float WanderRadius { get; private set; }
 
         static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
+        static readonly int SpeedId = Animator.StringToHash("Speed");
 
         Village village;
         IRandomSource random;
@@ -54,6 +55,7 @@ namespace PogeunVillage
         Vector2Int holeCell;
         float holeUntil;
         Vector3 visualRest;
+        Animator animator;       // 리깅 모델의 애니메이터(P-4j) — 걸을 때 Speed = 걷는 속도, 아니면 0
 
         public void Setup(Village owner, VillagerDefinition definition, HousePlot home, IRandomSource wanderRandom, float wanderRadius, bool isCamper = false)
         {
@@ -76,7 +78,8 @@ namespace PogeunVillage
                 visualRest = visual.localPosition;
             if (visual && definition.model)
             {
-                Model = Instantiate(definition.model, visual);  // 정적 모델(P-3c) — 통통 튐 · 구멍 빠짐은 visual이 그대로 맡음
+                Model = Instantiate(definition.model, visual);  // 모델(P-3c) — 구멍 빠짐은 visual이 그대로 맡음
+                animator = Model.GetComponentInChildren<Animator>();
                 foreach (var r in greyboxRenderers) if (r) r.enabled = false;
                 return;
             }
@@ -165,6 +168,8 @@ namespace PogeunVillage
                         ClimbOut();
                     break;
             }
+            if (animator)
+                animator.SetFloat(SpeedId, Current is State.Walking or State.GoingHome ? rules.walkSpeed : 0f, 0.1f, Time.deltaTime);
         }
 
         void PickTarget()
