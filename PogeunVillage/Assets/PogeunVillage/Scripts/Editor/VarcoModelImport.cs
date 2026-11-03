@@ -52,6 +52,8 @@ namespace PogeunVillage.EditorTools
             ["SaplingStage1"] = (0.9f, 0f),
             ["SaplingStage2"] = (1.4f, 0f),
             ["PickupWood"] = (0.3f, 0f),
+            ["FruitApple"] = (0.3f, 0f),  // 떨어진 열매 키(나무에 달린 열매는 FruitSize)
+            ["FruitPeach"] = (0.3f, 0f),
             ["Aquarium"] = (0.8f, 0f),  // 수조 · 물고기(P-4d): 물고기 높이는 떨어진 모습 기준, 수조 안에서는 길이에 맞춤
             ["FishMedaka"] = (0.08f, 0f),
             ["FishPaleChub"] = (0.08f, 0f),

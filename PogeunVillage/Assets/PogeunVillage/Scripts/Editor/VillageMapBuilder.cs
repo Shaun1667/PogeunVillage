@@ -80,6 +80,9 @@ namespace PogeunVillage.EditorTools
         // 캠핑 구역(결정 2026-10-28, 2-6): 마을 중간 좌측 = 광장 서쪽 끝, 텐트 입구는 광장 쪽
         static readonly Vector2 CampPosition = new(-38f, -4f);
         const float CampTentOffset = 0.66f;  // CampTent 모델 안에서 텐트 가운데가 +x로 치우친 거리(m, 높이 2.3 기준)
+        const float FruitSize = 0.38f;  // 나무에 달린 열매 키(m, 예전 공 지름)
+        const float FruitCrownRadius = 0.78f, FruitCrownLift = 0.2f;  // 열매 자리: 잎 덩어리 반지름 비율 · 가운데에서 위로(반지름 비율)
+        const float FurnitureCellLimit = 0.95f;  // 가구 모델 가로 · 세로 최대(m, 한 칸 1m)
         const float CageInsectSize = 0.2f, CageInsectCenter = 0.42f;  // 채집통 앞 곤충: 가장 긴 변(m) · 높이(채집통 키 비율)
         const float AquariumWaterCenter = 0.72f;  // 수조 모델 높이 중 물(유리) 가운데 비율 — 물고기 높이
         const float CounterTop = 0.85f;  // 노점 매대(모델) 윗면 높이 — 물건을 이 위에 놓음
@@ -140,6 +143,8 @@ namespace PogeunVillage.EditorTools
             inventoryRules = EnsureAsset<InventoryRules>(InventoryRulesPath);
             appleItem = EnsureItem("Apple", "사과", sellPrice: 100);
             peachItem = EnsureItem("Peach", "복숭아", sellPrice: 100);
+            SetPickupLook(appleItem, "FruitApple");  // 떨어진 열매도 열매 모델(P-4a)
+            SetPickupLook(peachItem, "FruitPeach");
             flowerItem = EnsureItem("Flower", "꽃", sellPrice: 40);
             pickupPrefab = BuildPickupPrefab();
             woodItem = EnsureItem("Wood", "목재", sellPrice: 20);
@@ -664,10 +669,10 @@ namespace PogeunVillage.EditorTools
             }
             else
             {
-                // 둥근 활엽수 (일부는 과일나무 — 사과 · 복숭아 나무 모델, 딸 수 있는 열매는 따로 보임)
+                // 둥근 활엽수 (일부는 과일나무 — 결정 2026-10-30: 열매 없는 둥근 나무 모델 + 딸 수 있는 열매 모델을 따로)
                 bool apple = kind == 8, peach = kind == 9;
                 ColliderOnly(Prim(PrimitiveType.Cylinder, "Trunk", tree, new Vector3(0f, 0.8f, 0f), new Vector3(0.4f, 0.8f, 0.4f), null, collider: true));
-                ModelVisual(apple ? "TreeApple" : peach ? "TreePeach" : "TreeRound", tree, Vector3.zero);
+                var crown = ModelVisual("TreeRound", tree, Vector3.zero);
 
                 AddInteractable(tree.gameObject, "나무", inVillage ? InteractableKind.Tree : InteractableKind.ForestTree, radius: 0.4f, markerHeight: 4.2f);
 
@@ -675,10 +680,20 @@ namespace PogeunVillage.EditorTools
                 {
                     var fruit = Mat(apple ? "Apple" : "Peach", apple ? "#F0645A" : "#FFB38A", rim: 0.3f);
                     var visuals = new Transform[gatheringRules.fruitMaxOnTree];
+                    // 열매는 잎 덩어리 겉면에(P-4a): 나무 모델 크기(나무 기준 좌표)에서 반지름 · 가운데 높이를 잼
+                    var crownBounds = ModelBounds(crown);
+                    var scale = tree.lossyScale;
+                    float radius = Mathf.Max(crownBounds.extents.x / scale.x, crownBounds.extents.z / scale.z);
+                    float crownY = (crownBounds.max.y - tree.position.y) / scale.y - radius * (1f - FruitCrownLift);  // 둥근 잎 덩어리의 가운데 = 꼭대기에서 반지름만큼 아래
                     for (int i = 0; i < visuals.Length; i++)
                     {
                         float a = (i * 360f / visuals.Length - 90f) * Mathf.Deg2Rad;  // 첫 열매는 카메라 쪽
-                        visuals[i] = Prim(PrimitiveType.Sphere, "Fruit", tree, new Vector3(Mathf.Cos(a) * 1.45f, 1.9f + (i % 2) * 0.5f, Mathf.Sin(a) * 1.45f), Vector3.one * 0.38f, fruit).transform;
+                        float y = crownY - (i % 2) * radius * 0.15f;
+                        var spot = new Vector3(Mathf.Cos(a) * radius * FruitCrownRadius, y, Mathf.Sin(a) * radius * FruitCrownRadius);
+                        var fruitModel = models ? models.Find(apple ? "FruitApple" : "FruitPeach") : null;
+                        visuals[i] = fruitModel != null && fruitModel.model
+                            ? FitModel(fruitModel.id, tree, spot - Vector3.up * FruitSize * 0.5f, new Vector3(0f, FruitSize, 0f)).transform  // 열매 모델(P-4a), 가운데가 예전 공 자리
+                            : Prim(PrimitiveType.Sphere, "Fruit", tree, spot, Vector3.one * 0.38f, fruit).transform;
                     }
 
                     var fruitTree = tree.gameObject.AddComponent<FruitTreeBehaviour>();
@@ -1651,7 +1666,8 @@ namespace PogeunVillage.EditorTools
             collider.size = box;
             AddInteractable(root, def.displayName, InteractableKind.Furniture, radius: 0.4f, markerHeight: markerHeight, wiggle: false);
             root.AddComponent<GridObject>().kind = GroundObjectKind.Furniture;
-            root.AddComponent<PlacedFurniture>();
+            var placed = root.AddComponent<PlacedFurniture>();
+            SwapToModel(placed, "Furniture" + def.id);  // 기본 가구 모델(P-4b)
             return SavePrefab(root, "Furniture_" + def.id);
         }
 
@@ -2474,6 +2490,25 @@ namespace PogeunVillage.EditorTools
             fit.SetParent(parent, false);
             fit.localPosition = localPosition;
             return fit.gameObject;
+        }
+
+        // 가구 그레이박스를 모델로(P-4b · P-4c): 도형 렌더러는 지우고(충돌 상자 · 상호작용은 그대로), 모델을 충돌 상자 높이에 맞춤.
+        // 한 칸을 넘지 않게 가로 · 세로는 FurnitureCellLimit 안으로 줄임. 모델은 제 색이라 주민 색 칠하기(PlacedFurniture.Tint)는 끔
+        static bool SwapToModel(PlacedFurniture placed, string modelId)
+        {
+            var entry = models ? models.Find(modelId) : null;
+            if (entry == null || !entry.model)
+                return false;
+            var root = placed.gameObject;
+            foreach (var r in root.GetComponentsInChildren<MeshRenderer>(true))
+                Object.DestroyImmediate(r.gameObject);
+            float height = root.GetComponent<BoxCollider>().size.y;
+            var fit = FitModel(modelId, root.transform, Vector3.zero, new Vector3(0f, height, 0f));
+            var size = ModelBounds(fit).size;
+            fit.transform.localScale *= Mathf.Min(1f, FurnitureCellLimit / size.x, FurnitureCellLimit / size.z);
+            placed.bodyRenderers = new Renderer[0];
+            placed.accentRenderers = new Renderer[0];
+            return true;
         }
 
         // 모니터 화면 칸의 표면 깊이(Z): 화면 칸 가운데 영역의 정점 중 가장 앞(-Z) — 테두리보다 들어가 있어 쿼드를 테두리 앞에 띄우지 않음

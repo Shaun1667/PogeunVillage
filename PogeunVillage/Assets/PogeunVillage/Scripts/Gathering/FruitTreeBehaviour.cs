@@ -33,7 +33,7 @@ namespace PogeunVillage
                 return;
             }
             interactable = GetComponent<Interactable>();
-            fruitMaterial = fruitVisuals[0].GetComponent<Renderer>().sharedMaterial;
+            fruitMaterial = fruitVisuals[0].GetComponentInChildren<Renderer>().sharedMaterial;  // 열매 모델(P-4a)은 렌더러가 자식에
             tree = new FruitTree(rules.fruitMaxOnTree);
             RefreshVisuals();
         }

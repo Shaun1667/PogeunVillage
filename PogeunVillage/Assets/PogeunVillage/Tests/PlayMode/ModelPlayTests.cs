@@ -141,6 +141,28 @@ namespace PogeunVillage.PlayModeTests
             Object.Destroy(wood.gameObject);
         }
 
+        // P-4a · P-4b: 과일나무는 둥근 나무 + 열매 모델, 떨어진 열매도 모델, 기본 가구 8은 모델(충돌 상자 · 상호작용은 그대로)
+        [Test]
+        public void FruitAndFurniture_UseModels()
+        {
+            foreach (var fruitTree in Object.FindObjectsByType<FruitTreeBehaviour>())
+            {
+                Assert.IsTrue(fruitTree.transform.Find("Model_TreeRound"), "과일나무는 둥근 나무 모델");
+                string fruit = "Fit_Fruit" + fruitTree.fruitItem.id;
+                Assert.IsTrue(fruitTree.fruitVisuals.All(v => v.name == fruit), fruit);
+                Assert.IsNotNull(fruitTree.fruitItem.pickupModel, "떨어진 열매 모델");
+            }
+            foreach (var id in new[] { "Fence", "Crate", "Planter", "LogStool", "Bench", "RoundTable", "StreetLamp", "Birdhouse" })
+            {
+                var definition = (FurnitureDefinition)Item(id);
+                var prefab = definition.prefab;
+                Assert.IsTrue(prefab.transform.Find("Fit_Furniture" + id), id + " 모델");
+                Assert.IsTrue(prefab.GetComponent<BoxCollider>(), id + " 충돌 상자");
+                var bounds = prefab.GetComponentsInChildren<Renderer>().Select(r => r.bounds).ToArray();
+                Assert.LessOrEqual(bounds.Max(b => b.max.x) - bounds.Min(b => b.min.x), 0.96f, id + " 한 칸 안");
+            }
+        }
+
         // P-4e: 마을을 도는 곤충은 그 곤충 모델(그레이박스 몸 · 날개는 숨김)
         [UnityTest]
         public IEnumerator Insects_UseModels()
