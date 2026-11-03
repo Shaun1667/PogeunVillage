@@ -32,7 +32,7 @@ namespace PogeunVillage.PlayModeTests
 #endif
             Assert.IsNotNull(library, "모델 목록이 로드되지 않음");
             int checkedCount = 0;
-            foreach (var entry in library.entries)
+            foreach (var entry in library.entries.Where(e => e.id != "Player"))  // 플레이어는 스킨 메시(Player_UsesModel_AnimatesWithSpeed에서 확인)
             {
                 foreach (var holder in Object.FindObjectsByType<Transform>().Where(t => t.name == "Model_" + entry.id).Take(3))
                 {
@@ -161,6 +161,27 @@ namespace PogeunVillage.PlayModeTests
                 var bounds = prefab.GetComponentsInChildren<Renderer>().Select(r => r.bounds).ToArray();
                 Assert.LessOrEqual(bounds.Max(b => b.max.x) - bounds.Min(b => b.min.x), 0.96f, id + " 한 칸 안");
             }
+        }
+
+        // P-4f: 플레이어는 리깅 모델 + 애니메이터(이동 속도 Speed로 서 있기 · 걷기 · 달리기), 손에 든 도구는 도구 모델
+        [UnityTest]
+        public IEnumerator Player_UsesModel_AnimatesWithSpeed()
+        {
+            var controller = player.GetComponent<PlayerController>();
+            Assert.IsNotNull(controller.animator, "애니메이터");
+            Assert.AreEqual("Model_Player", controller.animator.name);
+            Assert.IsTrue(controller.animator.parameters.Any(p => p.name == "Speed"), "Speed 파라미터");
+            Assert.IsNotNull(controller.animator.GetComponentInChildren<SkinnedMeshRenderer>(), "스킨 메시");
+            Assert.IsFalse(player.GetComponentsInChildren<Transform>(true).Any(t => t.name.StartsWith("Ear")), "그레이박스 토끼 없음");
+            foreach (var hold in player.GetComponent<PlayerTools>().holdVisuals)
+                Assert.IsTrue(hold.transform.Find("Fit_Tool" + hold.name), hold.name + " 도구 모델");
+
+            Press(keyboard.wKey);
+            yield return WaitSeconds(0.4f);
+            Assert.Greater(controller.animator.GetFloat("Speed"), 0.5f, "걸으면 Speed");
+            Release(keyboard.wKey);
+            yield return WaitSeconds(0.2f);
+            Assert.AreEqual(0f, controller.animator.GetFloat("Speed"), 0.01f, "멈추면 0");
         }
 
         // P-4e: 마을을 도는 곤충은 그 곤충 모델(그레이박스 몸 · 날개는 숨김)

@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
+using UnityEditor.Animations;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -35,6 +36,7 @@ namespace PogeunVillage.EditorTools
         const string InsectRulesPath = Root + "/Data/InsectRules.asset";
         const string SaveRulesPath = Root + "/Data/SaveRules.asset";
         const string IntroSettingsPath = Root + "/Data/IntroSettings.asset";
+        const string PlayerAnimatorPath = Root + "/Data/PlayerAnimator.controller";
         const string VillagerDir = Root + "/Data/Villagers";
         const string FontSourcePath = Root + "/Fonts/Cafe24Ssurround-v2.0.ttf";
         const string FontAssetPath = Root + "/Fonts/Cafe24Ssurround SDF.asset";
@@ -828,6 +830,7 @@ namespace PogeunVillage.EditorTools
             var pc = player.AddComponent<PlayerController>();
             pc.settings = settings;
             pc.visual = visual;
+            pc.animator = BuildPlayerModel(visual);
 
             var interactor = player.AddComponent<PlayerInteractor>();
             interactor.settings = settings;
@@ -837,6 +840,55 @@ namespace PogeunVillage.EditorTools
             BuildPlayerTools(player, visual, inventory, interactor);
             player.AddComponent<PlayerWallet>().shop = shopData;
             return player;
+        }
+
+        // 플레이어 모델(P-4f): Mixamo 리깅 Humanoid + 서 있기 · 걷기 · 달리기를 이동 속도로 섞는 애니메이터. 그레이박스 토끼는 지움.
+        // 모델이 없으면 null(토끼 그대로, 통통 튀기)
+        static Animator BuildPlayerModel(Transform visual)
+        {
+            var entry = models ? models.Find("Player") : null;
+            var controller = EnsurePlayerAnimator();
+            if (entry == null || !entry.model || !controller)
+                return null;
+            foreach (Transform part in visual.Cast<Transform>().ToArray())
+                Object.DestroyImmediate(part.gameObject);
+            var model = (GameObject)PrefabUtility.InstantiatePrefab(entry.model, visual);
+            model.name = "Model_Player";
+            var skin = model.GetComponentInChildren<SkinnedMeshRenderer>();
+            skin.sharedMaterial = entry.material;
+            skin.updateWhenOffscreen = true;  // 휘어진 화면에서 경계 상자로 잘려 사라지지 않게
+            var baked = new Mesh();
+            skin.BakeMesh(baked, true);
+            model.transform.localScale = Vector3.one * (entry.height / Mathf.Max(baked.bounds.size.y, 0.01f));
+            model.transform.localPosition = Vector3.down * baked.bounds.min.y * model.transform.localScale.y;
+            Object.DestroyImmediate(baked);
+            var animator = model.GetComponent<Animator>() ?? model.AddComponent<Animator>();
+            animator.runtimeAnimatorController = controller;
+            animator.applyRootMotion = false;
+            return animator;
+        }
+
+        // 플레이어 애니메이터(처음 한 번만 만듦): Speed(m/s)로 서 있기(0) · 걷기(walkSpeed) · 달리기(runSpeed) 블렌드
+        static RuntimeAnimatorController EnsurePlayerAnimator()
+        {
+            var existing = AssetDatabase.LoadAssetAtPath<AnimatorController>(PlayerAnimatorPath);
+            if (existing)
+                return existing;
+            var clips = VarcoModelImport.PlayerClips
+                .Select(c => AssetDatabase.LoadAllAssetsAtPath(VarcoModelImport.PlayerClipPath(c)).OfType<AnimationClip>().FirstOrDefault(a => !a.name.StartsWith("__")))
+                .ToArray();
+            if (clips.Any(c => !c))
+                return null;
+            var animator = AnimatorController.CreateAnimatorControllerAtPath(PlayerAnimatorPath);
+            animator.AddParameter("Speed", AnimatorControllerParameterType.Float);
+            animator.CreateBlendTreeInController("Move", out var tree);
+            tree.blendParameter = "Speed";
+            tree.useAutomaticThresholds = false;
+            tree.AddChild(clips[0], 0f);
+            tree.AddChild(clips[1], settings.walkSpeed);
+            tree.AddChild(clips[2], settings.runSpeed);
+            AssetDatabase.SaveAssets();
+            return animator;
         }
 
         // 손에 든 도구(그레이박스). 축은 오른손 위치, 휘두르면 앞으로 꺾임
@@ -874,7 +926,10 @@ namespace PogeunVillage.EditorTools
 
             var holds = new[] { net, rod, axe, shovel, can };
             foreach (var hold in holds)
+            {
+                HoldToolModel(hold);
                 hold.SetActive(false);
+            }
 
             var playerTools = player.AddComponent<PlayerTools>();
             playerTools.settings = settings;
@@ -883,6 +938,31 @@ namespace PogeunVillage.EditorTools
             playerTools.tools = tools;
             playerTools.holdVisuals = holds;
             playerTools.swingPivot = pivot;
+        }
+
+        // 손에 든 도구도 도구 모델(P-4h): 그레이박스와 같은 길이로(손잡이 아래가 축), 누운 모델은 ToolPitch로 세움
+        static void HoldToolModel(GameObject hold)
+        {
+            string id = "Tool" + hold.name;
+            var entry = models ? models.Find(id) : null;
+            if (entry == null || !entry.model)
+                return;
+            float length = 0f;  // 그레이박스 도구의 길이(도구 축 기준 위쪽 끝)
+            foreach (var filter in hold.GetComponentsInChildren<MeshFilter>())
+            {
+                var toHold = hold.transform.worldToLocalMatrix * filter.transform.localToWorldMatrix;
+                var b = filter.sharedMesh.bounds;
+                for (int corner = 0; corner < 8; corner++)
+                {
+                    var c = new Vector3((corner & 1) == 0 ? b.min.x : b.max.x, (corner & 2) == 0 ? b.min.y : b.max.y, (corner & 4) == 0 ? b.min.z : b.max.z);
+                    length = Mathf.Max(length, toHold.MultiplyPoint3x4(c).y);
+                }
+            }
+            foreach (Transform part in hold.transform.Cast<Transform>().ToArray())
+                Object.DestroyImmediate(part.gameObject);
+            var fit = FitModel(id, hold.transform, Vector3.zero, new Vector3(0f, length, 0f), pitch: ToolPitch.TryGetValue(id, out float pitch) ? pitch : 0f);
+            foreach (var r in fit.GetComponentsInChildren<Renderer>())
+                r.shadowCastingMode = ShadowCastingMode.Off;
         }
 
         static void BuildInteractionMarker(PlayerInteractor interactor)

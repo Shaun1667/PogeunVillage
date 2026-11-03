@@ -17,6 +17,10 @@ namespace PogeunVillage
         public Transform visual;
         public float bobHeight = 0.08f;
         public float bobFrequency = 12f;
+        [Tooltip("플레이어 모델의 애니메이터(P-4f) — 있으면 이동 속도(Speed)로 서 있기 · 걷기 · 달리기를 섞고 통통 튀기는 끔")]
+        public Animator animator;
+
+        static readonly int SpeedId = Animator.StringToHash("Speed");
 
         /// <summary>달려서 움직이는 중(곤충이 놀람, 3-7a). 조작이 멈추면 false</summary>
         public bool IsRunning { get; private set; }
@@ -68,7 +72,10 @@ namespace PogeunVillage
             verticalVelocity = controller.isGrounded ? -2f : verticalVelocity - settings.gravity * Time.deltaTime;
             controller.Move((move + Vector3.up * verticalVelocity) * Time.deltaTime);
 
-            UpdateBob(move.magnitude);
+            if (animator)
+                animator.SetFloat(SpeedId, move.magnitude);
+            else
+                UpdateBob(move.magnitude);
         }
 
         static Vector2 ReadMoveInput()
