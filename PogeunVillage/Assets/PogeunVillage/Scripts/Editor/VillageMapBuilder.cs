@@ -1699,7 +1699,7 @@ namespace PogeunVillage.EditorTools
                         item.ratingPoint = 20;
                         item.unlockStars = 1;
                     }
-                    item.prefab = prefabs[k];
+                    item.prefab = BuildThemeModelPrefab(prefabs[k], v, ThemeKinds[k].id) ?? prefabs[k];  // 주민마다 특색 있는 모델(P-4c), 없으면 그레이박스 + 주민 색
                     item.themeOwner = v;
                     EditorUtility.SetDirty(item);
                     set[k] = item;
@@ -1709,6 +1709,20 @@ namespace PogeunVillage.EditorTools
                 all.AddRange(set);
             }
             return all.ToArray();
+        }
+
+        // 주민 테마 가구 모델 프리팹(P-4c): 그레이박스 프리팹(충돌 · 상호작용)을 복사해 모델로 바꿈 — 모델이 제 색이라 주민 색은 칠하지 않음
+        static GameObject BuildThemeModelPrefab(GameObject greybox, VillagerDefinition villager, string kind)
+        {
+            string modelId = $"Theme{villager.id}_{kind}";
+            var entry = models ? models.Find(modelId) : null;
+            if (entry == null || !entry.model)
+                return null;
+            var root = (GameObject)PrefabUtility.InstantiatePrefab(greybox);
+            PrefabUtility.UnpackPrefabInstance(root, PrefabUnpackMode.Completely, InteractionMode.AutomatedAction);
+            root.name = $"Theme_{villager.id}_{kind}";
+            SwapToModel(root.GetComponent<PlacedFurniture>(), modelId);
+            return SavePrefab(root, $"Furniture_Theme_{villager.id}_{kind}");
         }
 
         // 테마 가구 모양(그레이박스): 흰 재질 부분에 주민 몸 색 · 포인트 색을 입힘(PlacedFurniture.Tint)

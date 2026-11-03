@@ -21,7 +21,7 @@ MonoBehaviour:
   pickupModel: {fileID: 0}
   pickupMaterial: {fileID: 0}
   pickupScale: 1
-  prefab: {fileID: 2514333927217454828, guid: 07ed60ff37a7a5e4880bc92ac65fd01d, type: 3}
+  prefab: {fileID: 5407073540628581657, guid: 21c93665195c2494e9b147989c861fa2, type: 3}
   woodCost: 0
   ratingPoint: 20
   unlockStars: 1

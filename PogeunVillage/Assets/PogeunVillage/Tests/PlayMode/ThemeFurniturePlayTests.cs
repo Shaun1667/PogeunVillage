@@ -103,26 +103,18 @@ namespace PogeunVillage.PlayModeTests
             Assert.AreEqual(1, Inv.Count(Who.themeFurniture[1].id));
         }
 
+        // P-4c: 테마 가구는 그 주민만의 모델(주민 색 칠하기 대신), 충돌 · 이름은 그대로
         [Test]
-        public void PlacedThemeFurniture_WearsVillagerColors()
+        public void PlacedThemeFurniture_UsesVillagerModel()
         {
             var keeper = Object.FindAnyObjectByType<FurnitureKeeper>();
             var bench = Who.themeFurniture[1];
             var placed = keeper.Place(bench, FindOpenSpot(), 0);
             Assert.IsNotNull(placed);
             Assert.AreEqual(bench.displayName, placed.GetComponent<Interactable>().displayName);
-            var block = new MaterialPropertyBlock();
-            placed.bodyRenderers[0].GetPropertyBlock(block);
-            AssertColor(Who.bodyColor, block.GetColor("_BaseColor"));
-            placed.accentRenderers[0].GetPropertyBlock(block);
-            AssertColor(Who.accentColor, block.GetColor("_BaseColor"));
-        }
-
-        static void AssertColor(Color expected, Color actual)
-        {
-            Assert.AreEqual(expected.r, actual.r, 0.002f);
-            Assert.AreEqual(expected.g, actual.g, 0.002f);
-            Assert.AreEqual(expected.b, actual.b, 0.002f);
+            Assert.IsTrue(placed.transform.Find($"Fit_Theme{Who.id}_Bench"), "주민 벤치 모델");
+            Assert.IsEmpty(placed.bodyRenderers, "모델은 주민 색을 칠하지 않음");
+            Assert.IsTrue(placed.GetComponent<BoxCollider>(), "충돌 상자");
         }
 
         [Test]
