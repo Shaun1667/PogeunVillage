@@ -62,11 +62,11 @@ namespace PogeunVillage.EditorTools
             ["FishCatfish"] = (0.15f, 0f),
             ["FishGoldenCarp"] = (0.15f, 0f),
             ["InsectCage"] = (0.5f, 0f),  // 곤충 · 채집통(P-4e, 생성만 — 적용 때 다시 맞춤)
-            ["InsectCabbageWhite"] = (0.12f, 0f),
+            ["InsectCabbageWhite"] = (0.08f, 0f),  // 나비 · 잠자리는 납작해 키를 낮게(폭이 키의 2 ~ 5배)
             ["InsectHoneyBee"] = (0.1f, 0f),
             ["InsectGrasshopper"] = (0.1f, 0f),
             ["InsectCricket"] = (0.08f, 0f),
-            ["InsectRedDragonfly"] = (0.1f, 0f),
+            ["InsectRedDragonfly"] = (0.03f, 0f),
             ["InsectCicada"] = (0.1f, 0f),
             ["InsectFirefly"] = (0.06f, 0f),
             ["InsectStagBeetle"] = (0.1f, 0f),

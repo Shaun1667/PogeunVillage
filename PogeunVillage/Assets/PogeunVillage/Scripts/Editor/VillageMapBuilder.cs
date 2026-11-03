@@ -80,6 +80,7 @@ namespace PogeunVillage.EditorTools
         // 캠핑 구역(결정 2026-10-28, 2-6): 마을 중간 좌측 = 광장 서쪽 끝, 텐트 입구는 광장 쪽
         static readonly Vector2 CampPosition = new(-38f, -4f);
         const float CampTentOffset = 0.66f;  // CampTent 모델 안에서 텐트 가운데가 +x로 치우친 거리(m, 높이 2.3 기준)
+        const float CageInsectSize = 0.2f, CageInsectCenter = 0.42f;  // 채집통 앞 곤충: 가장 긴 변(m) · 높이(채집통 키 비율)
         const float AquariumWaterCenter = 0.72f;  // 수조 모델 높이 중 물(유리) 가운데 비율 — 물고기 높이
         const float CounterTop = 0.85f;  // 노점 매대(모델) 윗면 높이 — 물건을 이 위에 놓음
         // 누워서 생성된 도구 모델을 세우는 x축 회전(P-4h): 삽은 날이 -z로 누움, 잠자리채는 45° 기움
@@ -2032,9 +2033,10 @@ namespace PogeunVillage.EditorTools
         {
             string dir = FurnitureDir + "/Cage";
             EnsureFolder(dir);
-            var prefab = BuildCagePrefab();
             foreach (var insect in insectList)
             {
+                var prefab = BuildCagePrefab(insect);
+                SetPickupLook(insect, "Insect" + insect.id);  // 떨어진 곤충 · 마을을 도는 곤충도 그 곤충 모델(P-4e)
                 string path = $"{dir}/Cage_{insect.id}.asset";
                 bool isNew = !AssetDatabase.LoadAssetAtPath<FurnitureDefinition>(path);
                 var cage = EnsureAsset<FurnitureDefinition>(path);
@@ -2052,6 +2054,32 @@ namespace PogeunVillage.EditorTools
             }
         }
 
+        // 곤충마다 채집통 프리팹(P-4e): 채집통 모델 + 그 곤충 모델. 망이 불투명이라 곤충은 앞 망 바로 앞에(수조의 물고기와 같은 방식), 가장 긴 변을 맞춤
+        static GameObject BuildCagePrefab(InsectDefinition insect)
+        {
+            var cageModel = models ? models.Find("InsectCage") : null;
+            var insectModel = models ? models.Find("Insect" + insect.id) : null;
+            if (cageModel == null || insectModel == null)
+                return BuildCagePrefab();
+            var root = new GameObject("Cage");
+            var t = root.transform;
+            var cage = FitModel("InsectCage", t, Vector3.zero, new Vector3(0.5f, 0f, 0f));
+            var cageBounds = ModelBounds(cage);
+            var body = FitModel("Insect" + insect.id, t, Vector3.zero, new Vector3(0f, CageInsectSize, 0f));
+            var size = ModelBounds(body).size;
+            body.transform.localScale *= CageInsectSize / Mathf.Max(size.x, size.y, size.z);  // 납작한 잠자리 · 나비도 같은 크기로
+            size = ModelBounds(body).size;
+            body.transform.localPosition = new Vector3(0f, cageBounds.size.y * CageInsectCenter - size.y * 0.5f, cageBounds.max.z + size.z * 0.5f - 0.01f);
+            var collider = root.AddComponent<BoxCollider>();
+            collider.center = new Vector3(0f, 0.3f, 0f);
+            collider.size = new Vector3(0.5f, 0.62f, 0.5f);
+            AddInteractable(root, "채집통", InteractableKind.Furniture, radius: 0.35f, markerHeight: 1f, wiggle: false);
+            root.AddComponent<GridObject>().kind = GroundObjectKind.Furniture;
+            root.AddComponent<PlacedFurniture>();  // 곤충 모델이 제 색이라 칠하지 않음
+            return SavePrefab(root, "Furniture_Cage_" + insect.id);
+        }
+
+        // 그레이박스 채집통(모델이 없을 때): 곤충 모양을 곤충 색으로 칠함
         static GameObject BuildCagePrefab()
         {
             var root = new GameObject("Cage");

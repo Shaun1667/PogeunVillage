@@ -141,6 +141,24 @@ namespace PogeunVillage.PlayModeTests
             Object.Destroy(wood.gameObject);
         }
 
+        // P-4e: 마을을 도는 곤충은 그 곤충 모델(그레이박스 몸 · 날개는 숨김)
+        [UnityTest]
+        public IEnumerator Insects_UseModels()
+        {
+            yield return null;
+            var insects = Object.FindAnyObjectByType<Insects>(FindObjectsInactive.Include);
+            Assert.IsNotNull(insects, "곤충 관리자");
+            foreach (var definition in insects.rules.insects)
+            {
+                var insect = insects.SpawnAt(definition, ground.transform.position + Vector3.up * 50f);
+                var model = insect.transform.Find("Model");
+                Assert.IsTrue(model, definition.id + " 모델");
+                Assert.IsTrue(model.GetComponentsInChildren<Renderer>().All(r => r.enabled && r.sharedMaterial == definition.pickupMaterial), definition.id);
+                Assert.IsTrue(insect.bodyRenderers.All(r => !r.enabled), definition.id + " 그레이박스 숨김");
+            }
+            yield break;
+        }
+
         [UnityTest]
         public IEnumerator Flower_UsesModelLook()
         {

@@ -43,9 +43,8 @@ namespace PogeunVillage.PlayModeTests
             Assert.AreEqual(1, Inv.Count("Grasshopper"), "곤충 하나 빠짐");
             var cage = keeper.Placed.Single();
             Assert.AreEqual("메뚜기 채집통", cage.GetComponent<Interactable>().displayName);
-            var block = new MaterialPropertyBlock();
-            cage.bodyRenderers[0].GetPropertyBlock(block);
-            Assert.AreEqual(hopper.color.g, block.GetColor("_BaseColor").g, 0.002f, "곤충 색");
+            Assert.IsTrue(cage.transform.Find("Fit_InsectGrasshopper"), "채집통 안에 메뚜기 모델(P-4e)");
+            Assert.IsTrue(cage.transform.Find("Fit_InsectCage"), "채집통 모델");
 
             yield return Frames(2);
             yield return Tap(keyboard.fKey);

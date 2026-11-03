@@ -35,6 +35,8 @@ namespace PogeunVillage
             var interactable = GetComponent<Interactable>();
             interactable.displayName = definition.displayName;
             interactable.Interacted += (_, _) => GameNotice.Post($"[곤충] {definition.displayName} — 잠자리채를 들고 살금살금 다가가 Space", this);
+            if (ItemLook.Show(definition, transform))  // 곤충 모델(P-4e)이 있으면 그레이박스 대신
+                return;
             var block = new MaterialPropertyBlock();
             block.SetColor(BaseColorId, definition.color);
             foreach (var r in bodyRenderers) if (r) r.SetPropertyBlock(block);

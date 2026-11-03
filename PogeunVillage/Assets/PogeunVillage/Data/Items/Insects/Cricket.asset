@@ -18,9 +18,9 @@ MonoBehaviour:
   plantsAs: 0
   buyPrice: 0
   sellPrice: 120
-  pickupModel: {fileID: 0}
-  pickupMaterial: {fileID: 0}
-  pickupScale: 1
+  pickupModel: {fileID: 919132149155446097, guid: 314a39ec4da466e4babad296b13cea1b, type: 3}
+  pickupMaterial: {fileID: 2100000, guid: 7bebf29cb90b6384897a5a504482a5dd, type: 2}
+  pickupScale: 0.11397879
   site: 2
   rarity: 0
   periods: 0200000003000000i

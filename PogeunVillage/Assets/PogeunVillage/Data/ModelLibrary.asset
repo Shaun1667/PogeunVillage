@@ -246,7 +246,7 @@ MonoBehaviour:
   - id: InsectCabbageWhite
     model: {fileID: 919132149155446097, guid: 4e9d69882dc6b0e4ea5290c1426da08d, type: 3}
     material: {fileID: 2100000, guid: 5c96fd3b8b5a2124c9a0b6b08a0c1129, type: 2}
-    height: 0.12
+    height: 0.08
     yaw: 0
   - id: InsectCage
     model: {fileID: 919132149155446097, guid: 2bcae2b8b54d0c44eaeff89ed43a7377, type: 3}
@@ -281,7 +281,7 @@ MonoBehaviour:
   - id: InsectRedDragonfly
     model: {fileID: 919132149155446097, guid: 50eb098a97287fe41a6e8c4cc56da2e0, type: 3}
     material: {fileID: 2100000, guid: a632ab6d6686a254db6653f19483f1f6, type: 2}
-    height: 0.1
+    height: 0.03
     yaw: 0
   - id: InsectStagBeetle
     model: {fileID: 919132149155446097, guid: fdfb61ec1373b194cbe33611dbbfede9, type: 3}

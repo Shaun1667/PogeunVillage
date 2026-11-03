@@ -59,7 +59,7 @@
     - 생성 (2026-11-02): `Art/Raw/Props/Fish{Medaka,PaleChub,CrucianCarp,Loach,Carp,Catfish,Mandarinfish,GoldenCarp}.fbx` · `Aquarium.fbx`(각 4천 삼각형, 2,250점). 플로우 메모 y 32700, 줄 y 33000 · 33900 · 34800. 가져오기 메뉴로 재질 · ModelLibrary 항목까지
     - 결정 (2026-11-02, 사용자): **유니티(게임) 적용은 나중에** — 생성 · 가져오기까지만. 적용 중이던 수조 코드는 되돌림
     - 적용 때 참고: 물고기 모델은 머리가 +z(정면이 머리) → 수조에서는 yaw 90°로 옆모습. 수조 모델은 위쪽 약 절반이 유리(불투명) · 아래가 나무 장 → 물고기는 앞 유리 바로 앞(높이 약 0.72)에 붙임. 물고기마다 수조 프리팹을 따로(지금은 한 프리팹을 물고기 색으로 칠함 — 모델이면 칠하지 않음), 떨어진 물고기는 `SetPickupLook`(P-4i)로. 미꾸라지는 S자로 휜 모습
-  - [ ] **P-4e. 곤충 8 · 채집통 1** — 배추흰나비 · 꿀벌 · 메뚜기 · 귀뚜라미 · 고추잠자리 · 매미 · 반딧불이 · 사슴벌레(마을에 돌아다니는 모습 + 채집통 안)
+  - [x] **P-4e. 곤충 8 · 채집통 1** (적용 2026-11-03) — 플레이 확인 완료 — 곤충마다 채집통 프리팹 `Furniture_Cage_{곤충}`(채집통 모델 + 앞 망 바로 앞에 곤충, 가장 긴 변 0.2 m), 마을을 도는 곤충 · 떨어진 곤충은 `ItemLook`(새 공용 도우미 — Pickup과 함께 씀)으로 모델. 납작한 나비 · 잠자리는 키를 0.08 · 0.03으로 낮춤(폭이 키의 2 ~ 5배). 예전 `Furniture_Cage.prefab` 지움. 테스트: `ModelPlayTests.Insects_UseModels` · `CagePlayTests`(채집통 안 곤충 모델), EditMode 268 · PlayMode 198 통과. 참고: 첫 실행에서 `AxeTests.FifthHit_Fells…`가 한 번 실패했다가 다시 돌리니 통과(코드 변경 없음, 가끔 실패하는 테스트로 보임) — — 배추흰나비 · 꿀벌 · 메뚜기 · 귀뚜라미 · 고추잠자리 · 매미 · 반딧불이 · 사슴벌레(마을에 돌아다니는 모습 + 채집통 안)
     - 생성 (2026-11-02, 사용자 "생성만"): `Art/Raw/Props/Insect{CabbageWhite,HoneyBee,Grasshopper,Cricket,RedDragonfly,Cicada,Firefly,StagBeetle}.fbx` · `InsectCage.fbx`(각 4천 삼각형, 2,250점). 플로우 메모 y 35700, 줄 y 36000 · 36900 · 37800
     - **가져오기 전**: 내려받는 동안 Unity 에디터가 닫혀(MCP 연결 끊김) 메뉴 `Import Varco Models`를 돌리지 못함 — 원본 FBX만 커밋(.meta 없음). 적용할 때 Unity를 열고 가져오기 메뉴부터. 기본 높이는 가져오기 코드에 넣어 둠
     - 게임 적용은 나중에(P-4d와 같은 결정)
