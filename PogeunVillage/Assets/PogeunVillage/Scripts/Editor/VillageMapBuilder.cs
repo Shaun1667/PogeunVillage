@@ -2479,7 +2479,7 @@ namespace PogeunVillage.EditorTools
             float deskTop = ModelBounds(desk).max.y - room.position.y;
             var monitor = RoomModel("RoomMonitor", room, new Vector3(0f, deskTop, 1.5f), intro.screenHeight * MonitorWidthPerScreenHeight);
             RoomModel("RoomKeyboard", room, new Vector3(-0.05f, deskTop, 1.05f), 0.44f);
-            RoomModel("RoomMouse", room, new Vector3(0.32f, deskTop, 1.05f), 0.07f);
+            RoomModel("RoomMouse", room, new Vector3(0.32f, deskTop, 1.05f), 0.07f, yaw: 0f);  // 버튼(모델 +Z)이 모니터 쪽
             var lamp = RoomModel("RoomLamp", room, new Vector3(-0.6f, deskTop, 1.45f), 0.26f);
             RoomModel("RoomMug", room, new Vector3(0.55f, deskTop, 1.25f), 0.1f);
 
