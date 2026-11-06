@@ -1,18 +1,15 @@
 # HANDOFF.md — 작업 환경 옮기기 · 이어서 작업하기
 
-> 처음 작성: 2026-10-27. **전면 정리: 2026-10-30**(작업 환경 이전 — 사용자 요청).
+> 처음 작성: 2026-10-27. 전면 정리: 2026-10-30. **최근 갱신: 2026-11-06**(두 번째 작업 환경 이전 — 사용자 요청, 이번에는 Claude가 커밋 · 푸시까지).
 > 이 저장소만 받으면 작업을 이어갈 수 있도록, 저장소 밖에 있던 정보(외부 도구 · Varco3D 플로우 · Mixamo · Notion · 작업 방식 · Claude 설정 · 요령)를 한곳에 모은 문서.
 > 다른 문서: 규칙 [CLAUDE.md](CLAUDE.md) · 기획 [GDD.md](GDD.md) · 작업 순서 · 일지 [TASKS.md](TASKS.md) · 수치 [BALANCE.md](BALANCE.md) · 진행 현황 [PROGRESS.md](PROGRESS.md) · 모델 규격 [MODELING_SPEC.md](MODELING_SPEC.md) · 재미 검증 점검표 [PLAYTEST.md](PLAYTEST.md) · 방법론 [claude_all_type_genre.md](claude_all_type_genre.md)
 
 ---
 
 ## 0. 옮기기 전에 (기존 PC에서)
-1. **푸시하기** — 2026-10-30 기준 `main`이 `origin/main`보다 **커밋 13개 앞서 있음**(6-1d 이후 P-3 · P-4 · P-5 전부). Claude는 푸시하지 않으므로 사용자가 직접:
-   ```
-   git push origin main
-   ```
-   - FBX 원본(68개)은 Git LFS라 푸시 때 LFS 업로드가 같이 됨(수백 MB, GitHub LFS 무료 용량 1GB 확인).
-2. `git status`가 깨끗한지 확인(아래 7-3 "되돌릴 잡음" 참고).
+1. **푸시** — 2026-11-06 사용자 요청으로 Claude가 모든 변경을 커밋하고 `origin/main`에 푸시함(P-4 모델 적용 · 주민 리깅까지 전부). 새 PC에서는 1번대로 받기만 하면 됨.
+   - FBX 원본은 Git LFS(Art/Raw 아래 250개, 주민 리깅 60개 포함). 받을 때 `git lfs pull`까지 확인.
+2. `git status`가 깨끗한지 확인(아래 8-3 "되돌릴 잡음" 참고).
 3. Claude 메모리(저장소 밖, 4번)는 새 PC에서 다시 만들어야 함 — 내용은 4번에 적어 둠.
 
 ## 1. 새 PC 세팅 순서
@@ -29,7 +26,7 @@
    - 저장이 없으면 인트로가 나옴(ESC로 건너뛰기). 저장이 있으면 시작 화면(F 이어하기 / 새로 시작).
 4. **Claude Code**: 저장소 **루트** 폴더를 작업 폴더로 → CLAUDE.md가 자동으로 읽힘.
 5. **외부 도구 연결**(2번): Unity MCP, Varco3D, Claude in Chrome(Mixamo), Notion.
-6. **확인**: 메뉴 `Pogeun Village > Run EditMode Tests` · `Run PlayMode Tests` → **EditMode 268 · PlayMode 192 통과**(2026-10-30 기준), 콘솔 경고 0.
+6. **확인**: 메뉴 `Pogeun Village > Run EditMode Tests` · `Run PlayMode Tests` → **EditMode 268 · PlayMode 201 통과**(2026-11-03 기준), 콘솔 경고 0.
 
 > 주의: pull 받은 뒤 에디터에 이미 열려 있던 씬은 이전 상태로 남을 수 있음 → 씬을 디스크에서 다시 연다.
 
@@ -55,13 +52,14 @@
 | 주민별 집 20채 | 메모 14700, 공통 규칙 텍스트 (0, 14950), 그룹 15300 ~ 18900 | 4열: AI 어시스턴트 +0 → 이미지 +340 → 3D +680 | 1.5만 tri, 2048 | 적용 완료(P-3b) |
 | P-4 메모 | 20000 | 남은 모델 목록 메모 | — | — |
 | 플레이어 | 20300 | 텍스트 → 이미지 → 3D → (안 쓰는) Rig · Animate | 3만 tri, T-pose | 생성 · Mixamo 완료 · 적용 완료(P-4f) |
-| 열매 2 | 21300 · 21800 | 4열 그룹 | 2천 tri, 1024 | 생성 완료, 적용 전 |
-| 기본 가구 8 | 22500 · 23400 | 4열 그룹 | 4천 tri, 1024 | 생성 완료, 적용 전 |
+| 열매 2 | 21300 · 21800 | 4열 그룹 | 2천 tri, 1024 | 적용 완료(P-4a · b) |
+| 기본 가구 8 | 22500 · 23400 | 4열 그룹 | 4천 tri, 1024 | 적용 완료(P-4b) |
 | 인트로 방 소품 7 | 24300(메모) · 24600 · 25500 | 4열 그룹 | 2천 ~ 5천 tri, 1024 | 적용 완료(P-5d) |
-| **다음 묶음** | **26400부터** | 같은 4열 그룹 방식 | — | 크레딧 충전 대기 |
+| 시설 · 상점 주인 · 도구 · 땅 물건 · 물고기 · 곤충 · 테마 가구 80 | 26400 ~ 56100 | 4열 그룹(테마 가구는 주민별 집 방식) | TASKS P-4 각 항목 | 적용 완료(P-4c ~ i) |
+| **다음 묶음** | **57000부터** | 같은 4열 그룹 방식 | — | P-4 목록은 모두 끝 |
 
 - **주민별 집 연결**: [공통 집 규칙 텍스트] → AI 어시스턴트 `prompt` / [주민 텍스트] → `referenceText` / [주민 컨셉 이미지] → `reference` → 이미지 생성 `prompt`(+ 주민 이미지를 `reference`로 한 번 더) → 3D. **테마 가구 80(P-4c)도 이 방식 추천**.
-- 사용 크레딧(대략): 소품 4,600 · 주민별 집 4,500 · P-4 지금까지 2,420
+- 사용 크레딧(대략): 소품 4,600 · 주민별 집 4,500 · P-4 약 31,000(테마 가구 80이 20,000)
 
 ### 3-2. 프롬프트 꼬리말
 - 소품: `Cute cozy stylized 3D game prop for a healing village life-sim game, soft pastel colors, rounded chunky shapes, simple clean forms, clean stylized 3D-render look, single isolated object, entire object visible, 3/4 front view from slightly above, plain solid white background, no shadow, no ground plane, no text, centered.`
@@ -92,11 +90,11 @@
 - 수치는 BALANCE.md 표 + **검산 케이스**(그대로 단위 테스트).
 - **플레이 확인은 Claude에게 맡김**(1-1부터): 테스트 전체 통과 + 콘솔 경고 0 + 실제 화면 캡처를 근거로 "플레이 확인 완료" 처리, 캡처는 사용자에게 보냄.
 - 사용자는 Remote Control(휴대폰)로도 봄 → 결과 · 실패를 끝에 한국어로 분명히, 스크린샷은 파일로 보냄.
-- 커밋: 한 항목 = 한 커밋, `MM.DD/Phase-항목/PascalCase요약`(수정은 `…Fix`), 끝에 `Co-Authored-By` 줄. **푸시는 사용자가 직접**. 작업 단위가 끝날 때마다 PROGRESS.md 갱신.
+- 커밋: 한 항목 = 한 커밋, `MM.DD/Phase-항목/PascalCase요약`(수정은 `…Fix`), 끝에 `Co-Authored-By` 줄. **푸시는 사용자가 직접**(사용자가 "푸시까지 해줘"라고 할 때만 Claude가 함 — 2026-11-06 한 번). 작업 단위가 끝날 때마다 PROGRESS.md 갱신.
 - Varco3D 생성은 **묶음마다 크레딧 확인** 후 실행.
 - 그래픽 작업은 원래 재미 검증 이후지만, P-3 · P-4 · P-5는 사용자 요청으로 **순서 예외**.
 
-## 5. 지금까지 한 일 (2026-10-30)
+## 5. 지금까지 한 일 (2026-11-06)
 | 구분 | 내용 | 상태 |
 |---|---|---|
 | Phase 0 | 문서 · asmdef · 테스트 메뉴 · 템플릿 정리 · WorldSettings | 완료 |
@@ -107,23 +105,25 @@
 | Phase 6 | 6-1 세이브(a 틀 · b 마을 · c 난수 · d 시작 화면) | 완료 |
 | P-1 · P-2 | 둥근 행성 맵 · Varco3D 주민 · 소품 · 집 생성 | 완료 |
 | P-3 | Varco3D 모델 적용(소품 · 주민별 집 · 주민) | 완료 |
-| P-4 | 남은 모델 생성 — 플레이어(+Mixamo) · 열매 2 · 기본 가구 8 생성 | **일시 중지**(크레딧) |
-| P-5 | 인트로(마을 → 아이 방 모니터 → 클릭 → 빨려 들기 → 낙하 · 착지), ESC로만 건너뛰기 | 그레이박스 완료 |
+| P-4 | 남은 모델 전부 생성 · 적용: 열매 · 기본 가구 · 테마 가구 80 · 시설 · 상점 주인(나무늘보, 정적) · 도구(매대 · 손) · 땅 물건 · 물고기 · 수조 · 곤충 · 채집통 · 플레이어(Mixamo 리깅 · 서 있기 · 걷기 · 달리기) · **주민 20명 Mixamo 리깅(서 있기 · 걷기, P-4j)** | 완료 — 플레이어 · 주민 리깅은 **실제 플레이 확인 대기** |
+| P-5 | 인트로(마을 → 아이 방 모니터 → 클릭 → 빨려 들기 → 낙하 · 착지), 방 소품 모델 · 저녁 조명, ESC로만 건너뛰기 | 완료(마우스 방향 수정 2026-11-03) |
 
-자세한 일지는 TASKS.md, 항목별 표는 PROGRESS.md 1번.
+자세한 일지는 TASKS.md, 항목별 표는 PROGRESS.md 1번, 커밋 기록은 PROGRESS.md 7번.
+
+### 5-1. 최근 작업 (2026-11-02 ~ 03, 이번 PC 마지막)
+- Varco3D로 남은 모델 전부 생성(시설 · 도구 · 땅 물건 · 물고기 · 곤충 · 테마 가구 80) → 모두 게임에 적용
+- 플레이어: Mixamo 리깅 모델 + 애니메이터(`Data/PlayerAnimator.controller`, Speed로 서 있기 · 걷기 · 달리기), 손에 든 도구는 도구 모델(예전 몸 옆 축 그대로, 손 뼈에 붙이지 않음)
+- 주민 20명: Varco OBJ를 Mixamo에 올려 자동 리깅 → `Art/Raw/Characters/Villager번호.fbx` · `@Idle` · `@Walk`. 공통 틀 `Data/VillagerAnimator.controller` + 주민마다 `Data/VillagerAnimators/Villager번호.overrideController`. `VillagerBehaviour`가 걸을 때 Speed = 걷는 속도(1.6)
+- 인트로 방 마우스가 거꾸로 놓였던 것 수정(버튼이 모니터 쪽)
+- 마지막 테스트: EditMode 268 · PlayMode 201 통과, 콘솔 경고 0
 
 ## 6. 앞으로 할 일 (순서대로 추천)
-1. **P-4 모델 생성 이어가기**(크레딧 충전 뒤, 묶음마다 확인). 다음 묶음부터:
-   1. ~~시설 6 + 상점 주인~~ → 완료(2026-11-02, 1,750점, 게임 적용까지 — TASKS P-4g · P-4f). Varco3D 플로우 다음 묶음은 y 38700부터
-   2. ~~도구 5~~ → 완료(2026-11-02, 1,250점, 노점 매대 물건까지 — TASKS P-4h). 손에 든 모습은 플레이어 모델 적용 때
-   3. ~~땅 · 줍는 물건~~ → 완료(2026-11-02, 1,250점 — TASKS P-4i). 꽃 포기는 보일 곳이 없어 생성 안 함
-   4. ~~물고기 8 + 수조~~ → 생성 완료(2026-11-02, 2,250점, 가져오기까지). **게임 적용은 나중에**(사용자 요청) — 적용 요령은 TASKS P-4d
-   5. ~~곤충 8 + 채집통~~ → 생성 완료(2026-11-02, 2,250점, **원본 FBX만 — Unity에서 가져오기 메뉴 아직**). 게임 적용은 나중에
-   6. 테마 가구 80 — 주민 20 × 화분 · 벤치 · 탁자 · 가로등, **색만 다르게가 아니라 주민마다 특색**(주민별 집 방식). → **80개 모두 생성 완료**(2026-11-03, 주민 01 시험 4개 + 02 ~ 20 76개, 20,000점, 원본 FBX만 — Unity 가져오기 · 검수 · 적용은 나중에). 플로우 다음 묶음 y 57000부터. **P-4 생성 목록 전부 끝**
-2. ~~**생성한 모델 게임 적용**~~ → 2026-11-03 전부 적용(물고기 · 수조, 곤충 · 채집통, 열매 · 기본 가구 8, 테마 가구 80, 플레이어 + 손에 든 도구). 자세한 내용은 TASKS P-4a ~ P-4f. 남은 그레이박스: 상점 매대의 묘목 공, 인트로 커서 · 먼지, 주민 집 없는 빈 집터 판
-3. **인트로 다듬기**(모델 · 크레딧 뒤): 커서 모델, 마을 화면에서 손 흔드는 주민 — 방 소품 모델(P-5d) · 저녁 조명(P-5e)은 완료
-4. **4-1 재미 검증**(보류) — 사용자가 PLAYTEST.md대로 플레이할 때. 기록은 에디터 플레이 때 `Temp/PlayLogs/*.csv`
-5. 열린 항목(GDD 10번 · 아래 9번 표) — 해당 작업 때 결정
+1. **플레이 확인**: 플레이어 · 주민 걷기 동작, 과일나무 · 매대 · 수조 · 채집통 · 테마 가구 크기와 위치(실제 Play로)
+2. **손에 든 도구를 손 뼈에 붙이기**(지금은 몸 옆 고정 축이라 걸을 때 손과 따로 놂) — 플레이어 리깅의 오른손 뼈(`mixamorig:RightHand`)에 도구 축을 옮기는 것 추천
+3. **남은 그레이박스**: 상점 매대의 묘목 공, 인트로 커서 · 먼지, 빈 집터 판
+4. **인트로 다듬기**: 커서 모델, 마을 화면에서 손 흔드는 주민(Mixamo 동작 추가)
+5. **4-1 재미 검증**(보류) — 사용자가 PLAYTEST.md대로 플레이할 때. 기록은 에디터 플레이 때 `Temp/PlayLogs/*.csv`
+6. 열린 항목(GDD 10번 · 아래 9번 표) — 해당 작업 때 결정
 
 ## 7. 만든 목록 · 위치
 | 목록 | 위치 |
@@ -136,7 +136,8 @@
 | 결정 기록(날짜 · 이유) | GDD.md 9번, TASKS 각 항목 "결정" |
 | 재미 검증 점검표 | PLAYTEST.md |
 | 커밋 기록 | PROGRESS.md 7번 |
-| Varco3D 원본 | `Art/Raw/{Props, Houses, Villagers, Furniture, Characters}` |
+| Varco3D 원본 | `Art/Raw/{Props, Houses, Villagers, Furniture, Room, Characters}` |
+| Mixamo 리깅 · 동작 | `Art/Raw/Characters/`(Player · Villager01 ~ 20, `이름@동작.fbx`) · 애니메이터 `Data/PlayerAnimator.controller` · `Data/VillagerAnimator.controller` · `Data/VillagerAnimators/` |
 
 ## 8. 코드 지도 · 요령
 ### 8-1. 코드 지도 (`Assets/PogeunVillage/Scripts`)
@@ -145,7 +146,7 @@
 - 맵 · 씬 · 프리팹은 전부 `Editor/VillageMapBuilder.cs`가 만듦 — 씬을 손으로 고치지 말고 빌더를 고침
 - 에디터 메뉴(`Pogeun Village/…`): `Build Map Prototype` · `Import Varco Models` · `Run EditMode Tests` · `Run PlayMode Tests` · `Delete Save`
 - 개발용: F8 = 다음 날 아침. 저장 위치 `Application.persistentDataPath/save.json`
-- 주요 연결: 주민 모델 `VillagerDefinition.model` → `VillagerBehaviour.Setup`, 집 `VillagerDefinition.houseModel` → `HousePlot`, 맵 모델 `ModelVisual`(그릇 `Model_이름`) · `ColliderOnly`, 꽃 `FlowerLook`, 인트로 `IntroSequence`(방 (3000,0,0) · `FlatWorldCamera` · `CurvedScreen` 셰이더)
+- 주요 연결: 주민 모델 `VillagerDefinition.model`(리깅 프리팹 `Prefabs/Villagers/`) → `VillagerBehaviour.Setup`(애니메이터 Speed), 리깅 모델 세우기 `RigModel` · 가져오기 `VarcoModelImport.ConfigureRig`, 집 `VillagerDefinition.houseModel` → `HousePlot`, 맵 모델 `ModelVisual`(그릇 `Model_이름`) · `ColliderOnly`, 꽃 `FlowerLook`, 인트로 `IntroSequence`(방 (3000,0,0) · `FlatWorldCamera` · `CurvedScreen` 셰이더)
 
 ### 8-2. 테스트
 - 메뉴로 실행, 결과는 `PogeunVillage/Temp/PogeunVillageTestResults_{EditMode|PlayMode}.txt`(파일 시각이 바뀌면 끝)
@@ -162,13 +163,14 @@ git checkout -- "Assets/PogeunVillage/Fonts/Cafe24Ssurround SDF.asset" Assets/Po
 ### 8-4. Unity MCP 요령
 - 에디터 창이 포커스를 잃으면 플레이 모드가 2프레임에서 멈춤 → 캡처는 카메라를 RenderTexture에 직접 그려 PNG로 저장
 - 가끔 플레이 모드 중 MCP가 응답 없음 → 사용자가 플레이 모드를 직접 멈춰야 함
-- MCP로 실행하는 코드에서 `AssetDatabase.DeleteAsset` · `Directory.Delete`는 "User interactions not supported" 오류 → `File.Delete`나 셸 사용
+- MCP로 실행하는 코드에서 `AssetDatabase.DeleteAsset` · `MoveAsset` · `Directory.Delete`는 "User interactions not supported" 오류 → 셸에서 파일과 `.meta`를 함께 옮기거나 지운 뒤 `AssetDatabase.Refresh`
 
 ## 9. 알려진 한계 · 사용자 확인이 필요한 해석
 ### 9-1. 알려진 한계
-- 주민: T-pose 정적 모델(애니메이션 없음), 이름 · 대사 임시
+- 주민: 이름 · 대사 임시. 리깅은 Mixamo 기본 뼈대라 꼬리 · 귀는 몸을 따라만 움직임, 펭귄(14)은 다리가 짧아 걸음이 작음
+- 플레이어 손에 든 도구가 손 뼈에 붙어 있지 않음(6번 2)
 - 다리 가운데에서 발이 판에 조금 묻힘 / 일부 집 모델에 우체통이 붙어 우체통이 둘로 보임(05 너구리 등)
-- 플레이어 · 상점 주인은 아직 그레이박스(플레이어 모델은 생성됨, 적용 전)
+- 상점 주인은 정적 자세(뼈대 없음)
 - 인트로: 커서 · 먼지는 기본 도형, 스탠드 갓 · 창 유리는 빛을 받을 뿐 스스로 빛나지 않음, 섬광은 카메라 캡처에 안 찍힘
 - 씬 삼각형 약 380만(나무 260그루 × 1만) — 에디터 약 50fps
 

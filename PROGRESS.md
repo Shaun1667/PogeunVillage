@@ -1,6 +1,6 @@
 # PROGRESS.md — 포근 마을 진행 현황
 
-> 마지막 갱신: 2026-10-30
+> 마지막 갱신: 2026-11-06
 > 세부 기준 문서: 기획 [GDD.md](GDD.md) · 수치 [BALANCE.md](BALANCE.md) · 작업 순서 [TASKS.md](TASKS.md) · 작업 규칙 [CLAUDE.md](CLAUDE.md)
 > 다른 PC에서 이어가기: [HANDOFF.md](HANDOFF.md) · 방법론: [claude_all_type_genre.md](claude_all_type_genre.md)
 > Notion 기획서: 포근 마을 - 게임 기획서 (개인 페이지)
@@ -256,6 +256,7 @@
 | 2026-10-30 | `10.30/P-5b/IntroClickDive` | 인트로 화면 속 버튼 · 커서 · 클릭 · 돌진 · 섬광 · 컷 |
 | 2026-10-30 | `10.30/P-5c/IntroFallLand` | 인트로 낙하 · 착지 · 카메라 정리 — 인트로 그레이박스 완료 |
 | 2026-10-30 | `10.30/P-5/IntroEscSkipFix` | 인트로 건너뛰기를 ESC(패드 Start)만으로 — 클릭 · 다른 키는 무시 |
+| 2026-11-06 | `11.06/0-2/HandoffUpdate` | 작업 환경 이전 — HANDOFF 갱신 · 남은 설정 변경 커밋 · 푸시 |
 | 2026-11-03 | `11.03/P-4j/VillagerRigs` | 주민 20명 Mixamo 리깅 · 서 있기 · 걷기 애니메이터 적용 |
 | 2026-11-03 | `11.03/P-5d/IntroMouseFix` | 인트로 방 마우스 방향 바로잡음(버튼이 모니터 쪽) |
 | 2026-11-03 | `11.03/P-4f/PlayerModel` | 플레이어 리깅 모델 · 애니메이터(서 있기 · 걷기 · 달리기) · 손에 든 도구 모델 |
