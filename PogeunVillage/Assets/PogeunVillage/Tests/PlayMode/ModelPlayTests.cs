@@ -113,7 +113,24 @@ namespace PogeunVillage.PlayModeTests
                 Assert.Greater(height, Mathf.Max(width, depth) * 0.6f, stand.item.id + " 세워 놓음");
                 Assert.Greater(bounds.Min(b => b.min.y), stand.transform.position.y + 0.7f, stand.item.id + " 매대 위");
             }
-            Assert.IsTrue(stands.Any(s => s.transform.Find("Goods")), "묘목은 공");
+            // P-4l: 묘목도 모델(작은 묘목 단계), 공은 없음
+            var sapling = stands.Single(s => s.item.id == "Sapling");
+            Assert.IsNull(sapling.transform.Find("Goods"), "묘목 공 없음");
+            var saplingFit = sapling.transform.Find("Fit_SaplingStage1");
+            Assert.IsTrue(saplingFit, "묘목 모델");
+            Assert.Greater(saplingFit.GetComponentsInChildren<Renderer>().Min(r => r.bounds.min.y), sapling.transform.position.y + 0.7f, "매대 위");
+        }
+
+        // P-4l: 빈 집터 판은 둥근 흙더미 메시(충돌 없음)
+        [Test]
+        public void EmptyLot_IsRoundedMound()
+        {
+            foreach (var plot in Object.FindObjectsByType<HousePlot>().Where(p => p.emptySign))
+            {
+                var lot = plot.emptySign.transform.Find("Lot");
+                Assert.AreEqual("EmptyLot", lot.GetComponent<MeshFilter>().sharedMesh.name, plot.name);
+                Assert.IsNull(lot.GetComponent<Collider>(), "걸어 다닐 수 있음");
+            }
         }
 
         // P-4i: 묘목 3단계 · 밑동은 모델, 떨어진 목재는 공 대신 통나무 단 모델

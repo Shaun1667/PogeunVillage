@@ -90,6 +90,8 @@ namespace PogeunVillage.EditorTools
         const float CageInsectSize = 0.2f, CageInsectCenter = 0.42f;  // 채집통 앞 곤충: 가장 긴 변(m) · 높이(채집통 키 비율)
         const float AquariumWaterCenter = 0.72f;  // 수조 모델 높이 중 물(유리) 가운데 비율 — 물고기 높이
         const float CounterTop = 0.85f;  // 노점 매대(모델) 윗면 높이 — 물건을 이 위에 놓음
+        const float StandSaplingHeight = 0.55f;  // 매대 위 묘목 높이(심은 묘목보다 작게)
+        const float StandSaplingForward = 0.28f;  // 묘목 자리는 노점 기둥 앞이라 손님 쪽으로 당김
         // 누워서 생성된 도구 모델을 세우는 x축 회전(P-4h): 삽은 날이 -z로 누움, 잠자리채는 45° 기움
         static readonly Dictionary<string, float> ToolPitch = new() { ["ToolShovel"] = -90f, ["ToolNet"] = 45f };
         static Vector2 CampDoor => CampPosition + (PlazaCenter - CampPosition).normalized * 2.4f;
@@ -551,10 +553,10 @@ namespace PogeunVillage.EditorTools
             ModelVisual("Mailbox", mailbox, Vector3.zero);
             AddInteractable(mailbox.gameObject, "우체통", InteractableKind.Mailbox, radius: 0.3f, markerHeight: 1.5f);
 
-            // 빈 집터: 낮은 흙판 + 말뚝 표지판
+            // 빈 집터: 낮고 둥근 흙더미(P-4l, 충돌 없음) + 말뚝 표지판
             var sign = new GameObject("EmptySign").transform;
             sign.SetParent(plotRoot, false);
-            Prim(PrimitiveType.Cube, "Lot", sign, new Vector3(0f, 0.04f, 0f), new Vector3(4.2f, 0.1f, 3.8f), Mat("EmptyLot", "#D9C49A"));
+            MeshObject("Lot", sign, LotMesh(), Mat("EmptyLot", "#D9C49A"));
             FitModel("LotSign", sign, new Vector3(0f, 0f, 2.3f), new Vector3(0f, 1.25f, 0f));
             sign.gameObject.SetActive(false);
 
@@ -1555,7 +1557,7 @@ namespace PogeunVillage.EditorTools
             shop.dayCycle = Object.FindAnyObjectByType<DayCycle>();
             shop.keeper = keeper.GetComponent<Interactable>();
 
-            // 매대: 도구 5종 + 묘목, 1m 간격. 도구는 모델(P-4h)을 매대 위에 세움, 묘목은 아직 공(그레이박스)
+            // 매대: 도구 5종 + 묘목, 1m 간격. 물건은 모델을 매대 위에 세움(도구 P-4h, 묘목은 작은 묘목 단계 P-4l)
             var goods = tools.Cast<ItemDefinition>().Append(saplingItem).ToArray();
             string[] colors = { "#F4F1EA", "#8E6B4A", "#C9D2DC", "#9AA6B2", "#7FB8E6", "#6FC27A" };
             for (int i = 0; i < goods.Length; i++)
@@ -1564,10 +1566,10 @@ namespace PogeunVillage.EditorTools
                 stand.SetParent(stall, false);
                 stand.localPosition = new Vector3(-2.5f + i * 1.0f, 0f, 0f);
                 ColliderOnly(Prim(PrimitiveType.Cube, "Table", stand, new Vector3(0f, 0.4f, 0f), new Vector3(0.8f, 0.8f, 0.6f), wood, collider: true));  // 매대는 노점 모델
-                var toolModel = goods[i] is ToolDefinition && models ? models.Find("Tool" + goods[i].id) : null;
-                if (toolModel != null)
-                    FitModel(toolModel.id, stand, new Vector3(0f, CounterTop, 0f), new Vector3(0f, toolModel.height, 0f),
-                        pitch: ToolPitch.TryGetValue(toolModel.id, out float pitch) ? pitch : 0f);
+                var goodsModel = !models ? null : models.Find(goods[i] is ToolDefinition ? "Tool" + goods[i].id : "SaplingStage1");
+                if (goodsModel != null)
+                    FitModel(goodsModel.id, stand, new Vector3(0f, CounterTop, goods[i] is ToolDefinition ? 0f : StandSaplingForward), new Vector3(0f, goods[i] is ToolDefinition ? goodsModel.height : StandSaplingHeight, 0f),
+                        pitch: ToolPitch.TryGetValue(goodsModel.id, out float pitch) ? pitch : 0f);
                 else
                     Prim(PrimitiveType.Sphere, "Goods", stand, new Vector3(0f, CounterTop + 0.15f, 0f), Vector3.one * 0.3f, Mat("ShopGoods_" + goods[i].id, colors[i], rim: 0.3f), castShadows: false);
                 AddInteractable(stand.gameObject, goods[i].displayName, InteractableKind.ShopStand, radius: 0.4f, markerHeight: 1.4f, wiggle: false);
@@ -2612,11 +2614,18 @@ namespace PogeunVillage.EditorTools
             Object.FindAnyObjectByType<StartScreen>().intro = sequence;
             BuildIntroScreenUi(sequence, mainCamera);
 
-            // 착지 먼지(P-5c, 그레이박스): 작은 공 6개가 둥글게 퍼지며 사라짐 — 자리 · 크기는 인트로가 정함
+            // 착지 먼지(P-5c, P-4l): 작은 구름 6개가 둥글게 퍼지고 떠오르며 사라짐 — 자리 · 크기는 인트로가 정함
             var dust = new GameObject("LandingDust").transform;
             var puff = Mat("Dust", "#F3E6CF", rim: 0.3f);
             for (int i = 0; i < 6; i++)
-                Prim(PrimitiveType.Sphere, "Puff", dust, Vector3.zero, Vector3.one * 0.3f, puff, castShadows: false);
+            {
+                var cloud = new GameObject("Puff").transform;
+                cloud.SetParent(dust, false);
+                cloud.localRotation = Quaternion.Euler(0f, i * 73f, 0f);
+                Prim(PrimitiveType.Sphere, "Lump", cloud, Vector3.zero, Vector3.one, puff, castShadows: false);
+                Prim(PrimitiveType.Sphere, "Lump", cloud, new Vector3(0.55f, -0.1f, 0.1f), Vector3.one * 0.7f, puff, castShadows: false);
+                Prim(PrimitiveType.Sphere, "Lump", cloud, new Vector3(-0.4f, 0.1f, -0.3f), Vector3.one * 0.6f, puff, castShadows: false);
+            }
             dust.gameObject.SetActive(false);
             sequence.landingDust = dust;
         }
@@ -2763,14 +2772,13 @@ namespace PogeunVillage.EditorTools
             label.text = "게임 시작";
             label.color = Color.white;
 
-            // 커서(그레이박스): 흰 화살 대신 기울인 작은 판 + 테두리
-            var cursor = new GameObject("Cursor", typeof(RectTransform), typeof(Image), typeof(Outline)).GetComponent<RectTransform>();
+            // 커서(P-4l): 흰 화살표 + 테두리, 피벗 = 화살 끝
+            var cursor = new GameObject("Cursor", typeof(RectTransform), typeof(CanvasRenderer), typeof(CursorArrow), typeof(Outline)).GetComponent<RectTransform>();
             cursor.SetParent(uiGo.transform, false);
             cursor.anchorMin = cursor.anchorMax = center;
-            cursor.pivot = new Vector2(0.5f, 1f);
-            cursor.sizeDelta = new Vector2(44f, 64f);
-            cursor.localRotation = Quaternion.Euler(0f, 0f, 25f);
-            var cursorImage = cursor.GetComponent<Image>();
+            cursor.pivot = new Vector2(0f, 1f);
+            cursor.sizeDelta = new Vector2(64f, 76f);
+            var cursorImage = cursor.GetComponent<CursorArrow>();
             cursorImage.color = Color.white;
             cursorImage.raycastTarget = false;
             var outline = cursor.GetComponent<Outline>();
@@ -2994,6 +3002,46 @@ namespace PogeunVillage.EditorTools
             AssetDatabase.DeleteAsset(path);
             AssetDatabase.CreateAsset(mesh, path);
             return mesh;
+        }
+
+        // 빈 집터 흙더미: 모서리 둥근 판, 가장자리가 부드럽게 땅으로 내려옴(점을 공유해 음영이 둥글게)
+        const float LotWidth = 4.2f, LotDepth = 3.8f, LotHeight = 0.09f, LotCorner = 0.7f, LotSlope = 0.35f;
+        const int LotCornerSegments = 6;
+        static Mesh lotMesh;
+        static Mesh LotMesh()
+        {
+            if (lotMesh && AssetDatabase.Contains(lotMesh))
+                return lotMesh;
+            (float inset, float y)[] rings = { (LotSlope, LotHeight), (LotSlope * 0.35f, LotHeight * 0.7f), (0f, 0f) };  // 위 → 바닥
+            int perRing = 4 * (LotCornerSegments + 1);
+            var vertices = new List<Vector3> { new(0f, LotHeight, 0f) };
+            foreach (var (inset, y) in rings)
+                for (int corner = 0; corner < 4; corner++)
+                {
+                    float cx = (corner is 0 or 3 ? 1f : -1f) * (LotWidth * 0.5f - LotCorner);
+                    float cz = (corner < 2 ? 1f : -1f) * (LotDepth * 0.5f - LotCorner);
+                    for (int k = 0; k <= LotCornerSegments; k++)
+                    {
+                        float a = (corner + (float)k / LotCornerSegments) * Mathf.PI * 0.5f;
+                        vertices.Add(new Vector3(cx + Mathf.Cos(a) * (LotCorner - inset), y, cz + Mathf.Sin(a) * (LotCorner - inset)));
+                    }
+                }
+            var tris = new List<int>();
+            for (int i = 0; i < perRing; i++)
+            {
+                int next = (i + 1) % perRing;
+                tris.AddRange(new[] { 0, 1 + next, 1 + i });
+                for (int ring = 0; ring < rings.Length - 1; ring++)
+                {
+                    int a = 1 + ring * perRing, b = a + perRing;
+                    tris.AddRange(new[] { a + i, a + next, b + i, a + next, b + next, b + i });
+                }
+            }
+            var mesh = new Mesh { name = "EmptyLot", vertices = vertices.ToArray(), triangles = tris.ToArray() };
+            mesh.RecalculateNormals();
+            mesh.RecalculateBounds();
+            lotMesh = SaveMesh(mesh, "EmptyLot");
+            return lotMesh;
         }
 
         static Mesh roofMesh;

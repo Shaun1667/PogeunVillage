@@ -71,6 +71,12 @@
     - 결정 (2026-10-30, 사용자): **리깅 · 애니메이션은 Mixamo에서**(Varco3D Rig · Animate 대신). 올리기는 Claude in Chrome(앱 브라우저는 파일 올리기 불가), Varco OBJ zip에서 노멀 텍스처를 빼서 10MB 아래로. Mixamo 계정에 있던 다른 캐릭터(GGACHI_OBJ)는 사용자 확인 뒤 교체
     - 생성 (2026-10-30): 플레이어 원본 `Art/Raw/Characters/Player_Varco.fbx`(Varco3D 3만 삼각형, T-pose, 약 220점) → Mixamo 자동 리깅(Standard Skeleton 65, 뼈 46개) `Player.fbx`(FBX for Unity, T-pose, 몸 포함) · 동작(몸 없음, 30fps) `Player@Idle.fbx`(Breathing Idle) · `Player@Walk.fbx`(Happy Walk, In Place) · `Player@Jog.fbx`(Jogging, In Place). 게임 적용(Humanoid 아바타 · Animator · CurvedToon 스킨 셰이더)은 아직 — 플레이 확인 대기
     - 참고: Varco3D 플로우의 Rig · Animate 노드(무료)는 이미 실행돼 남아 있지만 쓰지 않음. 상점 주인은 아직 생성 전
+  - [x] **P-4l. 남은 그레이박스 정리** (2026-11-09) — 플레이 확인 대기 — 사용자 요청 "그레이박스 진행". Varco3D 크레딧은 쓰지 않음(있는 모델 · 코드 생성)
+    - 상점 묘목: 공 → 작은 묘목 모델(`SaplingStage1`, 높이 0.55). 그 자리는 노점 기둥과 겹쳐 손님 쪽으로 0.28 당김
+    - 빈 집터: 상자 판 → 모서리 둥근 흙더미 메시(`LotMesh`, `Meshes/EmptyLot.asset`, 크기는 전과 같은 4.2 × 3.8, 높이 0.09, 충돌 없음 그대로). 색은 단색 유지
+    - 인트로 커서: 기울인 사각 판 → 화살표 UI 도형(`UI/CursorArrow.cs`, 텍스처 없음, 피벗 = 화살 끝)
+    - 착지 먼지: 공 하나 → 공 3개를 겹친 작은 구름 6개, 퍼지면서 떠오름(`IntroSettings.dustRise` 0.35). 모양은 여전히 공을 겹친 것 — 진짜 먼지 모델 · 파티클은 필요하면 나중에
+    - 테스트: PlayMode `ModelPlayTests.EmptyLot_IsRoundedMound` 추가, `ShopStands_ShowToolModels`(묘목 모델) · `IntroPlayTests`(화살표 · 구름 · 떠오름) 수정. EditMode 268 · PlayMode 203 통과. 커서 · 묘목 · 흙더미 · 먼지는 캡처로 확인(먼지는 자리를 손으로 놓은 캡처)
   - [x] **P-4k. 손에 든 도구가 손을 따라감** (2026-11-09) — 플레이 확인 대기 — 사용자가 "진행해줘"로 HANDOFF 6번 추천 순서대로 진행
     - 처음엔 도구 축을 오른손 뼈의 자식으로 넣었으나, 걷기 동작의 손목 회전까지 받아 도구가 옆으로 눕는 것을 캡처로 확인 → **위치만 손을 따르고 방향은 몸 기준**으로 바꿈
     - 구현: 도구 축은 `Visual` 아래 그대로, `PlayerTools.LateUpdate`가 축 위치를 `handBone.TransformPoint(handGrip)`으로(오른손 뼈 · 손바닥 자리는 맵 생성이 연결, 리깅 모델이 없으면 몸 옆 고정). 휘두르기는 지금처럼 축의 방향만 돌림. 쥐는 자리는 도구별 `ToolGrip`(아래 끝에서 길이의 비율: 잠자리채 0.1 · 낚싯대 0.12 · 도끼 0.2 · 삽 0.35 · 물뿌리개 0.7)

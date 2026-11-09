@@ -50,6 +50,8 @@ namespace PogeunVillage
         [Range(0.3f, 1f)] public float landSquash = 0.7f;
         [Tooltip("먼지가 퍼지는 반지름(m)")]
         public float dustRadius = 0.9f;
+        [Tooltip("착지 먼지가 사라질 때까지 떠오르는 높이(m)")]
+        public float dustRise = 0.35f;
 
         [Header("방")]
         [Tooltip("방 위치(맵 바깥)")]

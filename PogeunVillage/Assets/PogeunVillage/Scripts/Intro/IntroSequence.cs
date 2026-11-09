@@ -259,7 +259,7 @@ namespace PogeunVillage
             {
                 float a = i * Mathf.PI * 2f / count;
                 var puff = landingDust.GetChild(i);
-                puff.localPosition = new Vector3(Mathf.Cos(a) * radius, 0.12f, Mathf.Sin(a) * radius);
+                puff.localPosition = new Vector3(Mathf.Cos(a) * radius, 0.12f + settings.dustRise * progress, Mathf.Sin(a) * radius);
                 puff.localScale = Vector3.one * size;
             }
         }

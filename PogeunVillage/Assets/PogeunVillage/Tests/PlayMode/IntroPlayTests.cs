@@ -131,6 +131,7 @@ namespace PogeunVillage.PlayModeTests
             float click = intro.StartOf(IntroPhase.Click);
             intro.JumpTo(click + 0.01f);
             Assert.IsTrue(intro.cursor.gameObject.activeSelf, "커서 나타남");
+            Assert.IsTrue(intro.cursor.GetComponent<CursorArrow>(), "화살표 모양(P-4l)");
             Assert.IsFalse(intro.ButtonPressed);
             float before = Vector2.Distance(intro.cursor.anchoredPosition, intro.startButton.anchoredPosition);
             intro.JumpTo(click + intro.settings.clickTime * intro.settings.clickPressAt + 0.01f);
@@ -179,6 +180,10 @@ namespace PogeunVillage.PlayModeTests
             Assert.Less(visual.localScale.y, 0.8f, "착지 찌그러짐");
             Assert.IsTrue(intro.landingDust.gameObject.activeSelf, "먼지");
             Assert.AreEqual(intro.player.position.x, intro.landingDust.position.x, 0.01f, "먼지는 착지 자리");
+            Assert.AreEqual(3, intro.landingDust.GetChild(0).childCount, "먼지는 구름 덩어리(P-4l)");
+            float dustLow = intro.landingDust.GetChild(0).localPosition.y;
+            intro.JumpTo(land + 0.1f);
+            Assert.Greater(intro.landingDust.GetChild(0).localPosition.y, dustLow, "먼지가 떠오름");
 
             intro.JumpTo(intro.StartOf(IntroPhase.Settle) + intro.settings.settleTime * 0.99f);
             Assert.IsFalse(intro.landingDust.gameObject.activeSelf);
