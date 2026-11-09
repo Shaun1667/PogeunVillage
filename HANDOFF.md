@@ -26,7 +26,7 @@
    - 저장이 없으면 인트로가 나옴(ESC로 건너뛰기). 저장이 있으면 시작 화면(F 이어하기 / 새로 시작).
 4. **Claude Code**: 저장소 **루트** 폴더를 작업 폴더로 → CLAUDE.md가 자동으로 읽힘.
 5. **외부 도구 연결**(2번): Unity MCP, Varco3D, Claude in Chrome(Mixamo), Notion.
-6. **확인**: 메뉴 `Pogeun Village > Run EditMode Tests` · `Run PlayMode Tests` → **EditMode 268 · PlayMode 201 통과**(2026-11-03 기준), 콘솔 경고 0.
+6. **확인**: 메뉴 `Pogeun Village > Run EditMode Tests` · `Run PlayMode Tests` → **EditMode 268 · PlayMode 202 통과**(2026-11-09 기준), 콘솔 경고 0.
 
 > 주의: pull 받은 뒤 에디터에 이미 열려 있던 씬은 이전 상태로 남을 수 있음 → 씬을 디스크에서 다시 연다.
 
@@ -112,14 +112,14 @@
 
 ### 5-1. 최근 작업 (2026-11-02 ~ 03, 이번 PC 마지막)
 - Varco3D로 남은 모델 전부 생성(시설 · 도구 · 땅 물건 · 물고기 · 곤충 · 테마 가구 80) → 모두 게임에 적용
-- 플레이어: Mixamo 리깅 모델 + 애니메이터(`Data/PlayerAnimator.controller`, Speed로 서 있기 · 걷기 · 달리기), 손에 든 도구는 도구 모델(예전 몸 옆 축 그대로, 손 뼈에 붙이지 않음)
+- 플레이어: Mixamo 리깅 모델 + 애니메이터(`Data/PlayerAnimator.controller`, Speed로 서 있기 · 걷기 · 달리기), 손에 든 도구는 도구 모델(2026-11-09 P-4k: 위치가 오른손을 따라감)
 - 주민 20명: Varco OBJ를 Mixamo에 올려 자동 리깅 → `Art/Raw/Characters/Villager번호.fbx` · `@Idle` · `@Walk`. 공통 틀 `Data/VillagerAnimator.controller` + 주민마다 `Data/VillagerAnimators/Villager번호.overrideController`. `VillagerBehaviour`가 걸을 때 Speed = 걷는 속도(1.6)
 - 인트로 방 마우스가 거꾸로 놓였던 것 수정(버튼이 모니터 쪽)
 - 마지막 테스트: EditMode 268 · PlayMode 201 통과, 콘솔 경고 0
 
 ## 6. 앞으로 할 일 (순서대로 추천)
 1. **플레이 확인**: 플레이어 · 주민 걷기 동작, 과일나무 · 매대 · 수조 · 채집통 · 테마 가구 크기와 위치(실제 Play로)
-2. **손에 든 도구를 손 뼈에 붙이기**(지금은 몸 옆 고정 축이라 걸을 때 손과 따로 놂) — 플레이어 리깅의 오른손 뼈(`mixamorig:RightHand`)에 도구 축을 옮기는 것 추천
+2. ~~손에 든 도구를 손에 붙이기~~ → 완료(2026-11-09, TASKS P-4k, 플레이 확인 대기). 위치만 오른손을 따르고 방향은 몸 기준
 3. **남은 그레이박스**: 상점 매대의 묘목 공, 인트로 커서 · 먼지, 빈 집터 판
 4. **인트로 다듬기**: 커서 모델, 마을 화면에서 손 흔드는 주민(Mixamo 동작 추가)
 5. **4-1 재미 검증**(보류) — 사용자가 PLAYTEST.md대로 플레이할 때. 기록은 에디터 플레이 때 `Temp/PlayLogs/*.csv`
@@ -168,7 +168,7 @@ git checkout -- "Assets/PogeunVillage/Fonts/Cafe24Ssurround SDF.asset" Assets/Po
 ## 9. 알려진 한계 · 사용자 확인이 필요한 해석
 ### 9-1. 알려진 한계
 - 주민: 이름 · 대사 임시. 리깅은 Mixamo 기본 뼈대라 꼬리 · 귀는 몸을 따라만 움직임, 펭귄(14)은 다리가 짧아 걸음이 작음
-- 플레이어 손에 든 도구가 손 뼈에 붙어 있지 않음(6번 2)
+- 손에 든 도구: 위치만 손을 따름(손가락은 쥐는 모양이 아님), 도끼 · 삽이 아이 키에 비해 커 보임
 - 다리 가운데에서 발이 판에 조금 묻힘 / 일부 집 모델에 우체통이 붙어 우체통이 둘로 보임(05 너구리 등)
 - 상점 주인은 정적 자세(뼈대 없음)
 - 인트로: 커서 · 먼지는 기본 도형, 스탠드 갓 · 창 유리는 빛을 받을 뿐 스스로 빛나지 않음, 섬광은 카메라 캡처에 안 찍힘

@@ -71,6 +71,11 @@
     - 결정 (2026-10-30, 사용자): **리깅 · 애니메이션은 Mixamo에서**(Varco3D Rig · Animate 대신). 올리기는 Claude in Chrome(앱 브라우저는 파일 올리기 불가), Varco OBJ zip에서 노멀 텍스처를 빼서 10MB 아래로. Mixamo 계정에 있던 다른 캐릭터(GGACHI_OBJ)는 사용자 확인 뒤 교체
     - 생성 (2026-10-30): 플레이어 원본 `Art/Raw/Characters/Player_Varco.fbx`(Varco3D 3만 삼각형, T-pose, 약 220점) → Mixamo 자동 리깅(Standard Skeleton 65, 뼈 46개) `Player.fbx`(FBX for Unity, T-pose, 몸 포함) · 동작(몸 없음, 30fps) `Player@Idle.fbx`(Breathing Idle) · `Player@Walk.fbx`(Happy Walk, In Place) · `Player@Jog.fbx`(Jogging, In Place). 게임 적용(Humanoid 아바타 · Animator · CurvedToon 스킨 셰이더)은 아직 — 플레이 확인 대기
     - 참고: Varco3D 플로우의 Rig · Animate 노드(무료)는 이미 실행돼 남아 있지만 쓰지 않음. 상점 주인은 아직 생성 전
+  - [x] **P-4k. 손에 든 도구가 손을 따라감** (2026-11-09) — 플레이 확인 대기 — 사용자가 "진행해줘"로 HANDOFF 6번 추천 순서대로 진행
+    - 처음엔 도구 축을 오른손 뼈의 자식으로 넣었으나, 걷기 동작의 손목 회전까지 받아 도구가 옆으로 눕는 것을 캡처로 확인 → **위치만 손을 따르고 방향은 몸 기준**으로 바꿈
+    - 구현: 도구 축은 `Visual` 아래 그대로, `PlayerTools.LateUpdate`가 축 위치를 `handBone.TransformPoint(handGrip)`으로(오른손 뼈 · 손바닥 자리는 맵 생성이 연결, 리깅 모델이 없으면 몸 옆 고정). 휘두르기는 지금처럼 축의 방향만 돌림. 쥐는 자리는 도구별 `ToolGrip`(아래 끝에서 길이의 비율: 잠자리채 0.1 · 낚싯대 0.12 · 도끼 0.2 · 삽 0.35 · 물뿌리개 0.7)
+    - 테스트: PlayMode `ModelPlayTests.HeldTool_FollowsRightHand`(쥐는 자리에 있음 · 걸으면 움직임 · 방향 그대로). EditMode 268 · PlayMode 202 통과
+    - 남은 점: 도끼 · 삽이 아이 키에 비해 커 보임(길이는 그레이박스 그대로), 손가락은 쥐는 모양이 아님. 플레이 확인 때 판단
   - [x] **P-4j. 주민 리깅** (2026-11-03) — 플레이 확인 대기 — 사용자 요청 "주인공 플레이어와 마을 주민들 리깅은 모두 mixamo에서 … 리깅부터 다운로드, 적용까지 너가 다 진행"
     - 결정 (2026-11-03, 사용자): Mixamo 계정의 다른 캐릭터(SIA)는 교체해도 됨(Mixamo는 캐릭터 하나만 보관 — 주민 20명을 차례로 올리며 교체)
     - 리깅: 주민 20명의 Varco OBJ zip(노멀 텍스처 뺌, 4.9 ~ 7.1MB)을 Claude in Chrome으로 Mixamo에 올려 자동 리깅(Standard Skeleton 65, 대칭). 받은 파일(FBX for Unity, 30fps): `Art/Raw/Characters/Villager번호.fbx`(T-pose, 몸 포함) · `@Idle`(Breathing Idle) · `@Walk`(Happy Walk, In Place) = 60개. Varco 원본 `Art/Raw/Villagers/Villager번호.fbx`는 그대로 둠(색 텍스처 · 재질은 원본에서 꺼낸 것을 씀)

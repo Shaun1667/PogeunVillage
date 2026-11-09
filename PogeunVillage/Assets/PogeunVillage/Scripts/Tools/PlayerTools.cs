@@ -23,6 +23,10 @@ namespace PogeunVillage
         public GameObject[] holdVisuals = new GameObject[5];
         [Tooltip("휘두를 때 돌리는 축")]
         public Transform swingPivot;
+        [Tooltip("리깅 모델의 오른손 뼈(P-4k) — 있으면 도구 축이 손을 따라감. 방향은 몸 기준 그대로(손목 회전까지 받으면 걸을 때 도구가 옆으로 누움)")]
+        public Transform handBone;
+        [Tooltip("손 뼈 기준 쥐는 자리")]
+        public Vector3 handGrip;
 
         /// <summary>든 도구가 바뀜(빈손이면 null)</summary>
         public event Action<ToolDefinition> EquippedChanged;
@@ -91,6 +95,12 @@ namespace PogeunVillage
                 if (press.TryPress(this, Equipped))
                     return;
             StartCoroutine(Swing());
+        }
+
+        void LateUpdate()
+        {
+            if (handBone && swingPivot)
+                swingPivot.position = handBone.TransformPoint(handGrip);
         }
 
         /// <summary>든 도구의 내구도 -1(아직 그 도구를 들고 있으면). 0이 되면 부서짐 알림</summary>

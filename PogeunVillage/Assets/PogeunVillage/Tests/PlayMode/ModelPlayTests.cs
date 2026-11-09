@@ -184,6 +184,31 @@ namespace PogeunVillage.PlayModeTests
             Assert.AreEqual(0f, controller.animator.GetFloat("Speed"), 0.01f, "멈추면 0");
         }
 
+        // P-4k: 손에 든 도구는 위치만 오른손을 따라감(걸으면 함께 움직임), 방향은 몸 기준 그대로
+        [UnityTest]
+        public IEnumerator HeldTool_FollowsRightHand()
+        {
+            var tools = player.GetComponent<PlayerTools>();
+            var pivot = tools.swingPivot;
+            Assert.IsNotNull(tools.handBone, "오른손 뼈");
+            StringAssert.Contains("RightHand", tools.handBone.name);
+            Quaternion rest = pivot.localRotation;
+
+            Press(keyboard.wKey);
+            yield return WaitSeconds(0.3f);
+            Vector3 first = player.transform.InverseTransformPoint(pivot.position);
+            float moved = 0f;
+            for (float until = Time.time + 0.6f; Time.time < until;)
+            {
+                yield return null;
+                moved = Mathf.Max(moved, Vector3.Distance(first, player.transform.InverseTransformPoint(pivot.position)));
+                Assert.Less(Vector3.Distance(tools.handBone.TransformPoint(tools.handGrip), pivot.position), 0.001f, "쥐는 자리");
+            }
+            Release(keyboard.wKey);
+            Assert.Greater(moved, 0.03f, "걸으면 손과 함께 움직임");
+            Assert.AreEqual(0f, Quaternion.Angle(rest, pivot.localRotation), 0.01f, "방향은 몸 기준");
+        }
+
         // P-4e: 마을을 도는 곤충은 그 곤충 모델(그레이박스 몸 · 날개는 숨김)
         [UnityTest]
         public IEnumerator Insects_UseModels()

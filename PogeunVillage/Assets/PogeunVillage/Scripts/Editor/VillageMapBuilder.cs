@@ -947,7 +947,30 @@ namespace PogeunVillage.EditorTools
             playerTools.tools = tools;
             playerTools.holdVisuals = holds;
             playerTools.swingPivot = pivot;
+            // 리깅 모델이면 도구 축이 손바닥을 따라감(P-4k), 없으면(토끼) 몸 옆 고정
+            var hand = FindBone(visual, RightHandBone);
+            var palm = FindBone(visual, RightPalmBone);
+            if (hand && palm)
+            {
+                playerTools.handBone = hand;
+                playerTools.handGrip = hand.InverseTransformPoint(palm.position);
+            }
         }
+
+        const string RightHandBone = "mixamorig:RightHand";
+        const string RightPalmBone = "mixamorig:RightHandMiddle1";
+        // 손이 쥐는 자리(P-4k): 도구 아래 끝에서 길이의 몇 배 위. 축이 손에 오도록 도구를 그만큼 내림
+        static readonly Dictionary<string, float> ToolGrip = new()
+        {
+            ["Net"] = 0.1f,
+            ["FishingRod"] = 0.12f,
+            ["Axe"] = 0.2f,
+            ["Shovel"] = 0.35f,
+            ["WateringCan"] = 0.7f,
+        };
+
+        static Transform FindBone(Transform root, string name) =>
+            root.GetComponentsInChildren<Transform>().FirstOrDefault(t => t.name == name);
 
         // 손에 든 도구도 도구 모델(P-4h): 그레이박스와 같은 길이로(손잡이 아래가 축), 누운 모델은 ToolPitch로 세움
         static void HoldToolModel(GameObject hold)
@@ -970,6 +993,7 @@ namespace PogeunVillage.EditorTools
             foreach (Transform part in hold.transform.Cast<Transform>().ToArray())
                 Object.DestroyImmediate(part.gameObject);
             var fit = FitModel(id, hold.transform, Vector3.zero, new Vector3(0f, length, 0f), pitch: ToolPitch.TryGetValue(id, out float pitch) ? pitch : 0f);
+            hold.transform.localPosition = Vector3.down * (length * ToolGrip[hold.name]);
             foreach (var r in fit.GetComponentsInChildren<Renderer>())
                 r.shadowCastingMode = ShadowCastingMode.Off;
         }
