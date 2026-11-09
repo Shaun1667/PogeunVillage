@@ -1318,6 +1318,12 @@ namespace PogeunVillage.EditorTools
                 }
                 string id = $"Villager{i + 1:00}";
                 var entry = models.Find(id);
+                bool canWave = id != "Villager01";  // 토끼: 자동 리깅이 긴 귀를 팔 뼈에 묶어 팔을 들면 귀가 늘어남(P-5f)
+                if (v.canWave != canWave)
+                {
+                    v.canWave = canWave;
+                    changed = true;
+                }
                 if (entry != null)
                 {
                     var rig = AssetDatabase.LoadAssetAtPath<GameObject>(VarcoModelImport.RigPath(id));
@@ -2610,6 +2616,7 @@ namespace PogeunVillage.EditorTools
             sequence.playerVisual = player.transform.Find("Visual").gameObject;
             sequence.playerLock = player.GetComponent<PlayerLock>();
             sequence.dayCycle = Object.FindAnyObjectByType<DayCycle>();
+            sequence.village = Object.FindAnyObjectByType<Village>();
             sequence.hud = Object.FindAnyObjectByType<HudView>().GetComponent<Canvas>();
             Object.FindAnyObjectByType<StartScreen>().intro = sequence;
             BuildIntroScreenUi(sequence, mainCamera);

@@ -130,6 +130,12 @@
   - 구현: 맵 생성 `RoomModel`(돌리지 않은 그릇 `Model_Room…` 안에 모델(`Turn`)을 yaw 180 — 정면이 방 카메라 쪽 -Z — 으로 돌리고 폭(m)에 맞춤, 바닥을 자리에, 창문은 뒷면을 벽에 붙임). 책상은 모델 긴 변이 Z라 yaw 90 + 폭 1.6 · 높이 0.76 · 깊이 0.8로 따로 맞춤. 나머지는 책상 윗면 위. 모니터는 폭 = 화면 높이 × 2.4, 화면 쿼드는 모니터 앞면 바로 앞 · 모델 높이 62.5% 자리(모델을 보고 맞춘 값, 크기는 그대로 인트로가 정함)
   - 테스트: PlayMode `IntroPlayTests.Room_UsesModels_ScreenOnMonitorFront`(소품 7개 모델 · 그레이박스 모니터 없음 · 화면 쿼드가 모니터 앞면에 붙고 화면 높이) — 전체 193개. `ModelPlayTests` 높이 검사에서 Room… 제외(폭에 맞춤). EditMode 268개
   - 참고: 스탠드 · 창문의 빛(발광)은 모델 텍스처라 그레이박스 때처럼 빛나지 않음 — 저녁 조명은 아직. 커서 · 먼지는 그대로 기본 도형
+- [x] **P-5f. 손 흔드는 주민** (2026-11-09) — 플레이 확인 대기 — 사용자 요청 "손 흔드는 주민 진행". 마을 화면 · 모니터 속에서 주민 한 명이 착지 자리 옆(플레이어 기준 +2.9, -1.5, '게임 시작' 버튼 오른쪽)에 서서 카메라에 손을 흔들고, 플레이어가 떨어지기 시작하면(또는 건너뛰면) 다시 돌아다님
+  - 결정 (2026-11-09, Claude 판단 — 확인 부탁): **Mixamo 동작 대신 팔을 코드로 돌림**. Mixamo "Waving"을 받아 뼈 회전만 뽑아 20명에게 입혀 봤으나 사람 체형 기준이라 큰 머리에 손이 묻혔음(캡처로 확인) → 동작 파일은 넣지 않음. 서 있기 동작 위에 LateUpdate로 오른팔을 어깨부터 들고 아래팔을 좌우로 돌림(수치 `VillageRules.waveRaise` 40 · `waveSwing` 25 · `waveSpeed` 7, BALANCE 주민 표)
+  - 토끼(01)는 뽑지 않음(`VillagerDefinition.canWave` 끔): 자동 리깅이 긴 귀를 팔 뼈에 묶어 팔을 들면 귀가 늘어남. 팔을 크게 움직이는 동작을 더 넣으려면 토끼 리깅을 다시 봐야 함
+  - 고른 주민은 애니메이터 `AlwaysAnimate`로 바꿈: 모델 기본값(`CullUpdateTransforms`)은 화면 밖에서 뼈를 갱신하지 않아, 낙하 때 카메라가 위를 보면 든 팔이 그대로 남았음(테스트 실패로 발견)
+  - 코드: `VillagerBehaviour.StartWaving` · `StopWaving` · `LateUpdate`, `IntroSequence.Waver`, 자리 `IntroSettings.waverOffset`. 테스트: PlayMode `IntroWavePlayTests` 3개. EditMode 268 · PlayMode 206 통과. 캡처는 복제 주민에 같은 계산을 적용해 찍음(실제 재생 화면 아님)
+  - 참고: Mixamo 계정의 캐릭터는 `Enemy_TimePriest`(다른 작업물)라 새로 올리지 않고 그대로 둠. 처음 받은 복사본은 다른 PC의 Chrome으로 받아져 그 PC 내려받기 폴더에 `Enemy_TimePriest@Waving.fbx`가 남아 있을 수 있음(지워도 됨)
 - [x] **P-5e. 인트로 방 저녁 조명** (2026-11-02) — 플레이 확인 완료 — 방을 어둡게 하고 스탠드 · 모니터 · 노을 창 빛으로 밝힘 (사용자 요청 "조명 넣어줘", 수치 BALANCE 20번)
   - 상태 (2026-11-02): 근거는 EditMode 268 · PlayMode 194 통과 + 실제 화면 캡처(방 카메라로 렌더, 모니터에 마을 화면)
   - 구현: `CurvedToon` 셰이더에 점 · 스포트 조명(추가 조명, Forward+ 묶음 반복 `_CLUSTER_LIGHT_LOOP` 포함, 툰 경계 그대로) · 재질 값 `_MainLightScale`(해와 그림자 색을 함께 줄임, 기본 1). 맵 생성이 방 재질(벽 · 바닥 · 소품 모델)에만 `IntroSettings.roomSunlight` · `roomAmbient`를 넣고 점 조명 3개(`LampLight` · `MonitorLight` · `WindowLight`, 그림자 없음)를 세움. 마을에는 아직 점 조명이 없어 화면 변화 없음

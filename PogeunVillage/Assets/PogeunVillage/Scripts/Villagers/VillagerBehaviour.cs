@@ -19,6 +19,7 @@ namespace PogeunVillage
             Talking,
             GoingHome,
             InHole,
+            Waving,
         }
 
         [Tooltip("몸 · 머리(주민 몸 색)")]
@@ -42,6 +43,9 @@ namespace PogeunVillage
 
         static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
         static readonly int SpeedId = Animator.StringToHash("Speed");
+        const string RightArmBone = "mixamorig:RightArm";
+        const string RightForeArmBone = "mixamorig:RightForeArm";
+        const float WaveBlendSeconds = 0.2f;
 
         Village village;
         IRandomSource random;
@@ -56,6 +60,9 @@ namespace PogeunVillage
         float holeUntil;
         Vector3 visualRest;
         Animator animator;       // 리깅 모델의 애니메이터(P-4j) — 걸을 때 Speed = 걷는 속도, 아니면 0
+        Transform waveArm, waveForeArm;        // 손 흔들 때 동작 위에 덮어 돌리는 오른팔 뼈(P-5f)
+        Quaternion waveArmBind, waveForeArmBind;  // T자 자세의 뼈 방향(모델 기준)
+        float waveWeight;
 
         public void Setup(Village owner, VillagerDefinition definition, HousePlot home, IRandomSource wanderRandom, float wanderRadius, bool isCamper = false)
         {
@@ -80,6 +87,8 @@ namespace PogeunVillage
             {
                 Model = Instantiate(definition.model, visual);  // 모델(P-3c) — 구멍 빠짐은 visual이 그대로 맡음
                 animator = Model.GetComponentInChildren<Animator>();
+                if (animator)
+                    FindWaveBones();
                 foreach (var r in greyboxRenderers) if (r) r.enabled = false;
                 return;
             }
@@ -107,6 +116,26 @@ namespace PogeunVillage
             Place(Home.DoorPosition);
             transform.rotation = Quaternion.LookRotation(Vector3.ProjectOnPlane(Home.door ? Home.door.forward : Vector3.forward, Vector3.up));
             Pause(village.rules.pauseSeconds.x);
+        }
+
+        /// <summary>인트로(P-5f): 자리에 서서 바라보는 쪽으로 손을 흔듦. StopWaving까지 다른 일을 하지 않음</summary>
+        public void StartWaving(Vector3 position, Vector3 lookAt)
+        {
+            Place(position);
+            Vector3 toLook = Vector3.ProjectOnPlane(lookAt - position, Vector3.up);
+            if (toLook.sqrMagnitude > 1e-4f)
+                transform.rotation = Quaternion.LookRotation(toLook);
+            Current = State.Waving;
+            Target = null;
+            if (animator)
+                animator.cullingMode = AnimatorCullingMode.AlwaysAnimate;  // 기본은 화면 밖에서 뼈를 갱신하지 않아, 카메라가 낙하를 따라 올라가면 든 팔이 그대로 남음
+        }
+
+        /// <summary>손 흔들기를 멈추고 잠시 뒤 다시 돌아다님</summary>
+        public void StopWaving()
+        {
+            if (Current == State.Waving)
+                Pause(village.rules.pauseSeconds.x);
         }
 
         /// <summary>집에 들어가 사라짐</summary>
@@ -161,6 +190,7 @@ namespace PogeunVillage
                     WalkToTarget(rules);
                     break;
                 case State.Talking:
+                case State.Waving:
                     Fall();
                     break;
                 case State.InHole:
@@ -170,6 +200,39 @@ namespace PogeunVillage
             }
             if (animator)
                 animator.SetFloat(SpeedId, Current is State.Walking or State.GoingHome ? rules.walkSpeed : 0f, 0.1f, Time.deltaTime);
+        }
+
+        // 받은 Mixamo 손 흔들기 동작은 사람 체형이라 큰 머리에 손이 묻힘 → 어깨부터 옆으로 들어 올린 팔을 직접 돌림(체형과 무관).
+        // 서 있기 동작이 팔을 움직인 뒤라 LateUpdate. T자 자세에서 오른팔은 모델 +X, 모델 앞(+Z) 축으로 돌리면 위로 올라감
+        void LateUpdate()
+        {
+            bool waving = Current == State.Waving;
+            if (!waveArm || (!waving && waveWeight <= 0f))
+                return;
+            waveWeight = Mathf.MoveTowards(waveWeight, waving ? 1f : 0f, Time.deltaTime / WaveBlendSeconds);
+            var rules = village.rules;
+            Quaternion model = animator.transform.rotation;
+            float swing = Mathf.Sin(Time.time * rules.waveSpeed) * rules.waveSwing;
+            waveArm.rotation = Quaternion.Slerp(waveArm.rotation, model * Quaternion.AngleAxis(rules.waveRaise, Vector3.forward) * waveArmBind, waveWeight);
+            waveForeArm.rotation = Quaternion.Slerp(waveForeArm.rotation, model * Quaternion.AngleAxis(rules.waveRaise + swing, Vector3.forward) * waveForeArmBind, waveWeight);
+        }
+
+        // 막 만든 모델은 T자 자세 — 이때의 방향을 기억해 둠
+        void FindWaveBones()
+        {
+            foreach (var bone in animator.GetComponentsInChildren<Transform>())
+            {
+                if (bone.name == RightArmBone) waveArm = bone;
+                else if (bone.name == RightForeArmBone) waveForeArm = bone;
+            }
+            if (!waveArm || !waveForeArm)
+            {
+                waveArm = null;
+                return;
+            }
+            Quaternion toModel = Quaternion.Inverse(animator.transform.rotation);
+            waveArmBind = toModel * waveArm.rotation;
+            waveForeArmBind = toModel * waveForeArm.rotation;
         }
 
         void PickTarget()
@@ -272,7 +335,7 @@ namespace PogeunVillage
 
         void OnTalk(Interactable _, PlayerInteractor by)
         {
-            if (Current is State.Talking or State.InHole or State.Home || !village.dialogue)
+            if (Current is State.Talking or State.InHole or State.Home or State.Waving || !village.dialogue)
                 return;
             resumeAs = Current == State.GoingHome ? State.GoingHome : State.Walking;
             Current = State.Talking;

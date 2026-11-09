@@ -26,7 +26,7 @@
    - 저장이 없으면 인트로가 나옴(ESC로 건너뛰기). 저장이 있으면 시작 화면(F 이어하기 / 새로 시작).
 4. **Claude Code**: 저장소 **루트** 폴더를 작업 폴더로 → CLAUDE.md가 자동으로 읽힘.
 5. **외부 도구 연결**(2번): Unity MCP, Varco3D, Claude in Chrome(Mixamo), Notion.
-6. **확인**: 메뉴 `Pogeun Village > Run EditMode Tests` · `Run PlayMode Tests` → **EditMode 268 · PlayMode 203 통과**(2026-11-09 기준), 콘솔 경고 0.
+6. **확인**: 메뉴 `Pogeun Village > Run EditMode Tests` · `Run PlayMode Tests` → **EditMode 268 · PlayMode 206 통과**(2026-11-09 기준), 콘솔 경고 0.
 
 > 주의: pull 받은 뒤 에디터에 이미 열려 있던 씬은 이전 상태로 남을 수 있음 → 씬을 디스크에서 다시 연다.
 
@@ -121,7 +121,7 @@
 1. **플레이 확인**: 플레이어 · 주민 걷기 동작, 과일나무 · 매대 · 수조 · 채집통 · 테마 가구 크기와 위치(실제 Play로)
 2. ~~손에 든 도구를 손에 붙이기~~ → 완료(2026-11-09, TASKS P-4k, 플레이 확인 대기). 위치만 오른손을 따르고 방향은 몸 기준
 3. ~~남은 그레이박스~~ → 완료(2026-11-09, TASKS P-4l, 플레이 확인 대기). 상점 묘목 · 빈 집터 흙더미 · 화살표 커서 · 구름 먼지
-4. **인트로 다듬기**: 마을 화면에서 손 흔드는 주민(Mixamo 동작 추가)
+4. ~~인트로 다듬기~~ → 완료(2026-11-09, TASKS P-5f, 플레이 확인 대기). 손 흔드는 주민은 Mixamo 동작 대신 팔을 코드로 돌림(토끼 제외)
 5. **4-1 재미 검증**(보류) — 사용자가 PLAYTEST.md대로 플레이할 때. 기록은 에디터 플레이 때 `Temp/PlayLogs/*.csv`
 6. 열린 항목(GDD 10번 · 아래 9번 표) — 해당 작업 때 결정
 
@@ -161,6 +161,8 @@ git checkout -- "Assets/PogeunVillage/Fonts/Cafe24Ssurround SDF.asset" Assets/Po
 (단, 빌더를 고쳐 프리팹 · 메시가 실제로 바뀐 커밋이면 그 파일은 남김)
 
 ### 8-4. Unity MCP 요령
+- MCP 코드에서 씬을 저장 안 됨 상태로 남기면 다음 맵 생성 때 저장 창이 떠 응답이 멈춤(2026-11-09 30분 멈춤). `MarkAllScenesDirty` 쓰지 말 것
+- Claude in Chrome은 여러 PC의 Chrome에 연결될 수 있음 → 내려받을 때는 `list_connected_browsers`로 이 PC의 브라우저인지 먼저 확인
 - 에디터 창이 포커스를 잃으면 플레이 모드가 2프레임에서 멈춤 → 캡처는 카메라를 RenderTexture에 직접 그려 PNG로 저장
 - 가끔 플레이 모드 중 MCP가 응답 없음 → 사용자가 플레이 모드를 직접 멈춰야 함
 - MCP로 실행하는 코드에서 `AssetDatabase.DeleteAsset` · `MoveAsset` · `Directory.Delete`는 "User interactions not supported" 오류 → 셸에서 파일과 `.meta`를 함께 옮기거나 지운 뒤 `AssetDatabase.Refresh`

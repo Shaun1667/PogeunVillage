@@ -55,6 +55,7 @@ MonoBehaviour:
   - "\uC6B0\uB9AC \uCE5C\uD574\uC9C4 \uAE30\uB150\uC774\uC57C! {0}\uC744(\uB97C) \uC904\uAC8C."
   - "\uB108\uD55C\uD14C \uAF2D \uC8FC\uACE0 \uC2F6\uC5C8\uC5B4. {0}\uC774\uC57C!"
   houseModel: {fileID: 7554249346651587006, guid: 5c8d4640034d1f343bedbd60e2316d7c, type: 3}
+  canWave: 1
   model: {fileID: 7366928191465892600, guid: 250acc8628f553144bdc9bc462c277a2, type: 3}
   themeFurniture:
   - {fileID: 11400000, guid: 32fb867fc8269b447a49464dca7a8ede, type: 2}

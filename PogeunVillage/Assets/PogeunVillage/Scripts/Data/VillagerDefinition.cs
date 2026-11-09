@@ -44,6 +44,8 @@ namespace PogeunVillage
         [Header("모델 (P-3)")]
         [Tooltip("이 주민의 집(Prefabs/Houses/House번호, 맵 생성 메뉴가 비어 있을 때 채움). 없으면 그레이박스 집")]
         public GameObject houseModel;
+        [Tooltip("인트로에서 손 흔드는 주민이 될 수 있음(팔을 들어도 모델이 안 늘어남, P-5f)")]
+        public bool canWave = true;
         [Tooltip("이 주민의 모습(Prefabs/Villagers/Villager번호, 정적 모델). 없으면 그레이박스 몸")]
         public GameObject model;
 

@@ -37,6 +37,9 @@ MonoBehaviour:
   residentSeed: 2026
   wanderSeed: 77
   dialogueSeed: 19
+  waveRaise: 40
+  waveSwing: 25
+  waveSpeed: 7
   walkSpeed: 1.6
   turnSpeed: 360
   wanderRadius: 14

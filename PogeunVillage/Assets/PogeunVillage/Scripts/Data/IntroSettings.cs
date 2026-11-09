@@ -52,6 +52,8 @@ namespace PogeunVillage
         public float dustRadius = 0.9f;
         [Tooltip("착지 먼지가 사라질 때까지 떠오르는 높이(m)")]
         public float dustRise = 0.35f;
+        [Tooltip("손 흔드는 주민 자리(플레이어 착지 자리 기준, m). 카메라는 +Z를 봄")]
+        public Vector3 waverOffset = new(2.9f, 0f, -1.5f);
 
         [Header("방")]
         [Tooltip("방 위치(맵 바깥)")]

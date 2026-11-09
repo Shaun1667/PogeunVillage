@@ -328,6 +328,7 @@
 | `wanderSeed` | 77 | 배회 목표 시드(+ 집터 번호 = 주민마다 따로) |
 | `dialogueSeed` | 19 | 대사 고르기 시드 |
 | `walkSpeed` | 1.6 | 주민 걷는 속도(m/초). 플레이어 걷기 4보다 느긋하게 |
+| `waveRaise` / `waveSwing` / `waveSpeed` | 40° / 25° / 7 | 인트로 손 흔들기(P-5f): 팔 드는 각도 · 아래팔 좌우 각도 · 빠르기(라디안/초) |
 | `turnSpeed` | 360 | 회전 속도(도/초) |
 | `wanderRadius` | 14 | 자기 집 현관에서 이 거리(m) 안을 돌아다님 |
 | `pauseSeconds` | 1.5 ~ 4 | 목표에 닿은 뒤 멈춰 있는 시간(초) |

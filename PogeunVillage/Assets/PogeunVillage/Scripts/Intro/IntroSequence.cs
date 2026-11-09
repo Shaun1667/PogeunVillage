@@ -43,6 +43,8 @@ namespace PogeunVillage
         [Header("낙하 · 착지 (P-5c)")]
         [Tooltip("착지 먼지(자식들이 둥글게 퍼짐)")]
         public Transform landingDust;
+        [Tooltip("손 흔드는 주민을 고를 마을(없으면 손 흔드는 주민 없음)")]
+        public Village village;
 
         public bool IsPlaying { get; private set; }
         public IntroPhase Phase => timeline == null ? IntroPhase.Done : timeline.PhaseAt(time);
@@ -57,6 +59,9 @@ namespace PogeunVillage
         IntroTimeline timeline;
         float time;
         int startFrame;
+        /// <summary>지금 손 흔드는 주민(없으면 null)</summary>
+        public VillagerBehaviour Waver { get; private set; }
+
         RenderTexture screenTexture;
         MaterialPropertyBlock block;
         Pose roomStart, roomEnd, villagePose, followPose;
@@ -179,6 +184,10 @@ namespace PogeunVillage
                 Finish();
                 return;
             }
+            if (phase is IntroPhase.Fall or IntroPhase.Land or IntroPhase.Settle)
+                StopWaver();
+            else if (!Waver)
+                StartWaver();
             float progress = timeline.ProgressAt(time);
             bool inRoom = phase is IntroPhase.PullOut or IntroPhase.Room or IntroPhase.Click or IntroPhase.Dive;
             mainCamera.targetTexture = inRoom ? screenTexture : null;
@@ -236,6 +245,27 @@ namespace PogeunVillage
             }
         }
 
+        // 마을 화면 · 모니터 속에서 주민 한 명이 착지 자리 옆에 서서 카메라에 손을 흔듦(주민이 아직 없으면 다음 프레임에 다시)
+        void StartWaver()
+        {
+            if (!village)
+                return;
+            foreach (var villager in village.Villagers)
+                if (villager && villager.isActiveAndEnabled && villager.Definition.canWave)
+                {
+                    Waver = villager;
+                    Waver.StartWaving(player.position + settings.waverOffset, villagePose.position);
+                    return;
+                }
+        }
+
+        void StopWaver()
+        {
+            if (Waver)
+                Waver.StopWaving();
+            Waver = null;
+        }
+
         // 낙하: 하늘에서 중력처럼 점점 빠르게 / 착지: 찌그러졌다 펴짐
         void PlacePlayerVisual(IntroPhase phase, float progress)
         {
@@ -285,6 +315,7 @@ namespace PogeunVillage
 
         void Finish()
         {
+            StopWaver();
             IsPlaying = false;
             mainCamera.targetTexture = null;
             roomCamera.enabled = false;

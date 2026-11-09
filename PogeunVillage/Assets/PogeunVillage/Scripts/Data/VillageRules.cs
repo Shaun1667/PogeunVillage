@@ -20,6 +20,13 @@ namespace PogeunVillage
         public int dialogueSeed = 19;
 
         [Header("배회")]
+        [Tooltip("손 흔들 때 팔을 드는 각도(도, 어깨 높이 위로)")]
+        public float waveRaise = 40f;
+        [Tooltip("손 흔들 때 아래팔이 좌우로 움직이는 각도(도)")]
+        public float waveSwing = 25f;
+        [Tooltip("손 흔드는 빠르기(라디안/초)")]
+        public float waveSpeed = 7f;
+
         [Tooltip("걷는 속도(m/초)")]
         public float walkSpeed = 1.6f;
         [Tooltip("회전 속도(도/초)")]
